@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  location: ^8.0.0
   supabase_auth_ui: ^0.5.4
   supabase_flutter: ^2.8.4
 

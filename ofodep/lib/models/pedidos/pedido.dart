@@ -1,19 +1,20 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ofodep/models/localizacion/ubicacion.dart';
 
 class Pedido {
   // Campos del pedido
-  final String? id;
+  final String id;
   final String comercioId;
   final String usuarioId;
-  final String? nombreCliente;
-  final String? emailCliente;
-  final String? telefonoCliente;
+  final String nombreCliente;
+  final String emailCliente;
+  final String telefonoCliente;
   final String? direccionCalle;
   final String? direccionNumero;
   final String? direccionColonia;
   final String? direccionCP;
   final String? direccionCiudad;
   final String? direccionEstado;
+  final Ubicacion? ubicacion;
   final double? ubicacionLat;
   final double? ubicacionLng;
   final String? zonaId;
