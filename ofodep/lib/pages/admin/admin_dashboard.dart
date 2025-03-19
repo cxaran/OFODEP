@@ -1,31 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:ofodep/pages/admin/users_management_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ofodep/blocs/session_cubit.dart';
+import 'package:ofodep/pages/error_page.dart';
 
-class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({super.key});
+class AdminDashboardPage extends StatelessWidget {
+  const AdminDashboardPage({super.key});
 
-  @override
-  State<AdminDashboard> createState() => _AdminDashboardState();
-}
-
-class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Panel de Administración'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => UsersManagementScreen()),
-            );
-          },
-          child: Text('Gestión de Usuarios'),
-        ),
-      ),
+    return BlocBuilder<SessionCubit, SessionState>(
+      builder: (context, state) {
+        if (state is SessionAuthenticated && state.usuario.admin) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Dashboard Admin'),
+            ),
+            body: Column(
+              children: [
+                Text('Panel de administración general.'),
+                ElevatedButton(
+                  onPressed: () => context.push('/admin/users'),
+                  child: const Text('Administrar Usuarios'),
+                ),
+                ElevatedButton(
+                  onPressed: () => context.push('/admin/zones'),
+                  child: const Text('Zonas'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return const ErrorPage();
+        }
+      },
     );
   }
 }

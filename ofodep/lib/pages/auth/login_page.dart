@@ -1,17 +1,15 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginPage extends StatelessWidget {
+  final String? redirectPath;
+  const LoginPage({super.key, this.redirectPath});
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
+    debugPrint('redirectPath: $redirectPath');
     return Scaffold(
       appBar: AppBar(
         title: Text('Iniciar Sesión'),
@@ -19,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: SupaEmailAuth(
         onSignInComplete: (response) {
-          Navigator.pushNamed(context, '/home');
+          context.go(redirectPath ?? '/home');
         },
         onSignUpComplete: (AuthResponse response) {
           // Navigator.pushNamed(context, '/home');

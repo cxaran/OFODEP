@@ -1,4 +1,4 @@
--- Proyecto OFODEP - 2024-01-01
+-- Proyecto OFODEP - 2025-01-01
 -- Versión 0.1.0
 --------------------------------------------------------------------------------
 -- Autor: Jordan Aran
@@ -126,7 +126,7 @@ CREATE TABLE comercio_suscripciones (
 -- Define áreas geográficas para la entrega mediante polígonos.
 CREATE TABLE zonas (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    nombre text NOT NULL,
+    nombre text NOT NULL UNIQUE CHECK (nombre <> ''),
     descripcion text,
     geom geometry(Polygon, 4326),  -- Polígono para delimitar la zona (SRID 4326)
     codigos_postales text[],       -- Lista de códigos postales asociados
@@ -763,6 +763,22 @@ ALTER TABLE delivery_info ENABLE ROW LEVEL SECURITY;
 
 -- NOTA: Se utiliza auth.uid() para identificar al usuario autenticado.
 
+-- Usuario Admin Global tiene acceso total a la base de datos
+CREATE OR REPLACE FUNCTION public.is_global_admin() 
+RETURNS boolean AS $$
+DECLARE
+  admin_status boolean;
+BEGIN
+  SELECT admin 
+  INTO admin_status 
+  FROM public.usuarios 
+  WHERE auth_id = auth.uid();
+  RETURN admin_status;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+
+
 ---------------------------------------------------------------------
 -- SECCIÓN: POLÍTICAS DE SEGURIDAD (RLS)
 ---------------------------------------------------------------------
@@ -773,17 +789,14 @@ ALTER TABLE delivery_info ENABLE ROW LEVEL SECURITY;
 CREATE POLICY admin_full_access ON usuarios
 FOR ALL
 USING (
-  EXISTS (
-    SELECT 1 FROM usuarios u
-    WHERE u.auth_id = auth.uid() AND u.admin = true
-  )
+  public.is_global_admin()
 );
 
 -- 1.b. Usuario regular: puede SELECT, UPDATE y DELETE únicamente su propio registro.
 CREATE POLICY user_self_access ON usuarios
 FOR ALL
-USING (auth.uid() = auth_id)
-WITH CHECK (auth.uid() = auth_id);
+USING ( auth.uid() = usuarios.auth_id)
+WITH CHECK ( auth.uid() = usuarios.auth_id);
 
 ---------------------------------------------------------------------
 -- Tablas de COMERCIOS y HORARIOS

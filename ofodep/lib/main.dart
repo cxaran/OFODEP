@@ -1,35 +1,33 @@
+// main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/config/supabase_config.dart';
-import 'package:ofodep/pages/admin/admin_dashboard.dart';
-import 'package:ofodep/pages/admin/users_management_screen.dart';
-import 'package:ofodep/pages/auth/login_screen.dart';
-import 'package:ofodep/pages/common/home_screen.dart';
-import 'package:ofodep/pages/splash/splash_screen.dart';
+import 'blocs/session_cubit.dart';
+import 'routes/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseConfig.initialize();
-  runApp(const MainApp());
+
+  runApp(
+    BlocProvider.value(
+      value: SessionCubit(),
+      child: App(),
+    ),
+  );
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'OFODEP',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      // La pantalla inicial es el SplashScreen, que redirige según la sesión
-      home: const SplashScreen(),
-      routes: {
-        '/login': (_) => const LoginScreen(),
-        '/home': (_) => const HomeScreen(),
-
-        //Admin Screens
-        '/admin/dashboard': (_) => const AdminDashboard(),
-        '/admin/users': (_) => const UsersManagementScreen(),
-      },
+      theme: ThemeData.dark(),
+      routerConfig: createRouter(
+        context.watch<SessionCubit>(),
+      ),
     );
   }
 }
