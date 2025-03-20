@@ -8,6 +8,7 @@ import 'package:ofodep/pages/admin/admin_users.dart';
 import 'package:ofodep/pages/admin/admin_zones.dart';
 import 'package:ofodep/pages/auth/login_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
+import 'package:ofodep/pages/zones/zone_page.dart';
 
 /// Envuelve el SessionCubit en un ChangeNotifier para que go_router se actualice
 class SessionNotifier extends ChangeNotifier {
@@ -29,6 +30,7 @@ class SessionNotifier extends ChangeNotifier {
 
 /// Crea el router utilizando el estado del SessionCubit
 GoRouter createRouter(SessionCubit sessionCubit) {
+  GoRouter.optionURLReflectsImperativeAPIs = true;
   final sessionNotifier = SessionNotifier(sessionCubit);
   return GoRouter(
     initialLocation: '/home',
@@ -82,6 +84,12 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           )
         ],
       ),
+      GoRoute(
+        path: '/zone/:zoneId',
+        builder: (context, state) => ZonePage(
+          zoneId: state.pathParameters['zoneId'],
+        ),
+      )
     ],
   );
 }

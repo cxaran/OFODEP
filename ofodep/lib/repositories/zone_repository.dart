@@ -21,19 +21,26 @@ class ZoneRepository {
   }
 
   /// Actualiza el nombre y/o descripción de la zona.
-  Future<bool> updateZone(String zoneId,
-      {String? nombre, String? descripcion}) async {
+  Future<bool> updateZone(
+    String zoneId, {
+    String? nombre,
+    String? descripcion,
+    Map<String, dynamic>? geom,
+  }) async {
     try {
       Map<String, dynamic> updates = {};
       if (nombre != null) updates['nombre'] = nombre;
       if (descripcion != null) updates['descripcion'] = descripcion;
+      if (geom != null) updates['geom'] = geom;
 
       final response = await Supabase.instance.client
           .from('zonas')
           .update(updates)
-          .eq('id', zoneId);
+          .eq('id', zoneId)
+          .select('id');
 
-      return response.error == null;
+      if (response.isEmpty) return false;
+      return true;
     } on Exception catch (e) {
       throw Exception('Error al actualizar zona: $e');
     }
@@ -55,7 +62,7 @@ class ZoneRepository {
             'geom': geom,
             'codigos_postales': codigosPostales,
           })
-          .select()
+          .select('id')
           .maybeSingle();
 
       if (response == null) return null;

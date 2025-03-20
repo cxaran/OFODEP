@@ -21,8 +21,7 @@ class HomePage extends StatelessWidget {
             title: const Text('Home'),
             automaticallyImplyLeading: false,
           ),
-          body: Center(
-              child: Column(
+          body: Column(
             children: [
               Text(mensaje),
               if (state.admin)
@@ -35,7 +34,7 @@ class HomePage extends StatelessWidget {
                 child: const Text('Cerrar Sesión'),
               ),
             ],
-          )),
+          ),
         );
       },
     );

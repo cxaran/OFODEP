@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/blocs/catalogs/zones_list_cubit.dart';
 import 'package:ofodep/models/zona.dart';
@@ -12,17 +13,10 @@ class AdminZonesPage extends StatefulWidget {
 }
 
 class _AdminZonesPageState extends State<AdminZonesPage> {
-  final TextEditingController _searchController = TextEditingController();
   String? _selectedOrder;
   bool _ascending = false;
   DateTime? _createdAtGte;
   DateTime? _createdAtLte;
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
   // Método que arma y actualiza el filtro combinado.
   void updateFilters() {
@@ -48,133 +42,77 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
           body: Column(
             children: [
               // Sección de filtros, búsqueda y ordenamiento.
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    // Campo de búsqueda (por nombre o descripción).
-                    TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        labelText: 'Buscar por nombre o descripción',
-                        border: OutlineInputBorder(),
+              Column(
+                children: [
+                  // Campo de búsqueda (por nombre o descripción).
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Buscar por nombre o descripción',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      context.read<ZonesListCubit>().updateSearch(value);
+                    },
+                  ),
+
+                  // Filtros de ordenamiento.
+                  Row(
+                    children: [
+                      // Dropdown para seleccionar el criterio de ordenamiento.
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedOrder,
+                          decoration: const InputDecoration(
+                            labelText: 'Ordenar por',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'created_at',
+                              child: Text('Fecha de creación'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'updated_at',
+                              child: Text('Fecha de actualización'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'nombre',
+                              child: Text('Nombre'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedOrder = value;
+                            });
+                            context.read<ZonesListCubit>().updateOrdering(
+                                  orderBy: value,
+                                  ascending: _ascending,
+                                );
+                          },
+                        ),
                       ),
-                      onChanged: (value) {
-                        context.read<ZonesListCubit>().updateSearch(value);
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    // Filtros de fecha: "Fecha Desde" y "Fecha Hasta".
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () async {
-                              final selectedDate = await showDatePicker(
-                                context: context,
-                                initialDate: _createdAtGte ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now(),
-                              );
-                              if (selectedDate != null) {
-                                setState(() {
-                                  _createdAtGte = selectedDate;
-                                });
-                                updateFilters();
-                              }
-                            },
-                            child: Text(
-                              _createdAtGte == null
-                                  ? "Fecha Desde"
-                                  : "Desde: ${_createdAtGte!.toLocal().toString().split(' ')[0]}",
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () async {
-                              final selectedDate = await showDatePicker(
-                                context: context,
-                                initialDate: _createdAtLte ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now(),
-                              );
-                              if (selectedDate != null) {
-                                setState(() {
-                                  _createdAtLte = selectedDate;
-                                });
-                                updateFilters();
-                              }
-                            },
-                            child: Text(
-                              _createdAtLte == null
-                                  ? "Fecha Hasta"
-                                  : "Hasta: ${_createdAtLte!.toLocal().toString().split(' ')[0]}",
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        // Dropdown para seleccionar el criterio de ordenamiento.
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _selectedOrder,
-                            decoration: const InputDecoration(
-                              labelText: 'Ordenar por',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'created_at',
-                                child: Text('Fecha de creación'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'updated_at',
-                                child: Text('Fecha de actualización'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'nombre',
-                                child: Text('Nombre'),
-                              ),
-                            ],
+
+                      // Switch para definir orden ascendente/descendente.
+                      Column(
+                        children: [
+                          const Text('Ascendente'),
+                          Switch(
+                            value: _ascending,
                             onChanged: (value) {
                               setState(() {
-                                _selectedOrder = value;
+                                _ascending = value;
                               });
                               context.read<ZonesListCubit>().updateOrdering(
-                                    orderBy: value,
+                                    orderBy: _selectedOrder,
                                     ascending: _ascending,
                                   );
                             },
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Switch para definir orden ascendente/descendente.
-                        Column(
-                          children: [
-                            const Text('Ascendente'),
-                            Switch(
-                              value: _ascending,
-                              onChanged: (value) {
-                                setState(() {
-                                  _ascending = value;
-                                });
-                                context.read<ZonesListCubit>().updateOrdering(
-                                      orderBy: _selectedOrder,
-                                      ascending: _ascending,
-                                    );
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
               // Lista de zonas con scroll infinito.
               Expanded(
@@ -201,6 +139,7 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                               title: Text(zona.nombre),
                               subtitle: Text(zona.descripcion ?? ''),
                               trailing: const Icon(Icons.map),
+                              onTap: () => context.push('/zone/${zona.id}'),
                             ),
                             firstPageErrorIndicatorBuilder: (context) => Center(
                               child: Column(

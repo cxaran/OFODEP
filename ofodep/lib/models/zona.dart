@@ -2,7 +2,7 @@ class Zona {
   final String id;
   final String nombre;
   final String? descripcion;
-  final String? geom;
+  final Map<String, dynamic>? geom;
   final List<String>? codigosPostales;
   final DateTime? createdAt;
   final DateTime? updatedAt;
