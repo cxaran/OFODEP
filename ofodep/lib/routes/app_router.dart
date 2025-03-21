@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/session_cubit.dart';
+import 'package:ofodep/pages/admin/admin_commerces.dart';
 import 'package:ofodep/pages/admin/admin_dashboard.dart';
 import 'package:ofodep/pages/admin/admin_users.dart';
-import 'package:ofodep/pages/admin/admin_zones.dart';
 import 'package:ofodep/pages/auth/login_page.dart';
+import 'package:ofodep/pages/commerce/commerce_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
-import 'package:ofodep/pages/zones/zone_page.dart';
 
 /// Envuelve el SessionCubit en un ChangeNotifier para que go_router se actualice
 class SessionNotifier extends ChangeNotifier {
@@ -79,17 +79,17 @@ GoRouter createRouter(SessionCubit sessionCubit) {
             builder: (context, state) => const AdminUsersPage(),
           ),
           GoRoute(
-            path: 'zones',
-            builder: (context, state) => const AdminZonesPage(),
-          )
+            path: 'comercios',
+            builder: (context, state) => const AdminCommercesPage(),
+          ),
         ],
       ),
       GoRoute(
-        path: '/zone/:zoneId',
-        builder: (context, state) => ZonePage(
-          zoneId: state.pathParameters['zoneId'],
+        path: '/comercio/:comercioId',
+        builder: (context, state) => CommercePage(
+          comercioId: state.pathParameters['comercioId'],
         ),
-      )
+      ),
     ],
   );
 }

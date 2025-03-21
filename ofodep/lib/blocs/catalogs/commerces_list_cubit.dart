@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/models/filter_state.dart';
-import 'package:ofodep/models/zona.dart';
-import 'package:ofodep/repositories/zone_repository.dart';
+import 'package:ofodep/models/comercio.dart';
+import 'package:ofodep/repositories/commerce_repository.dart';
 
-/// Estado que almacena filtros, búsqueda y configuración de ordenamiento para zonas.
-class ZonesListFilterState extends ListFilterState {
-  const ZonesListFilterState({
+/// Estado que almacena filtros, búsqueda y configuración de ordenamiento para comercios.
+class CommercesListFilterState extends ListFilterState {
+  const CommercesListFilterState({
     super.filter,
     super.search,
     super.orderBy,
@@ -15,14 +15,14 @@ class ZonesListFilterState extends ListFilterState {
   });
 
   @override
-  ZonesListFilterState copyWith({
+  CommercesListFilterState copyWith({
     Map<String, dynamic>? filter,
     String? search,
     String? orderBy,
     bool? ascending,
     String? errorMessage,
   }) {
-    return ZonesListFilterState(
+    return CommercesListFilterState(
       filter: filter ?? this.filter,
       search: search ?? this.search,
       orderBy: orderBy ?? this.orderBy,
@@ -32,19 +32,19 @@ class ZonesListFilterState extends ListFilterState {
   }
 }
 
-/// Cubit que administra la lógica de paginación y filtros para zonas,
+/// Cubit que administra la lógica de paginación y filtros para comercios,
 /// utilizando el PagingController de infinite_scroll_pagination.
-class ZonesListCubit extends Cubit<ZonesListFilterState> {
-  late final ZoneRepository _zoneRepository;
-  late final PagingController<int, Zona> pagingController;
+class CommercesListCubit extends Cubit<CommercesListFilterState> {
+  late final CommerceRepository _commerceRepository;
+  late final PagingController<int, Comercio> pagingController;
   int limit;
 
-  ZonesListCubit({
-    ZoneRepository? zoneRepository,
+  CommercesListCubit({
+    CommerceRepository? commerceRepository,
     this.limit = 10,
-  }) : super(ZonesListFilterState()) {
-    _zoneRepository = zoneRepository ?? ZoneRepository();
-    pagingController = PagingController<int, Zona>(
+  }) : super(CommercesListFilterState()) {
+    _commerceRepository = commerceRepository ?? CommerceRepository();
+    pagingController = PagingController<int, Comercio>(
       getNextPageKey: (state) {
         // Obtiene la última página y la incrementa.
         final currentPage = state.keys?.last ?? 0;
@@ -52,7 +52,7 @@ class ZonesListCubit extends Cubit<ZonesListFilterState> {
       },
       fetchPage: (int pageKey) async {
         try {
-          final newZones = await _zoneRepository.getZones(
+          final newCommerces = await _commerceRepository.getCommerces(
             page: pageKey,
             limit: limit,
             filter: state.filter,
@@ -61,11 +61,11 @@ class ZonesListCubit extends Cubit<ZonesListFilterState> {
             ascending: state.ascending,
           );
 
-          if (newZones.isEmpty) {
+          if (newCommerces.isEmpty) {
             pagingController.value =
                 pagingController.value.copyWith(hasNextPage: false);
           }
-          return newZones;
+          return newCommerces;
         } on Exception catch (e) {
           emit(state.copyWith(errorMessage: e.toString()));
           pagingController.value =
@@ -97,14 +97,46 @@ class ZonesListCubit extends Cubit<ZonesListFilterState> {
     pagingController.refresh();
   }
 
-  /// Método para agregar una zona (solo con nombre)
-  Future<void> addZone(String zoneName) async {
+  /// Método para agregar un comercio.
+  Future<void> addCommerce({
+    required String nombre,
+    String? logoUrl,
+    String? direccionCalle,
+    String? direccionNumero,
+    String? direccionColonia,
+    String? direccionCp,
+    String? direccionCiudad,
+    String? direccionEstado,
+    num? lat,
+    num? lng,
+    List<String>? codigosPostales,
+    String? whatsapp,
+    num? minimoCompraDelivery,
+    bool pickup = false,
+    bool delivery = false,
+    num? precioDelivery,
+  }) async {
     try {
-      final newZone = await _zoneRepository.createZone(
-        nombre: zoneName,
+      final newCommerce = await _commerceRepository.createCommerce(
+        nombre: nombre,
+        logoUrl: logoUrl,
+        direccionCalle: direccionCalle,
+        direccionNumero: direccionNumero,
+        direccionColonia: direccionColonia,
+        direccionCp: direccionCp,
+        direccionCiudad: direccionCiudad,
+        direccionEstado: direccionEstado,
+        lat: lat,
+        lng: lng,
+        codigosPostales: codigosPostales,
+        whatsapp: whatsapp,
+        minimoCompraDelivery: minimoCompraDelivery,
+        pickup: pickup,
+        delivery: delivery,
+        precioDelivery: precioDelivery,
       );
-      if (newZone != null) {
-        // Se refresca la lista para que se muestre la nueva zona, si corresponde.
+      if (newCommerce != null) {
+        // Se refresca la lista para que se muestre la nueva comercio, si corresponde.
         pagingController.refresh();
       }
     } catch (e) {

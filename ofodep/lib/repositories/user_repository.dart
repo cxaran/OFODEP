@@ -2,13 +2,16 @@ import 'package:ofodep/models/usuario.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserRepository {
+  static const String tableName = 'usuarios';
+
   UserRepository();
 
   /// Obtiene el usuario desde la tabla 'usuarios' filtrando por el auth_id.
+  /// [userId] ID del usuario
   Future<Usuario?> getUser(String userId) async {
     try {
       final data = await Supabase.instance.client
-          .from('usuarios')
+          .from(tableName)
           .select()
           .eq('auth_id', userId)
           .maybeSingle();
@@ -20,27 +23,30 @@ class UserRepository {
     }
   }
 
-  /// Actualiza el nombre del usuario en la tabla 'usuarios'
-  Future<bool> updateUserName(String userId, String newName) async {
+  /// Actualiza el nombre y/o telefono del usuario.
+  /// [nombre] nuevo nombre del usuario
+  /// [telefono] nuevo telefono del usuario
+  /// [admin] nuevo admin del usuario
+  Future<bool> updateUser(
+    String userId, {
+    String? nombre,
+    String? telefono,
+    bool? admin,
+  }) async {
     try {
+      Map<String, dynamic> updates = {};
+      if (nombre != null) updates['nombre'] = nombre;
+      if (telefono != null) updates['telefono'] = telefono;
+      if (admin != null) updates['admin'] = admin;
+
       final response = await Supabase.instance.client
-          .from('usuarios')
-          .update({'nombre': newName}).eq('auth_id', userId);
+          .from(tableName)
+          .update(updates)
+          .eq('auth_id', userId)
+          .select('id');
 
-      return response.error == null;
-    } on Exception catch (e) {
-      throw Exception('Error al actualizar usuario: $e');
-    }
-  }
-
-  /// Actualiza el teléfono del usuario en la tabla 'usuarios'
-  Future<bool> updateUserPhone(String userId, String newPhone) async {
-    try {
-      final response = await Supabase.instance.client
-          .from('usuarios')
-          .update({'telefono': newPhone}).eq('auth_id', userId);
-
-      return response.error == null;
+      if (response.isEmpty) return false;
+      return true;
     } on Exception catch (e) {
       throw Exception('Error al actualizar usuario: $e');
     }
@@ -65,7 +71,7 @@ class UserRepository {
 
     // Construir la consulta básica
     PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-        supabase.from('usuarios').select('*');
+        supabase.from(tableName).select('*');
 
     // Aplicar filtros personalizados
     if (filter != null) {

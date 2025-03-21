@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:ofodep/blocs/catalogs/zones_list_cubit.dart';
-import 'package:ofodep/models/zona.dart';
+import 'package:ofodep/blocs/catalogs/commerces_list_cubit.dart';
+import 'package:ofodep/models/comercio.dart';
 
-class AdminZonesPage extends StatefulWidget {
-  const AdminZonesPage({super.key});
+class AdminCommercesPage extends StatefulWidget {
+  const AdminCommercesPage({super.key});
 
   @override
-  State<AdminZonesPage> createState() => _AdminZonesPageState();
+  State<AdminCommercesPage> createState() => _AdminCommercesPageState();
 }
 
-class _AdminZonesPageState extends State<AdminZonesPage> {
+class _AdminCommercesPageState extends State<AdminCommercesPage> {
   String? _selectedOrder;
   bool _ascending = false;
   DateTime? _createdAtGte;
@@ -27,17 +27,19 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
     if (_createdAtLte != null) {
       filter['created_at_lte'] = _createdAtLte!.toIso8601String();
     }
-    context.read<ZonesListCubit>().updateFilter(filter.isEmpty ? null : filter);
+    context
+        .read<CommercesListCubit>()
+        .updateFilter(filter.isEmpty ? null : filter);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ZonesListCubit>(
-      create: (context) => ZonesListCubit(),
+    return BlocProvider<CommercesListCubit>(
+      create: (context) => CommercesListCubit(),
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text('Administrar Zonas'),
+            title: const Text('Administrar Comercios'),
           ),
           body: Column(
             children: [
@@ -51,7 +53,7 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
-                      context.read<ZonesListCubit>().updateSearch(value);
+                      context.read<CommercesListCubit>().updateSearch(value);
                     },
                   ),
 
@@ -84,7 +86,7 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                             setState(() {
                               _selectedOrder = value;
                             });
-                            context.read<ZonesListCubit>().updateOrdering(
+                            context.read<CommercesListCubit>().updateOrdering(
                                   orderBy: value,
                                   ascending: _ascending,
                                 );
@@ -102,7 +104,7 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                               setState(() {
                                 _ascending = value;
                               });
-                              context.read<ZonesListCubit>().updateOrdering(
+                              context.read<CommercesListCubit>().updateOrdering(
                                     orderBy: _selectedOrder,
                                     ascending: _ascending,
                                   );
@@ -114,9 +116,10 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                   ),
                 ],
               ),
-              // Lista de zonas con scroll infinito.
+              // Lista de comercios con scroll infinito.
               Expanded(
-                child: BlocConsumer<ZonesListCubit, ZonesListFilterState>(
+                child:
+                    BlocConsumer<CommercesListCubit, CommercesListFilterState>(
                   listener: (context, state) {
                     if (state.errorMessage != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -125,27 +128,28 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                     }
                   },
                   builder: (context, state) {
-                    final cubit = context.read<ZonesListCubit>();
+                    final cubit = context.read<CommercesListCubit>();
                     return RefreshIndicator(
                       onRefresh: () async => cubit.pagingController.refresh(),
                       child: PagingListener(
                         controller: cubit.pagingController,
                         builder: (context, state, fetchNextPage) =>
-                            PagedListView<int, Zona>(
+                            PagedListView<int, Comercio>(
                           state: state,
                           fetchNextPage: fetchNextPage,
-                          builderDelegate: PagedChildBuilderDelegate<Zona>(
-                            itemBuilder: (context, zona, index) => ListTile(
-                              title: Text(zona.nombre),
-                              subtitle: Text(zona.descripcion ?? ''),
+                          builderDelegate: PagedChildBuilderDelegate<Comercio>(
+                            itemBuilder: (context, comercio, index) => ListTile(
+                              title: Text(comercio.nombre),
+                              subtitle: Text(comercio.direccionCalle ?? ''),
                               trailing: const Icon(Icons.map),
-                              onTap: () => context.push('/zone/${zona.id}'),
+                              onTap: () =>
+                                  context.push('/comercio/${comercio.id}'),
                             ),
                             firstPageErrorIndicatorBuilder: (context) => Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('Error al cargar zonas'),
+                                  const Text('Error al cargar comercios'),
                                   ElevatedButton(
                                     onPressed: () =>
                                         cubit.pagingController.refresh(),
@@ -156,7 +160,7 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                             ),
                             noItemsFoundIndicatorBuilder: (context) =>
                                 const Center(
-                                    child: Text('No se encontraron zonas')),
+                                    child: Text('No se encontraron comercios')),
                           ),
                         ),
                       ),
@@ -172,11 +176,11 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
               builder: (context) {
                 String newName = '';
                 return AlertDialog(
-                  title: const Text('Agregar Zona'),
+                  title: const Text('Agregar Comercio'),
                   content: TextField(
                     autofocus: true,
                     decoration: const InputDecoration(
-                      labelText: 'Nombre de la zona',
+                      labelText: 'Nombre del comercio',
                     ),
                     onChanged: (value) => newName = value,
                   ),
@@ -190,7 +194,9 @@ class _AdminZonesPageState extends State<AdminZonesPage> {
                     ElevatedButton(
                       onPressed: () {
                         if (newName.isNotEmpty) {
-                          context.read<ZonesListCubit>().addZone(newName);
+                          context.read<CommercesListCubit>().addCommerce(
+                                nombre: newName,
+                              );
                         }
                       },
                       child: const Text('Agregar'),

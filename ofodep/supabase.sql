@@ -61,6 +61,7 @@ CREATE TABLE comercios (
     direccion_estado text,
     lat numeric,                       -- Latitud geográfica
     lng numeric,                       -- Longitud geográfica
+    codigos_postales text[],           -- Lista de códigos postales asociados
     whatsapp text CHECK (whatsapp ~ '^\+?[0-9]{7,15}$'),
     minimo_compra_delivery numeric,    -- Monto mínimo para delivery
     pickup boolean DEFAULT false,      -- Permite recogida en local
@@ -119,36 +120,10 @@ CREATE TABLE comercio_suscripciones (
 );
 
 ---------------------------------------------------------------------
--- FASE 3: GESTIÓN DE ZONAS DE ENTREGA
+-- FASE 3: PRODUCTOS Y producto_configuraciones
 ---------------------------------------------------------------------
 
--- 3.1. Tabla "zonas"
--- Define áreas geográficas para la entrega mediante polígonos.
-CREATE TABLE zonas (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    nombre text NOT NULL UNIQUE CHECK (nombre <> ''),
-    descripcion text,
-    geom geometry(Polygon, 4326),  -- Polígono para delimitar la zona (SRID 4326)
-    codigos_postales text[],       -- Lista de códigos postales asociados
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now()
-);
-
--- 3.2. Tabla "comercio_zonas"
--- Relaciona cada comercio con las zonas en las que opera.
-CREATE TABLE comercio_zonas (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    comercio_id uuid REFERENCES comercios(id) ON DELETE CASCADE,
-    zona_id uuid REFERENCES zonas(id) ON DELETE CASCADE,
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now()
-);
-
----------------------------------------------------------------------
--- FASE 4: PRODUCTOS Y producto_configuraciones
----------------------------------------------------------------------
-
--- 4.1. Tabla "productos"
+-- 3.1. Tabla "productos"
 -- Almacena el catálogo de productos de cada comercio, junto con etiquetas y categorías.
 CREATE TABLE productos (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -163,7 +138,7 @@ CREATE TABLE productos (
     updated_at timestamptz DEFAULT now()
 );
 
--- 4.2. Tabla "producto_configuraciones"
+-- 3.2. Tabla "producto_configuraciones"
 -- Define las producto_configuraciones o personalizaciones disponibles para un producto.
 CREATE TABLE producto_configuraciones (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -176,7 +151,7 @@ CREATE TABLE producto_configuraciones (
     CHECK (rango_min >= 0 AND rango_max >= rango_min)
 );
 
--- 4.3. Tabla "producto_opciones"
+-- 3.3. Tabla "producto_opciones"
 -- Registra las producto_opciones disponibles para cada configuración, incluyendo costos extras.
 CREATE TABLE producto_opciones (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -191,10 +166,10 @@ CREATE TABLE producto_opciones (
 );
 
 ---------------------------------------------------------------------
--- FASE 5: PEDIDOS Y DETALLES
+-- FASE 4: PEDIDOS Y DETALLES
 ---------------------------------------------------------------------
 
--- 5.1. Tabla "pedidos"
+-- 4.1. Tabla "pedidos"
 -- Registra los pedidos realizados. Se han agregado:
 --   - "activo": indica si el pedido está activo.
 --   - "solicitud_cancelacion": campo que el usuario puede modificar (solicitar cancelación) solo si "activo" es true.
@@ -216,7 +191,6 @@ CREATE TABLE pedidos (
     direccion_estado text,
     ubicacion_lat numeric,       -- Latitud (obligatoria en delivery)
     ubicacion_lng numeric,       -- Longitud (obligatoria en delivery)
-    zona_id uuid REFERENCES zonas(id),
     metodo_entrega metodo_entrega_enum NOT NULL,
     precio_delivery numeric CHECK (precio_delivery >= 0) DEFAULT 0,     -- Costo de delivery aplicado
     total numeric CHECK (total >= 0),        -- Total del pedido
@@ -228,7 +202,7 @@ CREATE TABLE pedidos (
     CHECK (metodo_entrega <> 'delivery' OR (ubicacion_lat IS NOT NULL AND ubicacion_lng IS NOT NULL))
 );
 
--- 5.1.1 Tabla "pedido_reviews"
+-- 4.1.1 Tabla "pedido_reviews"
 -- Registra las valoraciones y comentarios del usuario que realizó el pedido después de recibirlo.
 CREATE TABLE pedido_reviews (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -240,7 +214,7 @@ CREATE TABLE pedido_reviews (
 );
 
 
--- 5.2. Tabla "pedido_productos"
+-- 4.2. Tabla "pedido_productos"
 -- Detalla cada item del pedido, vinculando el producto y la cantidad solicitada, además del precio final.
 CREATE TABLE pedido_productos (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -252,7 +226,7 @@ CREATE TABLE pedido_productos (
     updated_at timestamptz DEFAULT now()
 );
 
--- 5.3. Tabla "pedido_configuraciones"
+-- 4.3. Tabla "pedido_configuraciones"
 -- Registra las producto_configuraciones seleccionadas para cada item del pedido.
 CREATE TABLE pedido_configuraciones (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -262,7 +236,7 @@ CREATE TABLE pedido_configuraciones (
     updated_at timestamptz DEFAULT now()
 );
 
--- 5.4. Tabla "pedido_opciones"
+-- 4.4. Tabla "pedido_opciones"
 -- Registra las producto_opciones seleccionadas para cada configuración de un item, junto con
 -- la cantidad elegida y el costo extra aplicado.
 CREATE TABLE pedido_opciones (
@@ -276,10 +250,10 @@ CREATE TABLE pedido_opciones (
 );
 
 ---------------------------------------------------------------------
--- FASE 6: INFORMACIÓN DE DELIVERY
+-- FASE 5: INFORMACIÓN DE DELIVERY
 ---------------------------------------------------------------------
 
--- 6.1. Tabla "delivery_info"
+-- 5.1. Tabla "delivery_info"
 -- Almacena los datos necesarios para la asignación de repartidor: token único,
 -- coordenadas y el ID del repartidor que acepte el pedido.
 CREATE TABLE delivery_info (
@@ -321,20 +295,12 @@ CREATE INDEX idx_comercio_administradores_usuario_id ON comercio_administradores
 CREATE INDEX idx_comercio_suscripciones_fecha_expiracion ON comercio_suscripciones(fecha_expiracion);
 
 ---------------------------------------------------------------------
--- FASE 3: Zonas
--- Índice espacial en zonas para mejorar búsquedas geoespaciales
-CREATE INDEX zonas_geom_gist ON zonas USING GIST(geom);
-
--- Índice adicional en "nombre" para búsquedas por nombre de zona
-CREATE INDEX idx_zonas_nombre ON zonas(nombre);
-
----------------------------------------------------------------------
--- FASE 4: Productos y producto_configuraciones
+-- FASE 3: Productos y producto_configuraciones
 -- Índice para búsquedas en el nombre de productos (además del índice en categoría)
 CREATE INDEX idx_productos_nombre ON productos(nombre);
 
 ---------------------------------------------------------------------
--- FASE 5: Pedidos y Detalles
+-- FASE 4: Pedidos y Detalles
 -- Índice en la tabla pedidos para búsquedas rápidas por usuario (útil para que los usuarios vean sus pedidos)
 CREATE INDEX idx_pedidos_usuario_id ON pedidos(usuario_id);
 
@@ -351,7 +317,7 @@ CREATE INDEX idx_pedidos_created_at ON pedidos(created_at DESC);
 CREATE INDEX idx_pedidos_usuario_estado ON pedidos(usuario_id, estado);
 
 ---------------------------------------------------------------------
--- FASE 6: Información de Delivery
+-- FASE 5: Información de Delivery
 -- Índice en delivery_info para búsquedas por pedido
 CREATE INDEX idx_delivery_info_pedido_id ON delivery_info(pedido_id);
 
@@ -513,7 +479,6 @@ BEGIN
             NEW.direccion_estado IS DISTINCT FROM OLD.direccion_estado OR
             NEW.ubicacion_lat IS DISTINCT FROM OLD.ubicacion_lat OR
             NEW.ubicacion_lng IS DISTINCT FROM OLD.ubicacion_lng OR
-            NEW.zona_id IS DISTINCT FROM OLD.zona_id OR
             NEW.metodo_entrega IS DISTINCT FROM OLD.metodo_entrega OR
             NEW.precio_delivery IS DISTINCT FROM OLD.precio_delivery OR
             NEW.total IS DISTINCT FROM OLD.total OR
@@ -579,16 +544,7 @@ CREATE TRIGGER trg_comercio_administradores_updated_at
 BEFORE UPDATE ON comercio_administradores
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- FASE 3: Zonas
-CREATE TRIGGER trg_zonas_updated_at
-BEFORE UPDATE ON zonas
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER trg_comercio_zonas_updated_at
-BEFORE UPDATE ON comercio_zonas
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- FASE 4: Productos y producto_configuraciones
+-- FASE 3: Productos y producto_configuraciones
 CREATE TRIGGER trg_productos_updated_at
 BEFORE UPDATE ON productos
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -601,7 +557,7 @@ CREATE TRIGGER trg_producto_opciones_updated_at
 BEFORE UPDATE ON producto_opciones
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- FASE 5: Pedidos y Detalles
+-- FASE 4: Pedidos y Detalles
 CREATE TRIGGER trg_pedidos_updated_at
 BEFORE UPDATE ON pedidos
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -618,7 +574,7 @@ CREATE TRIGGER trg_pedido_opciones_updated_at
 BEFORE UPDATE ON pedido_opciones
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- FASE 6: Delivery
+-- FASE 5: Delivery
 CREATE TRIGGER trg_delivery_info_updated_at
 BEFORE UPDATE ON delivery_info
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -749,8 +705,6 @@ ALTER TABLE comercio_horarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comercio_horarios_excepciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comercio_suscripciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comercio_administradores ENABLE ROW LEVEL SECURITY;
-ALTER TABLE zonas ENABLE ROW LEVEL SECURITY;
-ALTER TABLE comercio_zonas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE producto_configuraciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE producto_opciones ENABLE ROW LEVEL SECURITY;
@@ -1198,43 +1152,6 @@ USING (
 -- Restringida a administradores globales.
 CREATE POLICY delete_delivery_info_admin ON delivery_info
 FOR DELETE
-USING (
-    EXISTS (
-      SELECT 1 FROM usuarios u
-      WHERE u.auth_id = auth.uid() AND u.admin = true
-    )
-);
-
----------------------------------------------------------------------
--- Tabla de zonas y comercio_zonas
-
--- 6.a. Lectura Pública de zonas:
-CREATE POLICY public_read_zonas ON zonas
-FOR SELECT
-USING (true);
-
--- 6.b. Modificación de zonas:
--- Permite insertar, actualizar y eliminar zonas siempre que:
---   - El usuario es administrador global.
-CREATE POLICY modify_zonas_admin ON zonas
-FOR ALL
-USING (
-    EXISTS (
-      SELECT 1 FROM usuarios u
-      WHERE u.auth_id = auth.uid() AND u.admin = true
-    )
-);
-
--- 6.c. Lectura Pública de comercio_zonas:
-CREATE POLICY public_read_comercio_zonas ON comercio_zonas
-FOR SELECT
-USING (true);
-
--- 6.d. Modificación de comercio_zonas:
--- Permite insertar, actualizar y eliminar zonas siempre que:
---   - El usuario es administrador global.
-CREATE POLICY modify_comercio_zonas_admin ON comercio_zonas
-FOR ALL
 USING (
     EXISTS (
       SELECT 1 FROM usuarios u

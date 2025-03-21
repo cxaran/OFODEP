@@ -10,6 +10,7 @@ class Comercio {
   String? direccionEstado;
   num? lat;
   num? lng;
+  final List<String>? codigosPostales;
   String? whatsapp;
   num? minimoCompraDelivery;
   bool pickup;
@@ -30,6 +31,7 @@ class Comercio {
     this.direccionEstado,
     this.lat,
     this.lng,
+    this.codigosPostales,
     this.whatsapp,
     this.minimoCompraDelivery,
     this.pickup = false,
@@ -52,6 +54,9 @@ class Comercio {
       direccionEstado: map['direccion_estado'] as String?,
       lat: map['lat'],
       lng: map['lng'],
+      codigosPostales: (map['codigos_postales'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList(),
       whatsapp: map['whatsapp'] as String?,
       minimoCompraDelivery: map['minimo_compra_delivery'],
       pickup: map['pickup'] as bool? ?? false,

@@ -39,7 +39,7 @@ El sistema busca cubrir todas las necesidades digitales esenciales para cualquie
 - Control avanzado de horarios de apertura regulares y excepcionales.
 - Gestión automatizada de pedidos con soporte para delivery y pickup.
 - Comunicación efectiva con clientes mediante WhatsApp.
-- Geolocalización y manejo de zonas específicas de entrega.
+- Geolocalización y manejo areas de entrega por codigos postales.
 - Valoraciones y reseñas públicas para generar confianza.
 - Suscripciones flexibles para comercios según funcionalidades deseadas.
 
@@ -90,10 +90,9 @@ El flujo básico del sistema comprende:
 |----------|------------------------------------------------------------------|------------------------|
 | 1        | Usuarios y Autenticación                                         | usuarios               |
 | 2        | Comercios y Gestión de Horarios                                  | comercios, comercio_horarios, comercio_horarios_excepciones, comercio_administradores, comercio_suscripciones |
-| 3        | Gestión de Zonas de Entrega                                      | zonas, comercio_zonas  |
-| 4        | Productos y Configuraciones                                      | productos, producto_configuraciones, producto_opciones |
-| 5        | Pedidos, Comentarios y Detalles                                  | pedidos, pedido_reviews, pedido_productos, pedido_configuraciones, pedido_opciones |
-| 6        | Información del Delivery                                         | delivery_info          |
+| 3        | Productos y Configuraciones                                      | productos, producto_configuraciones, producto_opciones |
+| 4        | Pedidos, Comentarios y Detalles                                  | pedidos, pedido_reviews, pedido_productos, pedido_configuraciones, pedido_opciones |
+| 5        | Información del Delivery                                         | delivery_info          |
 
 ---
 
@@ -101,9 +100,6 @@ El flujo básico del sistema comprende:
 
 #### 📌 **Uso de Tags y Categorías:**
 - Facilita la búsqueda y filtrado de productos por parte del cliente final.
-
-#### 📌 **Catálogo de Zonas Geográficas:**
-- Administración de áreas específicas (polígonos geográficos) para restringir o facilitar el servicio de entrega, evitando confusiones o problemas logísticos.
 
 #### 📌 **Generación y Manejo de Links para Repartidores:**
 - Permite asignar rápidamente pedidos mediante enlaces únicos enviados al repartidor por WhatsApp o SMS.
