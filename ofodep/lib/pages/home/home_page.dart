@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
       builder: (context, state) {
         String mensaje = 'Cargando...';
         if (state is SessionAuthenticated) {
-          mensaje = 'Bienvenido, ${state.usuario.nombre}';
+          mensaje = 'Bienvenido, ${state.user.name}';
         } else if (state is SessionUnauthenticated) {
           mensaje = 'No autenticado';
         }

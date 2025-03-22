@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ofodep/models/usuario.dart';
+import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Estados de la sesión
+/// [SessionInitial] estado inicial
+/// [SessionAuthenticated] estado de autenticación
+/// [SessionUnauthenticated] estado de no autenticación
 abstract class SessionState {
   final bool admin;
   const SessionState({required this.admin});
@@ -15,8 +18,11 @@ class SessionInitial extends SessionState {
 }
 
 class SessionAuthenticated extends SessionState {
-  final Usuario usuario;
-  SessionAuthenticated(this.usuario) : super(admin: usuario.admin);
+  final UserModel user;
+
+  /// Crea el estado de autenticación a partir de un Usuario
+  /// [user] Usuario a copiar
+  SessionAuthenticated(this.user) : super(admin: user.admin);
 }
 
 class SessionUnauthenticated extends SessionState {
@@ -28,6 +34,7 @@ class SessionCubit extends Cubit<SessionState> {
   final AuthRepository authRepository = AuthRepository();
   late final StreamSubscription authSubscription;
 
+  /// Crea un Cubit que gestiona el estado de autenticación
   SessionCubit() : super(SessionInitial()) {
     // Suscribirse a los cambios de autenticación de Supabase
     authSubscription =
@@ -42,12 +49,13 @@ class SessionCubit extends Cubit<SessionState> {
     checkSession();
   }
 
+  /// Verifica la sesión actual
   Future<void> checkSession() async {
     final session = Supabase.instance.client.auth.currentSession;
     if (session != null) {
-      final usuario = await authRepository.getUserByAuthId(session.user.id);
-      if (usuario != null) {
-        emit(SessionAuthenticated(usuario));
+      final user = await authRepository.getUserByAuthId(session.user.id);
+      if (user != null) {
+        emit(SessionAuthenticated(user));
         return;
       }
       await Supabase.instance.client.auth.signOut();
@@ -56,6 +64,7 @@ class SessionCubit extends Cubit<SessionState> {
     emit(SessionUnauthenticated());
   }
 
+  /// Elimina la sesión actual
   Future<void> signOut() async {
     await Supabase.instance.client.auth.signOut();
   }

@@ -1,31 +1,31 @@
-class Usuario {
+class UserModel {
   final String id;
   final String authId;
-  String nombre;
+  String name;
   String email;
-  String telefono;
+  String phone;
   bool admin;
   DateTime createdAt;
   DateTime updatedAt;
 
-  Usuario({
+  UserModel({
     required this.id,
     required this.authId,
-    required this.nombre,
+    required this.name,
     required this.email,
-    required this.telefono,
+    required this.phone,
     required this.admin,
     required this.createdAt,
     required this.updatedAt,
   });
 
-  factory Usuario.fromMap(Map<String, dynamic> map) {
-    return Usuario(
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
       id: map['id'] as String,
       authId: map['auth_id'].toString(),
-      nombre: map['nombre'].toString(),
+      name: map['name'].toString(),
       email: map['email'].toString(),
-      telefono: map['telefono'].toString(),
+      phone: map['phone'].toString(),
       admin: map['admin'] as bool? ?? false,
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),

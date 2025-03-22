@@ -64,9 +64,9 @@ class UserPage extends StatelessWidget {
                       key: const ValueKey('name_user'),
                       controller: TextEditingController.fromValue(
                         TextEditingValue(
-                          text: state.nombre,
+                          text: state.name,
                           selection: TextSelection.collapsed(
-                              offset: state.nombre.length),
+                              offset: state.name.length),
                         ),
                       ),
                       decoration: const InputDecoration(
@@ -80,9 +80,9 @@ class UserPage extends StatelessWidget {
                       key: const ValueKey('phone_user'),
                       controller: TextEditingController.fromValue(
                         TextEditingValue(
-                          text: state.telefono,
+                          text: state.phone,
                           selection: TextSelection.collapsed(
-                              offset: state.telefono.length),
+                              offset: state.phone.length),
                         ),
                       ),
                       decoration: const InputDecoration(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/blocs/catalogs/users_list_cubit.dart';
-import 'package:ofodep/models/usuario.dart';
+import 'package:ofodep/config/locations_strings.dart';
+import 'package:ofodep/models/user_model.dart';
 
 class AdminUsersPage extends StatefulWidget {
   const AdminUsersPage({super.key});
@@ -41,7 +43,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text('Administrar Usuarios'),
+            title: const Text(adminUsersTitle),
           ),
           body: Column(
             children: [
@@ -51,7 +53,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                   // Campo de búsqueda.
                   TextField(
                     decoration: const InputDecoration(
-                      labelText: 'Buscar por nombre, email o teléfono',
+                      labelText: adminUsersSearchHint,
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
@@ -67,25 +69,25 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                         child: DropdownButtonFormField<String>(
                           value: _selectedOrder,
                           decoration: const InputDecoration(
-                            labelText: 'Ordenar por',
+                            labelText: adminUsersOrderBy,
                             border: OutlineInputBorder(),
                           ),
                           items: const [
                             DropdownMenuItem(
                               value: 'created_at',
-                              child: Text('Fecha de creación'),
+                              child: Text(adminUsersOrderCreatedAt),
                             ),
                             DropdownMenuItem(
                               value: 'updated_at',
-                              child: Text('Fecha de actualización'),
+                              child: Text(adminUsersOrderUpdatedAt),
                             ),
                             DropdownMenuItem(
                               value: 'nombre',
-                              child: Text('Nombre'),
+                              child: Text(adminUsersOrderName),
                             ),
                             DropdownMenuItem(
                               value: 'email',
-                              child: Text('Email'),
+                              child: Text(adminUsersOrderEmail),
                             ),
                           ],
                           onChanged: (value) {
@@ -103,7 +105,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                       // Switch para definir orden ascendente/descendente.
                       Column(
                         children: [
-                          const Text('Ascendente'),
+                          const Text(adminUsersAscending),
                           Switch(
                             value: _ascending,
                             onChanged: (value) {
@@ -122,7 +124,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                       // Checkbox para filtrar solo usuarios administradores.
                       Column(
                         children: [
-                          const Text('Solo Admin'),
+                          const Text(adminUsersAdmin),
                           Checkbox(
                             value: _adminFilter,
                             onChanged: (value) {
@@ -155,33 +157,36 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                       child: PagingListener(
                         controller: cubit.pagingController,
                         builder: (context, state, fetchNextPage) =>
-                            PagedListView<int, Usuario>(
+                            PagedListView<int, UserModel>(
                           state: state,
                           fetchNextPage: fetchNextPage,
-                          builderDelegate: PagedChildBuilderDelegate<Usuario>(
-                            itemBuilder: (context, usuario, index) => ListTile(
-                              title: Text(usuario.nombre),
-                              subtitle: Text(usuario.email),
-                              trailing: usuario.admin
+                          builderDelegate: PagedChildBuilderDelegate<UserModel>(
+                            itemBuilder: (context, user, index) => ListTile(
+                              title: Text(user.name),
+                              subtitle: Text(user.email),
+                              trailing: user.admin
                                   ? const Icon(Icons.admin_panel_settings)
                                   : null,
+                              onTap: () =>
+                                  context.push('/admin/user/${user.authId}'),
                             ),
                             firstPageErrorIndicatorBuilder: (context) => Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('Error al cargar usuarios'),
+                                  const Text(adminUsersError),
                                   ElevatedButton(
                                     onPressed: () =>
                                         cubit.pagingController.refresh(),
-                                    child: const Text('Reintentar'),
+                                    child: const Text(adminUsersRetry),
                                   ),
                                 ],
                               ),
                             ),
                             noItemsFoundIndicatorBuilder: (context) =>
                                 const Center(
-                                    child: Text('No se encontraron usuarios')),
+                              child: Text(adminUsersNoUsers),
+                            ),
                           ),
                         ),
                       ),

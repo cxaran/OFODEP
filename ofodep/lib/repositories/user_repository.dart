@@ -1,14 +1,14 @@
-import 'package:ofodep/models/usuario.dart';
+import 'package:ofodep/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserRepository {
-  static const String tableName = 'usuarios';
+  static const String tableName = 'users';
 
   UserRepository();
 
   /// Obtiene el usuario desde la tabla 'usuarios' filtrando por el auth_id.
   /// [userId] ID del usuario
-  Future<Usuario?> getUser(String userId) async {
+  Future<UserModel?> getUser(String userId) async {
     try {
       final data = await Supabase.instance.client
           .from(tableName)
@@ -17,26 +17,26 @@ class UserRepository {
           .maybeSingle();
 
       if (data == null) return null;
-      return Usuario.fromMap(data);
+      return UserModel.fromMap(data);
     } catch (e) {
       throw Exception('Error al obtener usuario: $e');
     }
   }
 
-  /// Actualiza el nombre y/o telefono del usuario.
-  /// [nombre] nuevo nombre del usuario
-  /// [telefono] nuevo telefono del usuario
-  /// [admin] nuevo admin del usuario
+  /// Actualiza el nombre y/o teléfono del usuario.
+  /// [name] nuevo nombre del usuario
+  /// [phone] nuevo teléfono del usuario
+  /// [admin] nuevo valor de admin del usuario
   Future<bool> updateUser(
     String userId, {
-    String? nombre,
-    String? telefono,
+    String? name,
+    String? phone,
     bool? admin,
   }) async {
     try {
       Map<String, dynamic> updates = {};
-      if (nombre != null) updates['nombre'] = nombre;
-      if (telefono != null) updates['telefono'] = telefono;
+      if (name != null) updates['name'] = name;
+      if (phone != null) updates['phone'] = phone;
       if (admin != null) updates['admin'] = admin;
 
       final response = await Supabase.instance.client
@@ -55,11 +55,11 @@ class UserRepository {
   /// Obtiene una lista paginada de usuarios con opciones de filtrado y ordenado.
   /// [page] número de página (1-indexado)
   /// [limit] número de registros por página
-  /// [filter] mapa opcional de filtros (e.g. fechas, flag admin)
+  /// [filter] mapa opcional de filtros (ej: fechas, flag admin)
   /// [search] búsqueda textual (por nombre, email o teléfono)
-  /// [orderBy] campo por el que se ordena (ej: 'created_at', 'nombre', 'email')
+  /// [orderBy] campo por el que se ordena (ej: 'created_at', 'name', 'email')
   /// [ascending] orden ascendente (true) o descendente (false)
-  Future<List<Usuario>> getUsers({
+  Future<List<UserModel>> getUsers({
     int page = 1,
     int limit = 20,
     Map<String, dynamic>? filter,
@@ -92,10 +92,10 @@ class UserRepository {
       }
     }
 
-    // Aplicar búsqueda textual (en nombre, email y teléfono)
+    // Aplicar búsqueda textual (en name, email y phone)
     if (search != null && search.isNotEmpty) {
       query = query.or(
-          'nombre.ilike.%$search%,email.ilike.%$search%,telefono.ilike.%$search%');
+          'name.ilike.%$search%,email.ilike.%$search%,phone.ilike.%$search%');
     }
 
     PostgrestTransformBuilder<List<Map<String, dynamic>>> paginationQuery;
@@ -119,7 +119,7 @@ class UserRepository {
       final List<dynamic> response = await paginationQuery;
 
       // Procesar datos y devolver la lista de usuarios
-      return response.map((userData) => Usuario.fromMap(userData)).toList();
+      return response.map((userData) => UserModel.fromMap(userData)).toList();
     } catch (e) {
       throw Exception('Error al obtener usuarios: $e');
     }

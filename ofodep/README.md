@@ -27,13 +27,13 @@
 
 ## 🎯 **Objetivo del Proyecto**
 
-**OFODEP (Open Food Delivery Platform)** es una plataforma web abierta diseñada para ayudar a comercios locales a gestionar de manera sencilla y efectiva sus ventas, pedidos, entregas y comunicación con clientes, promoviendo así la economía local mediante herramientas digitales accesibles para todos.
+**OFODEP (Open Food Delivery Platform)** es una plataforma web abierta diseñada para ayudar a stores locales a gestionar de manera sencilla y efectiva sus ventas, pedidos, entregas y comunicación con clientes, promoviendo así la economía local mediante herramientas digitales accesibles para todos.
 
 ---
 
 ## 📌 **Alcance del Proyecto**
 
-El sistema busca cubrir todas las necesidades digitales esenciales para cualquier comercio local, proporcionando herramientas claras para:
+El sistema busca cubrir todas las necesidades digitales esenciales para cualquier store local, proporcionando herramientas claras para:
 
 - Manejo eficiente de productos con personalizaciones.
 - Control avanzado de horarios de apertura regulares y excepcionales.
@@ -41,17 +41,17 @@ El sistema busca cubrir todas las necesidades digitales esenciales para cualquie
 - Comunicación efectiva con clientes mediante WhatsApp.
 - Geolocalización y manejo areas de entrega por codigos postales.
 - Valoraciones y reseñas públicas para generar confianza.
-- Suscripciones flexibles para comercios según funcionalidades deseadas.
+- Suscripciones flexibles para stores según funcionalidades deseadas.
 
 ---
 
 ## 🌐 **Enfoque Open Source**
 
-OFODEP es una iniciativa **Open Source**, diseñada específicamente para facilitar la implementación por parte de comercios, municipios o comunidades interesadas en desplegar rápidamente su propia plataforma local.  
+OFODEP es una iniciativa **Open Source**, diseñada específicamente para facilitar la implementación por parte de stores, municipios o comunidades interesadas en desplegar rápidamente su propia plataforma local.  
 
 - **Despliegue fácil:** Al utilizar Supabase, no requiere configuración de servidores propios, reduciendo costes y complejidad técnica.
 - **Adaptabilidad:** El código abierto permite que cada implementación adapte la plataforma fácilmente según su contexto local.
-- **Colaboración:** Fomenta la colaboración entre desarrolladores, comunidades y pequeños comercios.
+- **Colaboración:** Fomenta la colaboración entre desarrolladores, comunidades y pequeños stores.
 
 ---
 
@@ -62,8 +62,8 @@ El flujo básico del sistema comprende:
 1. **Registro y Autenticación:**  
    Usuarios y administradores acceden con autenticación segura a través de Supabase Auth.
 
-2. **Exploración de Comercios y Productos:**  
-   Clientes visualizan comercios cercanos, productos disponibles y horarios actualizados.
+2. **Exploración de StoreModels y Productos:**  
+   Clientes visualizan stores cercanos, productos disponibles y horarios actualizados.
 
 3. **Pedidos Personalizados:**  
    Los clientes crean pedidos personalizando opciones según sus preferencias.
@@ -72,13 +72,13 @@ El flujo básico del sistema comprende:
    Cada pedido tiene seguimiento claro desde la creación hasta la entrega.
 
 5. **Comunicación directa (WhatsApp):**  
-   Comercios tienen la opción de recibir y manejar pedidos directamente por WhatsApp, sin depender exclusivamente de la plataforma.
+   StoreModels tienen la opción de recibir y manejar pedidos directamente por WhatsApp, sin depender exclusivamente de la plataforma.
 
 6. **Entregas Eficientes (Delivery/Pickup):**  
    Mediante enlaces únicos generados para repartidores, facilitando asignación rápida y seguimiento preciso.
 
 7. **Retroalimentación y Mejoras:**  
-   Comentarios y valoraciones de usuarios mejoran la reputación y visibilidad de los comercios.
+   Comentarios y valoraciones de usuarios mejoran la reputación y visibilidad de los stores.
 
 ---
 
@@ -86,13 +86,13 @@ El flujo básico del sistema comprende:
 
 ### 📂 **Fases del Esquema**
 
-| **Fase** | **Descripción**                                                  | **Tablas principales** |
-|----------|------------------------------------------------------------------|------------------------|
-| 1        | Usuarios y Autenticación                                         | usuarios               |
-| 2        | Comercios y Gestión de Horarios                                  | comercios, comercio_horarios, comercio_horarios_excepciones, comercio_administradores, comercio_suscripciones |
-| 3        | Productos y Configuraciones                                      | productos, producto_configuraciones, producto_opciones |
-| 4        | Pedidos, Comentarios y Detalles                                  | pedidos, pedido_reviews, pedido_productos, pedido_configuraciones, pedido_opciones |
-| 5        | Información del Delivery                                         | delivery_info          |
+| **Fase** | **Descripción**                                     | **Tablas principales**                                                                                                                            |
+|----------|-----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1        | Usuarios y Autenticación                            | **users**                                                                                                                                          |
+| 2        | Tiendas (Stores) y Gestión de Horarios              | **stores**, **store_schedules**, **store_schedule_exceptions**, **store_admins**, **store_subscriptions**                                         |
+| 3        | Productos y Configuraciones                         | **products**, **product_configurations**, **product_options**                                                                                     |
+| 4        | Pedidos, Comentarios y Detalles                     | **orders**, **order_reviews**, **order_products**, **order_configurations**, **order_options**                                                    |
+| 5        | Información de Delivery                             | **delivery_info**                                                                                                                                 |
 
 ---
 
@@ -103,16 +103,16 @@ El flujo básico del sistema comprende:
 
 #### 📌 **Generación y Manejo de Links para Repartidores:**
 - Permite asignar rápidamente pedidos mediante enlaces únicos enviados al repartidor por WhatsApp o SMS.
-- Seguimiento en tiempo real del repartidor asignado por parte del cliente y del comercio.
+- Seguimiento en tiempo real del repartidor asignado por parte del cliente y del store.
 
 #### 📌 **Manejo Alternativo de Pedidos por WhatsApp:**
-- Comercios tienen la opción de recibir pedidos vía WhatsApp, permitiendo un flujo sencillo y accesible sin requerir uso permanente de la aplicación web.
+- StoreModels tienen la opción de recibir pedidos vía WhatsApp, permitiendo un flujo sencillo y accesible sin requerir uso permanente de la aplicación web.
 
 #### 📌 **Gestión Avanzada y Detallada de Horarios:**
 - Control minucioso de horarios regulares por días específicos y excepciones para días festivos, eventos especiales o situaciones particulares.
 
 #### 📌 **Sistema Flexible de Suscripciones:**
-- Los comercios acceden a funcionalidades diferenciadas según tipo de suscripción (general, especial, premium), permitiendo monetización del servicio según necesidades específicas.
+- Los stores acceden a funcionalidades diferenciadas según tipo de suscripción (general, especial, premium), permitiendo monetización del servicio según necesidades específicas.
 
 #### 📌 **Comentarios y Valoraciones:**
 - Transparencia total mediante la retroalimentación directa del cliente, impulsando calidad constante y generando confianza en la comunidad.
@@ -148,4 +148,4 @@ Este proyecto es Open Source bajo licencia MIT. Puedes usar, modificar y redistr
 
 ---
 
-✨ **¡Gracias por apoyar el comercio local y el software abierto! ¡Juntos construimos comunidad!** ✨
+✨ **¡Gracias por apoyar el store local y el software abierto! ¡Juntos construimos comunidad!** ✨

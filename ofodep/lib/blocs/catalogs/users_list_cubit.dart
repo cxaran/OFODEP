@@ -1,11 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/models/filter_state.dart';
-import 'package:ofodep/models/usuario.dart';
+import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/repositories/user_repository.dart';
 
 /// Estado que almacena los filtros y configuraciones de ordenado.
 class UsersListFilterState extends ListFilterState {
+  /// Crea un estado de filtros para usuarios.
+  /// [filter] mapa de filtros
+  /// [search] búsqueda textual
+  /// [orderBy] campo por el que se ordena
+  /// [ascending] orden ascendente
+  /// [errorMessage] mensaje de error
   UsersListFilterState({
     super.filter,
     super.search,
@@ -20,7 +26,6 @@ class UsersListFilterState extends ListFilterState {
     String? search,
     String? orderBy,
     bool? ascending,
-    bool? randomOrder,
     String? errorMessage,
   }) {
     return UsersListFilterState(
@@ -37,15 +42,19 @@ class UsersListFilterState extends ListFilterState {
 /// utilizando el PagingController de infinite_scroll_pagination.
 class UsersListCubit extends Cubit<UsersListFilterState> {
   late final UserRepository _userRepository;
-  late final PagingController<int, Usuario> pagingController;
+  late final PagingController<int, UserModel> pagingController;
   int limit;
 
+  /// Crea un Cubit que administra la lógica de paginación y filtros para usuarios,
+  /// utilizando el PagingController de infinite_scroll_pagination.
+  /// [userRepository] repositorio de usuarios
+  /// [limit] número de registros por página
   UsersListCubit({
     UserRepository? userRepository,
     this.limit = 10,
   }) : super(UsersListFilterState()) {
     _userRepository = userRepository ?? UserRepository();
-    pagingController = PagingController<int, Usuario>(
+    pagingController = PagingController<int, UserModel>(
       getNextPageKey: (state) {
         final currentPage = state.keys?.last ?? 0;
 
@@ -77,22 +86,23 @@ class UsersListCubit extends Cubit<UsersListFilterState> {
     );
   }
 
-  // Métodos para actualizar filtros, búsqueda y ordenado.
+  /// Actualiza la búsqueda [search].
   void updateSearch(String? search) {
     emit(state.copyWith(search: search));
     pagingController.refresh();
   }
 
+  /// Actualiza los filtros [filter].
   void updateFilter(Map<String, dynamic>? filter) {
     emit(state.copyWith(filter: filter));
     pagingController.refresh();
   }
 
-  void updateOrdering({String? orderBy, bool? ascending, bool? randomOrder}) {
+  /// Actualiza el ordenamiento [orderBy] y [ascending].
+  void updateOrdering({String? orderBy, bool? ascending}) {
     emit(state.copyWith(
       orderBy: orderBy,
       ascending: ascending,
-      randomOrder: randomOrder,
     ));
     pagingController.refresh();
   }

@@ -1,11 +1,12 @@
-import 'package:ofodep/models/usuario.dart';
+import 'package:ofodep/models/user_model.dart';
+import 'package:ofodep/repositories/user_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
-  Future<Usuario?> getUserByAuthId(String authId) async {
+  Future<UserModel?> getUserByAuthId(String authId) async {
     try {
       final data = await Supabase.instance.client
-          .from('usuarios')
+          .from(UserRepository.tableName)
           .select()
           .eq('auth_id', authId)
           .maybeSingle();
@@ -14,7 +15,7 @@ class AuthRepository {
         return null;
       }
 
-      return Usuario.fromMap(data);
+      return UserModel.fromMap(data);
     } catch (e) {
       return null;
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/session_cubit.dart';
+import 'package:ofodep/config/locations_strings.dart';
 import 'package:ofodep/pages/error_page.dart';
 
 class AdminDashboardPage extends StatelessWidget {
@@ -11,21 +12,20 @@ class AdminDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SessionCubit, SessionState>(
       builder: (context, state) {
-        if (state is SessionAuthenticated && state.usuario.admin) {
+        if (state is SessionAuthenticated && state.user.admin) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Dashboard Admin'),
+              title: const Text(adminDashboardTitle),
             ),
             body: Column(
               children: [
-                Text('Panel de administración general.'),
                 ElevatedButton(
                   onPressed: () => context.push('/admin/users'),
-                  child: const Text('Administrar Usuarios'),
+                  child: const Text(adminDashboardUsers),
                 ),
                 ElevatedButton(
-                  onPressed: () => context.push('/admin/comercios'),
-                  child: const Text('Comercios'),
+                  onPressed: () => context.push('/admin/stores'),
+                  child: const Text(adminDashboardStores),
                 ),
               ],
             ),
