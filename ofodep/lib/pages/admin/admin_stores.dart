@@ -176,6 +176,11 @@ class _AdminStoresPageState extends State<AdminStoresPage> {
                         SnackBar(content: Text(state.errorMessage!)),
                       );
                     }
+                    if (state.newElementId != null) {
+                      if (mounted) {
+                        context.push('/admin/store/${state.newElementId}');
+                      }
+                    }
                   },
                   builder: (context, state) {
                     final cubit = context.read<StoresListCubit>();

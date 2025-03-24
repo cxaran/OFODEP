@@ -17,6 +17,7 @@ class StoresListFilterState extends ListFilterState {
     super.search,
     super.orderBy,
     super.ascending,
+    super.newElementId,
     super.errorMessage,
   });
 
@@ -26,6 +27,7 @@ class StoresListFilterState extends ListFilterState {
     String? search,
     String? orderBy,
     bool? ascending,
+    String? newElementId,
     String? errorMessage,
   }) {
     return StoresListFilterState(
@@ -33,6 +35,7 @@ class StoresListFilterState extends ListFilterState {
       search: search ?? this.search,
       orderBy: orderBy ?? this.orderBy,
       ascending: ascending ?? this.ascending,
+      newElementId: newElementId ?? this.newElementId,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -162,6 +165,7 @@ class StoresListCubit extends Cubit<StoresListFilterState> {
         deliveryPrice: deliveryPrice,
       );
       if (newStore != null) {
+        emit(state.copyWith(newElementId: newStore));
         // Refreshes the list so the new store appears, if applicable.
         pagingController.refresh();
       }

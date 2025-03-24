@@ -25,12 +25,12 @@ class StoreLoaded extends StoreState {
 }
 
 enum StoreEditSection {
-  general(StoreEditSectionGeneralTitle),
-  contact(StoreEditSectionContactTitle),
-  coordinates(StoreEditSectionCoordinatesTitle),
-  codePostal(StoreEditSectionCodePostalTitle),
-  delivery(StoreEditSectionDeliveryTitle),
-  imageApi(StoreEditSectionImageApiTitle);
+  general(storeEditSectionGeneralTitle),
+  contact(storeEditSectionContactTitle),
+  coordinates(storeEditSectionCoordinatesTitle),
+  codePostal(storeEditSectionCodePostalTitle),
+  delivery(storeEditSectionDeliveryTitle),
+  imageApi(storeEditSectionImageApiTitle);
 
   const StoreEditSection(this.description);
 
@@ -220,10 +220,10 @@ class StoreCubit extends Cubit<StoreState> {
       if (store != null) {
         emit(StoreLoaded(store));
       } else {
-        emit(StoreError(message: "Store not found"));
+        emit(StoreError(message: storeEditNotFoundError));
       }
     } catch (e) {
-      emit(StoreError(message: "Error loading store: $e"));
+      emit(StoreError(message: "$storeEditError: $e"));
     }
   }
 
@@ -298,14 +298,10 @@ class StoreCubit extends Cubit<StoreState> {
     if (currentState is StoreEditState) {
       // Basic validation: name and addressStreet must not be empty.
       if (currentState.name.trim().isEmpty) {
-        emit(currentState.copyWith(errorMessage: "The name is required"));
+        emit(currentState.copyWith(errorMessage: storeEditNameRequiredError));
         return;
       }
-      if (currentState.addressStreet == null ||
-          currentState.addressStreet!.trim().isEmpty) {
-        emit(currentState.copyWith(errorMessage: "The street is required"));
-        return;
-      }
+
       emit(currentState.copyWith(isSubmitting: true, errorMessage: null));
       try {
         final success = await storeRepository.updateStore(
@@ -336,7 +332,7 @@ class StoreCubit extends Cubit<StoreState> {
           emit(
             currentState.copyWith(
               isSubmitting: false,
-              errorMessage: "Error updating the store",
+              errorMessage: storeEditUpdateError,
             ),
           );
         }

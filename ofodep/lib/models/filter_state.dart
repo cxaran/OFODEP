@@ -3,6 +3,7 @@ abstract class ListFilterState {
   final String? search;
   final String? orderBy;
   final bool ascending;
+  final String? newElementId;
   final String? errorMessage;
 
   const ListFilterState({
@@ -10,6 +11,7 @@ abstract class ListFilterState {
     this.search,
     this.orderBy,
     this.ascending = false,
+    this.newElementId,
     this.errorMessage,
   });
 
@@ -19,5 +21,6 @@ abstract class ListFilterState {
     String? search,
     String? orderBy,
     bool? ascending,
+    String? errorMessage,
   });
 }

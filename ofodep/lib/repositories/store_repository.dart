@@ -23,7 +23,7 @@ class StoreRepository {
   }
 
   /// Agrega una tienda.
-  Future<StoreModel?> createStore({
+  Future<String?> createStore({
     required String name,
     String? logoUrl,
     String? addressStreet,
@@ -40,6 +40,8 @@ class StoreRepository {
     bool pickup = false,
     bool delivery = false,
     num? deliveryPrice,
+    String? imgurClientId,
+    String? imgurClientSecret,
   }) async {
     try {
       final response = await Supabase.instance.client
@@ -61,13 +63,15 @@ class StoreRepository {
             'pickup': pickup,
             'delivery': delivery,
             'delivery_price': deliveryPrice,
+            'imgur_client_id': imgurClientId,
+            'imgur_client_secret': imgurClientSecret,
           })
           .select('id')
           .maybeSingle();
 
       if (response == null) return null;
 
-      return StoreModel.fromMap(response);
+      return response['id'];
     } catch (e) {
       throw Exception('Error al agregar tienda: $e');
     }

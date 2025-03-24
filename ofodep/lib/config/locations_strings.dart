@@ -8,6 +8,9 @@ const String storeEditSectionImageApiTitle = 'Configuración de Imagenes';
 const String storeEditNotFoundError = 'Store not found';
 const String storeEditError = 'Error loading store';
 const String storeEditUpdateError = 'Error updating store';
+const String storeEditNameRequiredError = 'The name is required';
+
+//UserCubit
 
 const String homeTitle = 'OFODEP';
 
@@ -33,7 +36,7 @@ const String adminStoresRetry = 'Reintentar';
 const String adminStoresAdd = 'Agregar';
 
 const String adminDashboardTitle = 'Panel de Administración';
-const String adminDashboardUsers = 'Usuarios';
+const String adminDashboardUsers = 'Users';
 const String adminDashboardStores = 'StoreModels';
 
 const String adminUsersTitle = 'Administrar Usuarios';

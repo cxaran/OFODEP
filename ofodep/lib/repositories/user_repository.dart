@@ -4,13 +4,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class UserRepository {
   static const String tableName = 'users';
 
+  final supabase = Supabase.instance.client;
+
   UserRepository();
 
   /// Obtiene el usuario desde la tabla 'usuarios' filtrando por el auth_id.
   /// [userId] ID del usuario
   Future<UserModel?> getUser(String userId) async {
     try {
-      final data = await Supabase.instance.client
+      final data = await supabase
           .from(tableName)
           .select()
           .eq('auth_id', userId)
@@ -39,7 +41,7 @@ class UserRepository {
       if (phone != null) updates['phone'] = phone;
       if (admin != null) updates['admin'] = admin;
 
-      final response = await Supabase.instance.client
+      final response = await supabase
           .from(tableName)
           .update(updates)
           .eq('auth_id', userId)
@@ -67,8 +69,6 @@ class UserRepository {
     String? orderBy,
     bool ascending = false,
   }) async {
-    final supabase = Supabase.instance.client;
-
     // Construir la consulta básica
     PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
         supabase.from(tableName).select('*');

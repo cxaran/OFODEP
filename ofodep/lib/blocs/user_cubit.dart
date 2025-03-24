@@ -15,8 +15,8 @@ class UserInitial extends UserState {}
 class UserLoading extends UserState {}
 
 class UserEditState extends UserState {
-  final String name; // Antes: nombre
-  final String phone; // Antes: telefono
+  final String name;
+  final String phone;
   final String email;
   final bool admin;
   final bool editMode;

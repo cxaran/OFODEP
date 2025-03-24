@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/models/user_model.dart';
-import 'package:ofodep/repositories/auth_repository.dart';
+import 'package:ofodep/repositories/user_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Estados de la sesión
@@ -31,7 +31,7 @@ class SessionUnauthenticated extends SessionState {
 
 /// Cubit que gestiona el estado de autenticación
 class SessionCubit extends Cubit<SessionState> {
-  final AuthRepository authRepository = AuthRepository();
+  final UserRepository userRepository = UserRepository();
   late final StreamSubscription authSubscription;
 
   /// Crea un Cubit que gestiona el estado de autenticación
@@ -53,7 +53,7 @@ class SessionCubit extends Cubit<SessionState> {
   Future<void> checkSession() async {
     final session = Supabase.instance.client.auth.currentSession;
     if (session != null) {
-      final user = await authRepository.getUserByAuthId(session.user.id);
+      final user = await userRepository.getUser(session.user.id);
       if (user != null) {
         emit(SessionAuthenticated(user));
         return;
