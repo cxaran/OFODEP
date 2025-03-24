@@ -432,8 +432,8 @@ BEGIN
   VALUES (
     NEW.id, 
     NEW.email, 
-    COALESCE(NEW.raw_user_meta_data->>'nombre', ''), 
-    COALESCE(NEW.raw_user_meta_data->>'telefono', '')
+    COALESCE(NEW.raw_user_meta_data->>'name', ''), 
+    COALESCE(NEW.raw_user_meta_data->>'phone', '')
   );
   RETURN NEW;
 END;

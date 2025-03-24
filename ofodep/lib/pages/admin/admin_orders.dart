@@ -18,7 +18,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pedidos'),
+        title: const Text('orders'),
       ),
       body: Center(
         child: Text(

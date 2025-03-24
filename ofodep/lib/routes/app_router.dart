@@ -10,6 +10,7 @@ import 'package:ofodep/pages/admin/admin_products.dart';
 import 'package:ofodep/pages/admin/admin_schedule.dart';
 import 'package:ofodep/pages/admin/admin_users.dart';
 import 'package:ofodep/pages/auth/login_page.dart';
+import 'package:ofodep/pages/product/product_page.dart';
 import 'package:ofodep/pages/store/store_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
 import 'package:ofodep/pages/user/user_page.dart';
@@ -99,9 +100,19 @@ GoRouter createRouter(SessionCubit sessionCubit) {
             ),
           ),
           GoRoute(
+            path: '/products',
+            builder: (context, state) => const AdminProductsPage(),
+          ),
+          GoRoute(
             path: '/products/:storeId',
             builder: (context, state) => AdminProductsPage(
               storeId: state.pathParameters['storeId'],
+            ),
+          ),
+          GoRoute(
+            path: '/product/:productId',
+            builder: (context, state) => ProductPage(
+              productId: state.pathParameters['productId'],
             ),
           ),
           GoRoute(

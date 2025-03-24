@@ -1,193 +1,125 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ofodep/models/product_model.dart';
+import 'package:ofodep/repositories/product_configuration_repository.dart';
+import 'package:ofodep/repositories/abstract_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ProductRepository {
-  static const String tableName = 'products';
-  static const String tableNameConfigurations = 'product_configurations';
-  static const String tableNameOptions = 'product_options';
+class ProductRepository extends Repository<ProductModel> {
+  @override
+  String get tableName => 'products';
 
-  final supabase = Supabase.instance.client;
+  // Se utiliza el cliente heredado de Repository (client)
+  final ProductConfigurationRepository configurationRepository =
+      ProductConfigurationRepository();
 
-  /// Obtiene un producto por ID incluyendo store_name y listas anidadas
-  /// [productId] ID del producto
-  Future<ProductModel?> getProductById(String productId) async {
+  @override
+  ProductModel fromMap(Map<String, dynamic> map) {
+    return ProductModel.fromMap(map);
+  }
+
+  /// Sobrescribe getById para incluir la relación con stores y cargar las configuraciones del producto.
+  @override
+  Future<ProductModel?> getById(String id) async {
     try {
-      final data = await supabase
+      final data = await client
           .from(tableName)
           .select('*, stores(name)')
-          .eq('id', productId)
+          .eq('id', id)
           .maybeSingle();
 
       if (data == null) return null;
 
       final product = ProductModel.fromMap(data);
-
-      // Obtener configuraciones
-      final configurations = await _getConfigurations(product.id);
-      product.configurations = configurations;
-
+      // Se cargan las configuraciones relacionadas.
+      product.configurations =
+          await configurationRepository.getByProductId(product.id);
       return product;
     } catch (e) {
-      throw Exception('Error al obtener el producto: $e');
+      throw Exception('error(getById): $e');
     }
   }
 
-  Future<String> addProduct(ProductModel product) async {
-    try {
-      final response = await supabase
-          .from(tableName)
-          .insert(product.toMap())
-          .select('id')
-          .single();
-      return response['id'] as String;
-    } catch (e) {
-      throw Exception('Error al agregar producto: $e');
-    }
-  }
-
-  Future<bool> updateProduct(
-      String productId, Map<String, dynamic> updates) async {
-    try {
-      final response = await supabase
-          .from(tableName)
-          .update({
-            ...updates,
-            'updated_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', productId)
-          .select('id');
-
-      return response.isNotEmpty;
-    } catch (e) {
-      throw Exception('Error al actualizar producto: $e');
-    }
-  }
-
-  /// Obtiene una lista paginada de productos con nombre de tienda
-  /// [storeId] ID de la tienda
-  /// [configurations] indica si se deben obtener las configuraciones
-  /// [page] número de página (1-indexado)
-  /// [limit] número de registros por página
-  /// [filter] mapa opcional de filtros (ej: fechas, flag admin)
-  /// [search] búsqueda textual (por nombre, email o teléfono)
-  /// [orderBy] campo por el que se ordena (ej: 'created_at', 'name', 'email')
-  /// [ascending] orden ascendente (true) o descendente (false)
-  Future<List<ProductModel>> getProductsPaginated({
+  /// Obtiene una lista paginada de productos, con la posibilidad de filtrar por store y búsqueda textual
+  /// - [storeId]: Filtra los productos que pertenecen a una tienda específica.
+  /// - [configurations]: Si es true, se cargarán las configuraciones de cada producto.
+  @override
+  Future<List<ProductModel>> getPaginated({
     String? storeId,
     bool configurations = false,
     int page = 1,
     int limit = 20,
     Map<String, dynamic>? filter,
     String? search,
+    List<String>? searchColumns,
     String? orderBy,
     bool ascending = false,
   }) async {
-    PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-        supabase.from(tableName).select('*, stores(name)');
-
-    if (storeId != null) {
-      query = query.eq('store_id', storeId);
-    }
-
-    // Aplicar filtros personalizados
-    if (filter != null) {
-      if (filter.containsKey('created_at_gte')) {
-        query = query.gte('created_at', filter['created_at_gte']);
-      }
-      if (filter.containsKey('created_at_lte')) {
-        query = query.lte('created_at', filter['created_at_lte']);
-      }
-      if (filter.containsKey('updated_at_gte')) {
-        query = query.gte('updated_at', filter['updated_at_gte']);
-      }
-      if (filter.containsKey('updated_at_lte')) {
-        query = query.lte('updated_at', filter['updated_at_lte']);
-      }
-      if (filter.containsKey('admin')) {
-        query = query.eq('admin', filter['admin']);
-      }
-    }
-
-    // Aplicar búsqueda textual (en name y lista de tags)
-    if (search != null && search.isNotEmpty) {
-      query = query.or('name.ilike.%$search%,tags.cs.{$search}');
-    }
-
-    PostgrestTransformBuilder<List<Map<String, dynamic>>> paginationQuery;
-
-    // Aplicar ordenamiento
-    if (orderBy != null && orderBy.isNotEmpty) {
-      paginationQuery = query.order(orderBy, ascending: ascending);
-    } else {
-      // Orden por defecto: fecha de creación descendente
-      paginationQuery = query.order('created_at', ascending: false);
-    }
-
-    // Aplicar paginación
-    paginationQuery = paginationQuery.range(
-      (page - 1) * limit,
-      (page * limit) - 1,
-    );
-
     try {
-      // Ejecutar la consulta
-      final List<dynamic> response = await paginationQuery;
+      // Se realiza la consulta incluyendo la relación con la tabla stores.
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
+          client.from(tableName).select('*, stores(name)');
 
-      // Procesar datos y devolver la lista de productos
+      // Filtrar por store si se especifica.
+      if (storeId != null) {
+        query = query.eq('store_id', storeId);
+      }
+
+      // Aplicar filtros personalizados.
+      if (filter != null) {
+        filter.forEach((filterKey, value) {
+          if (filterKey.endsWith('_gte')) {
+            query =
+                query.gte(filterKey.substring(0, filterKey.length - 4), value);
+          } else if (filterKey.endsWith('_lte')) {
+            query =
+                query.lte(filterKey.substring(0, filterKey.length - 4), value);
+          } else {
+            query = query.eq(filterKey, value);
+          }
+        });
+      }
+
+      // Búsqueda textual flexible.
+      if (search != null && search.isNotEmpty) {
+        // Para productos, se buscan en 'name' y en 'tags'.
+        final columns = searchColumns ?? ['name', 'tags'];
+        final searchFilter = columns.map((col) {
+          // Si se busca en 'tags', se utiliza el operador de contención (cs).
+          return col == 'tags' ? "$col.cs.{$search}" : "$col.ilike.%$search%";
+        }).join(',');
+        query = query.or(searchFilter);
+      }
+
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> paginationQuery;
+
+      // Ordenamiento
+      if (orderBy != null && orderBy.isNotEmpty) {
+        paginationQuery = query.order(orderBy, ascending: ascending);
+      } else {
+        paginationQuery = query.order('created_at', ascending: false);
+      }
+
+      // Paginación
+      paginationQuery = paginationQuery.range(
+        (page - 1) * limit,
+        (page * limit) - 1,
+      );
+
+      final List<dynamic> response = await paginationQuery;
       final List<ProductModel> products = [];
 
       for (final item in response) {
-        final product = ProductModel.fromMap(item);
-
-        // Obtener configuraciones
+        final product = ProductModel.fromMap(item as Map<String, dynamic>);
         if (configurations) {
-          product.configurations = await _getConfigurations(product.id);
+          product.configurations = await configurationRepository.getByProductId(
+            product.id,
+          );
         }
-
         products.add(product);
       }
 
       return products;
     } catch (e) {
-      throw Exception('Error al obtener usuarios: $e');
-    }
-  }
-
-  /// Internamente obtiene configuraciones y sus opciones
-  Future<List<ProductConfigurationModel>> getConfigurations(
-      String productId) async {
-    try {
-      final data = await supabase
-          .from('product_configurations')
-          .select()
-          .eq('product_id', productId);
-
-      final configurations = <ProductConfigurationModel>[];
-
-      for (final conf in data) {
-        final config = ProductConfigurationModel.fromMap(conf);
-        config.options = await _getOptions(config.id);
-        configurations.add(config);
-      }
-
-      return configurations;
-    } catch (e) {
-      throw Exception('Error al obtener configuraciones: $e');
-    }
-  }
-
-  Future<List<ProductOptionModel>> _getOptions(String configurationId) async {
-    try {
-      final data = await supabase
-          .from(tableNameOptions)
-          .select()
-          .eq('configuration_id', configurationId);
-
-      return (data as List)
-          .map((item) => ProductOptionModel.fromMap(item))
-          .toList();
-    } catch (e) {
-      throw Exception('Error al obtener opciones: $e');
+      throw Exception('error(getPaginated): $e');
     }
   }
 }

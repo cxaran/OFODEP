@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:ofodep/blocs/catalogs/filter_state.dart';
 import 'package:ofodep/blocs/catalogs/stores_list_cubit.dart';
 import 'package:ofodep/models/store_model.dart';
 
@@ -39,137 +40,132 @@ class _AdminStoresPageState extends State<AdminStoresPage> {
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text('Manage Stores'),
+            title: const Text('stores'),
           ),
           body: Column(
             children: [
               // Filters, search, and sorting section
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    // Search field (by name or description)
-                    TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Search by name or description',
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (value) {
-                        context.read<StoresListCubit>().updateSearch(value);
-                      },
+              Column(
+                children: [
+                  // Search field (by name or description)
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'search',
+                      border: OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 8),
-                    // Sorting filters
-                    Row(
-                      children: [
-                        // Dropdown to select sorting criteria
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _selectedOrder,
-                            decoration: const InputDecoration(
-                              labelText: 'Sort by',
-                              border: OutlineInputBorder(),
+                    onChanged: (value) {
+                      context.read<StoresListCubit>().updateSearch(value);
+                    },
+                  ),
+                  // Sorting filters
+                  Row(
+                    children: [
+                      // Dropdown to select sorting criteria
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedOrder,
+                          decoration: const InputDecoration(
+                            labelText: 'sort_by',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'created_at',
+                              child: Text('created_at'),
                             ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'created_at',
-                                child: Text('Creation date'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'updated_at',
-                                child: Text('Update date'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'name',
-                                child: Text('Name'),
-                              ),
-                            ],
+                            DropdownMenuItem(
+                              value: 'updated_at',
+                              child: Text('updated_at'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'name',
+                              child: Text('name'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedOrder = value;
+                            });
+                            context.read<StoresListCubit>().updateOrdering(
+                                  orderBy: value,
+                                  ascending: _ascending,
+                                );
+                          },
+                        ),
+                      ),
+
+                      Column(
+                        children: [
+                          const Text('ascending'),
+                          Switch(
+                            value: _ascending,
                             onChanged: (value) {
                               setState(() {
-                                _selectedOrder = value;
+                                _ascending = value;
                               });
                               context.read<StoresListCubit>().updateOrdering(
-                                    orderBy: value,
+                                    orderBy: _selectedOrder,
                                     ascending: _ascending,
                                   );
                             },
                           ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  // Date range filters (optional example)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final selectedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
+                            if (selectedDate != null) {
+                              setState(() {
+                                _createdAtGte = selectedDate;
+                              });
+                              updateFilters();
+                            }
+                          },
+                          child: Text(_createdAtGte == null
+                              ? 'created_after...'
+                              : 'created_after: ${_createdAtGte!.toLocal()}'),
                         ),
-                        const SizedBox(width: 8),
-                        Column(
-                          children: [
-                            const Text('Ascending'),
-                            Switch(
-                              value: _ascending,
-                              onChanged: (value) {
-                                setState(() {
-                                  _ascending = value;
-                                });
-                                context.read<StoresListCubit>().updateOrdering(
-                                      orderBy: _selectedOrder,
-                                      ascending: _ascending,
-                                    );
-                              },
-                            ),
-                          ],
+                      ),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final selectedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
+                            if (selectedDate != null) {
+                              setState(() {
+                                _createdAtLte = selectedDate;
+                              });
+                              updateFilters();
+                            }
+                          },
+                          child: Text(_createdAtLte == null
+                              ? 'created_before...'
+                              : 'created_before: ${_createdAtLte!.toLocal()}'),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Date range filters (optional example)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              final selectedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime(2100),
-                              );
-                              if (selectedDate != null) {
-                                setState(() {
-                                  _createdAtGte = selectedDate;
-                                });
-                                updateFilters();
-                              }
-                            },
-                            child: Text(_createdAtGte == null
-                                ? 'Created after...'
-                                : 'Created after: ${_createdAtGte!.toLocal()}'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              final selectedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime(2100),
-                              );
-                              if (selectedDate != null) {
-                                setState(() {
-                                  _createdAtLte = selectedDate;
-                                });
-                                updateFilters();
-                              }
-                            },
-                            child: Text(_createdAtLte == null
-                                ? 'Created before...'
-                                : 'Created before: ${_createdAtLte!.toLocal()}'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
               // Infinite scroll list of stores
               Expanded(
-                child: BlocConsumer<StoresListCubit, StoresListFilterState>(
+                child: BlocConsumer<StoresListCubit, BasicListFilterState>(
                   listener: (context, state) {
                     if (state.errorMessage != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -205,7 +201,7 @@ class _AdminStoresPageState extends State<AdminStoresPage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('Error loading stores'),
+                                  const Text('error_loading'),
                                   ElevatedButton(
                                     onPressed: () =>
                                         cubit.pagingController.refresh(),
@@ -215,7 +211,7 @@ class _AdminStoresPageState extends State<AdminStoresPage> {
                               ),
                             ),
                             noItemsFoundIndicatorBuilder: (context) =>
-                                const Center(child: Text('No stores found')),
+                                const Center(child: Text('error_not_found')),
                           ),
                         ),
                       ),

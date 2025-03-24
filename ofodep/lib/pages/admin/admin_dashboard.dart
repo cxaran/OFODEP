@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/session_cubit.dart';
-import 'package:ofodep/config/locations_strings.dart';
 import 'package:ofodep/pages/error_page.dart';
 
 class AdminDashboardPage extends StatelessWidget {
@@ -15,17 +14,21 @@ class AdminDashboardPage extends StatelessWidget {
         if (state is SessionAuthenticated && state.user.admin) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text(adminDashboardTitle),
+              title: const Text('admin_dashboard'),
             ),
             body: Column(
               children: [
                 ElevatedButton(
                   onPressed: () => context.push('/admin/users'),
-                  child: const Text(adminDashboardUsers),
+                  child: const Text('users'),
                 ),
                 ElevatedButton(
                   onPressed: () => context.push('/admin/stores'),
-                  child: const Text(adminDashboardStores),
+                  child: const Text('stores'),
+                ),
+                ElevatedButton(
+                  onPressed: () => context.push('/admin/products'),
+                  child: const Text('products'),
                 ),
               ],
             ),

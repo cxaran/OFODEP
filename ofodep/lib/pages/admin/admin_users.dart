@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:ofodep/blocs/catalogs/filter_state.dart';
 import 'package:ofodep/blocs/catalogs/users_list_cubit.dart';
-import 'package:ofodep/config/locations_strings.dart';
 import 'package:ofodep/models/user_model.dart';
 
 class AdminUsersPage extends StatefulWidget {
@@ -43,7 +43,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text(adminUsersTitle),
+            title: const Text('users'),
           ),
           body: Column(
             children: [
@@ -53,7 +53,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                   // Campo de búsqueda.
                   TextField(
                     decoration: const InputDecoration(
-                      labelText: adminUsersSearchHint,
+                      labelText: 'search',
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
@@ -69,25 +69,25 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                         child: DropdownButtonFormField<String>(
                           value: _selectedOrder,
                           decoration: const InputDecoration(
-                            labelText: adminUsersOrderBy,
+                            labelText: 'Order by',
                             border: OutlineInputBorder(),
                           ),
                           items: const [
                             DropdownMenuItem(
                               value: 'created_at',
-                              child: Text(adminUsersOrderCreatedAt),
+                              child: Text('created_at'),
                             ),
                             DropdownMenuItem(
                               value: 'updated_at',
-                              child: Text(adminUsersOrderUpdatedAt),
+                              child: Text('updated_at'),
                             ),
                             DropdownMenuItem(
-                              value: 'nombre',
-                              child: Text(adminUsersOrderName),
+                              value: 'name',
+                              child: Text('name'),
                             ),
                             DropdownMenuItem(
                               value: 'email',
-                              child: Text(adminUsersOrderEmail),
+                              child: Text('email'),
                             ),
                           ],
                           onChanged: (value) {
@@ -105,7 +105,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                       // Switch para definir orden ascendente/descendente.
                       Column(
                         children: [
-                          const Text(adminUsersAscending),
+                          const Text('ascending'),
                           Switch(
                             value: _ascending,
                             onChanged: (value) {
@@ -124,7 +124,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                       // Checkbox para filtrar solo usuarios administradores.
                       Column(
                         children: [
-                          const Text(adminUsersAdmin),
+                          const Text('admin'),
                           Checkbox(
                             value: _adminFilter,
                             onChanged: (value) {
@@ -138,11 +138,59 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                       ),
                     ],
                   ),
+
+                  // Date range filters (optional example)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final selectedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
+                            if (selectedDate != null) {
+                              setState(() {
+                                _createdAtGte = selectedDate;
+                              });
+                              updateFilters();
+                            }
+                          },
+                          child: Text(_createdAtGte == null
+                              ? 'created_after...'
+                              : 'created_after: ${_createdAtGte!.toLocal()}'),
+                        ),
+                      ),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final selectedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
+                            if (selectedDate != null) {
+                              setState(() {
+                                _createdAtLte = selectedDate;
+                              });
+                              updateFilters();
+                            }
+                          },
+                          child: Text(_createdAtLte == null
+                              ? 'created_before...'
+                              : 'created_before: ${_createdAtLte!.toLocal()}'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               // Lista de usuarios con scroll infinito.
               Expanded(
-                child: BlocConsumer<UsersListCubit, UsersListFilterState>(
+                child: BlocConsumer<UsersListCubit, BasicListFilterState>(
                   listener: (context, state) {
                     if (state.errorMessage != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -174,18 +222,18 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(adminUsersError),
+                                  const Text('error_loading'),
                                   ElevatedButton(
                                     onPressed: () =>
                                         cubit.pagingController.refresh(),
-                                    child: const Text(adminUsersRetry),
+                                    child: const Text('retry'),
                                   ),
                                 ],
                               ),
                             ),
                             noItemsFoundIndicatorBuilder: (context) =>
                                 const Center(
-                              child: Text(adminUsersNoUsers),
+                              child: Text('error_not_found'),
                             ),
                           ),
                         ),

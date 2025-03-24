@@ -1,127 +1,59 @@
 import 'package:ofodep/models/user_model.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ofodep/repositories/abstract_repository.dart';
 
-class UserRepository {
-  static const String tableName = 'users';
+/// Implementación del repositorio de usuarios que extiende de Repository.
+/// Se aprovecha la implementación genérica, pero se ajusta el método getById
+/// para buscar por `auth_id` y se sobreescribe getPaginated para aplicar la búsqueda
+/// en las columnas name, email y phone.
+class UserRepository extends Repository<UserModel> {
+  @override
+  String get tableName => 'users';
 
-  final supabase = Supabase.instance.client;
+  @override
+  UserModel fromMap(Map<String, dynamic> map) {
+    return UserModel.fromMap(map);
+  }
 
-  UserRepository();
-
-  /// Obtiene el usuario desde la tabla 'usuarios' filtrando por el auth_id.
-  /// [userId] ID del usuario
-  Future<UserModel?> getUser(String userId) async {
+  /// Obtiene el usuario desde la tabla 'users' filtrando por el auth_id.
+  /// [userId] es el auth_id que se utiliza para la búsqueda.
+  @override
+  Future<UserModel?> getById(String userId) async {
     try {
-      final data = await supabase
+      final data = await client
           .from(tableName)
           .select()
           .eq('auth_id', userId)
           .maybeSingle();
 
       if (data == null) return null;
-      return UserModel.fromMap(data);
+      return fromMap(data);
     } catch (e) {
-      throw Exception('Error al obtener usuario: $e');
+      throw Exception('error(getById): $e');
     }
   }
 
-  /// Actualiza el nombre y/o teléfono del usuario.
-  /// [name] nuevo nombre del usuario
-  /// [phone] nuevo teléfono del usuario
-  /// [admin] nuevo valor de admin del usuario
-  Future<bool> updateUser(
-    String userId, {
-    String? name,
-    String? phone,
-    bool? admin,
-  }) async {
-    try {
-      Map<String, dynamic> updates = {};
-      if (name != null) updates['name'] = name;
-      if (phone != null) updates['phone'] = phone;
-      if (admin != null) updates['admin'] = admin;
-
-      final response = await supabase
-          .from(tableName)
-          .update(updates)
-          .eq('auth_id', userId)
-          .select('id');
-
-      if (response.isEmpty) return false;
-      return true;
-    } on Exception catch (e) {
-      throw Exception('Error al actualizar usuario: $e');
-    }
-  }
-
-  /// Obtiene una lista paginada de usuarios con opciones de filtrado y ordenado.
-  /// [page] número de página (1-indexado)
-  /// [limit] número de registros por página
-  /// [filter] mapa opcional de filtros (ej: fechas, flag admin)
-  /// [search] búsqueda textual (por nombre, email o teléfono)
-  /// [orderBy] campo por el que se ordena (ej: 'created_at', 'name', 'email')
-  /// [ascending] orden ascendente (true) o descendente (false)
-  Future<List<UserModel>> getUsers({
+  /// Obtiene una lista paginada de usuarios, aplicando búsqueda textual en las columnas
+  /// name, email y phone (si no se especifican otras columnas en [searchColumns]).
+  @override
+  Future<List<UserModel>> getPaginated({
     int page = 1,
     int limit = 20,
     Map<String, dynamic>? filter,
     String? search,
+    List<String>? searchColumns,
     String? orderBy,
     bool ascending = false,
   }) async {
-    // Construir la consulta básica
-    PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-        supabase.from(tableName).select('*');
-
-    // Aplicar filtros personalizados
-    if (filter != null) {
-      if (filter.containsKey('created_at_gte')) {
-        query = query.gte('created_at', filter['created_at_gte']);
-      }
-      if (filter.containsKey('created_at_lte')) {
-        query = query.lte('created_at', filter['created_at_lte']);
-      }
-      if (filter.containsKey('updated_at_gte')) {
-        query = query.gte('updated_at', filter['updated_at_gte']);
-      }
-      if (filter.containsKey('updated_at_lte')) {
-        query = query.lte('updated_at', filter['updated_at_lte']);
-      }
-      if (filter.containsKey('admin')) {
-        query = query.eq('admin', filter['admin']);
-      }
-    }
-
-    // Aplicar búsqueda textual (en name, email y phone)
-    if (search != null && search.isNotEmpty) {
-      query = query.or(
-          'name.ilike.%$search%,email.ilike.%$search%,phone.ilike.%$search%');
-    }
-
-    PostgrestTransformBuilder<List<Map<String, dynamic>>> paginationQuery;
-
-    // Aplicar ordenamiento
-    if (orderBy != null && orderBy.isNotEmpty) {
-      paginationQuery = query.order(orderBy, ascending: ascending);
-    } else {
-      // Orden por defecto: fecha de creación descendente
-      paginationQuery = query.order('created_at', ascending: false);
-    }
-
-    // Aplicar paginación
-    paginationQuery = paginationQuery.range(
-      (page - 1) * limit,
-      (page * limit) - 1,
+    // Si no se proveen columnas para la búsqueda, se utilizan por defecto.
+    final columns = searchColumns ?? ['name', 'email', 'phone'];
+    return super.getPaginated(
+      page: page,
+      limit: limit,
+      filter: filter,
+      search: search,
+      searchColumns: columns,
+      orderBy: orderBy,
+      ascending: ascending,
     );
-
-    try {
-      // Ejecutar la consulta
-      final List<dynamic> response = await paginationQuery;
-
-      // Procesar datos y devolver la lista de usuarios
-      return response.map((userData) => UserModel.fromMap(userData)).toList();
-    } catch (e) {
-      throw Exception('Error al obtener usuarios: $e');
-    }
   }
 }

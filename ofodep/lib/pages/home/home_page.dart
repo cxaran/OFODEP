@@ -10,15 +10,15 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SessionCubit, SessionState>(
       builder: (context, state) {
-        String message = 'Loading...';
+        String message = 'loading...';
         if (state is SessionAuthenticated) {
-          message = 'Welcome ${state.user.name}';
+          message = 'welcome ${state.user.name}';
         } else if (state is SessionUnauthenticated) {
-          message = 'User not authenticated';
+          message = 'user_not_authenticated';
         }
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Home'),
+            title: const Text('home'),
             automaticallyImplyLeading: false,
           ),
           body: Column(
@@ -27,11 +27,11 @@ class HomePage extends StatelessWidget {
               if (state.admin)
                 ElevatedButton(
                   onPressed: () => context.push('/admin'),
-                  child: const Text('Ir a Admin Dashboard'),
+                  child: const Text('admin_dashboard'),
                 ),
               ElevatedButton(
                 onPressed: () => context.read<SessionCubit>().signOut(),
-                child: const Text('Cerrar Sesión'),
+                child: const Text('sign_out'),
               ),
             ],
           ),

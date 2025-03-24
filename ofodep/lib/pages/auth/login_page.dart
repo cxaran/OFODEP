@@ -44,7 +44,7 @@ class LoginPage extends StatelessWidget {
           MetaDataField(
             prefixIcon: const Icon(Icons.person),
             label: 'Nombre',
-            key: 'nombre',
+            key: 'name',
             validator: (val) {
               if (val == null || val.isEmpty) {
                 return 'Por favor ingresa un nombre';
@@ -55,7 +55,7 @@ class LoginPage extends StatelessWidget {
           MetaDataField(
             prefixIcon: const Icon(Icons.phone),
             label: 'Telefono',
-            key: 'telefono',
+            key: 'phone',
             validator: (val) {
               if (val == null || val.isEmpty) {
                 return 'Por favor ingresa un número de teléfono';

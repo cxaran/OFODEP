@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/repositories/user_repository.dart';
@@ -53,7 +54,7 @@ class SessionCubit extends Cubit<SessionState> {
   Future<void> checkSession() async {
     final session = Supabase.instance.client.auth.currentSession;
     if (session != null) {
-      final user = await userRepository.getUser(session.user.id);
+      final user = await userRepository.getById(session.user.id);
       if (user != null) {
         emit(SessionAuthenticated(user));
         return;

@@ -1,6 +1,6 @@
-class StoreModel {
-  final String id;
+import 'package:ofodep/models/abstract_model.dart';
 
+class StoreModel extends ModelComponent {
   // General store information
   String name;
   String? logoUrl;
@@ -31,12 +31,8 @@ class StoreModel {
   String? imgurClientId;
   String? imgurClientSecret;
 
-  // Creation and update information
-  DateTime createdAt;
-  DateTime updatedAt;
-
   StoreModel({
-    required this.id,
+    required super.id,
     required this.name,
     this.logoUrl,
     this.addressStreet,
@@ -55,10 +51,11 @@ class StoreModel {
     this.deliveryPrice,
     this.imgurClientId,
     this.imgurClientSecret,
-    required this.createdAt,
-    required this.updatedAt,
+    super.createdAt,
+    super.updatedAt,
   });
 
+  @override
   factory StoreModel.fromMap(Map<String, dynamic> map) {
     return StoreModel(
       id: map['id'] as String,
@@ -82,8 +79,105 @@ class StoreModel {
       deliveryPrice: map['delivery_price'],
       imgurClientId: map['imgur_client_id'] as String?,
       imgurClientSecret: map['imgur_client_secret'] as String?,
-      createdAt: DateTime.parse(map['created_at']),
-      updatedAt: DateTime.parse(map['updated_at']),
+      createdAt: DateTime.tryParse(map['created_at'] ?? ''),
+      updatedAt: DateTime.tryParse(map['updated_at'] ?? ''),
     );
   }
+
+  @override
+  Map<String, dynamic> toMap({
+    bool includeId = true,
+  }) =>
+      {
+        if (includeId) 'id': id,
+        'name': name,
+        'logo_url': logoUrl,
+        'address_street': addressStreet,
+        'address_number': addressNumber,
+        'address_colony': addressColony,
+        'address_zipcode': addressZipcode,
+        'address_city': addressCity,
+        'address_state': addressState,
+        'lat': lat,
+        'lng': lng,
+        'zipcodes': zipcodes,
+        'whatsapp': whatsapp,
+        'delivery_minimum_order': deliveryMinimumOrder,
+        'pickup': pickup,
+        'delivery': delivery,
+        'delivery_price': deliveryPrice,
+        'imgur_client_id': imgurClientId,
+        'imgur_client_secret': imgurClientSecret,
+      };
+
+  @override
+  StoreModel copyWith({
+    String? name,
+    String? logoUrl,
+    String? addressStreet,
+    String? addressNumber,
+    String? addressColony,
+    String? addressZipcode,
+    String? addressCity,
+    String? addressState,
+    num? lat,
+    num? lng,
+    List<String>? zipcodes,
+    String? whatsapp,
+    num? deliveryMinimumOrder,
+    bool? pickup,
+    bool? delivery,
+    num? deliveryPrice,
+    String? imgurClientId,
+    String? imgurClientSecret,
+  }) {
+    return StoreModel(
+      id: id,
+      name: name ?? this.name,
+      logoUrl: logoUrl ?? this.logoUrl,
+      addressStreet: addressStreet ?? this.addressStreet,
+      addressNumber: addressNumber ?? this.addressNumber,
+      addressColony: addressColony ?? this.addressColony,
+      addressZipcode: addressZipcode ?? this.addressZipcode,
+      addressCity: addressCity ?? this.addressCity,
+      addressState: addressState ?? this.addressState,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      zipcodes: zipcodes ?? this.zipcodes,
+      whatsapp: whatsapp ?? this.whatsapp,
+      deliveryMinimumOrder: deliveryMinimumOrder ?? this.deliveryMinimumOrder,
+      pickup: pickup ?? this.pickup,
+      delivery: delivery ?? this.delivery,
+      deliveryPrice: deliveryPrice ?? this.deliveryPrice,
+      imgurClientId: imgurClientId ?? this.imgurClientId,
+      imgurClientSecret: imgurClientSecret ?? this.imgurClientSecret,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
+  @override
+  String toString() => 'StoreModel('
+      'id: $id, '
+      'name: $name, '
+      'logoUrl: $logoUrl, '
+      'addressStreet: $addressStreet, '
+      'addressNumber: $addressNumber, '
+      'addressColony: $addressColony, '
+      'addressZipcode: $addressZipcode, '
+      'addressCity: $addressCity, '
+      'addressState: $addressState, '
+      'lat: $lat, '
+      'lng: $lng, '
+      'zipcodes: $zipcodes, '
+      'whatsapp: $whatsapp, '
+      'deliveryMinimumOrder: $deliveryMinimumOrder, '
+      'pickup: $pickup, '
+      'delivery: $delivery, '
+      'deliveryPrice: $deliveryPrice, '
+      'imgurClientId: $imgurClientId, '
+      'imgurClientSecret: $imgurClientSecret, '
+      'createdAt: $createdAt, '
+      'updatedAt: $updatedAt'
+      ')';
 }

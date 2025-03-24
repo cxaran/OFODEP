@@ -1,84 +1,62 @@
-enum TipoSuscripcion { general, especial, premium }
+enum SubscriptionType {
+  general,
+  special,
+  premium;
 
-extension TipoSuscripcionExtension on TipoSuscripcion {
-  String get value {
-    switch (this) {
-      case TipoSuscripcion.general:
-        return 'general';
-      case TipoSuscripcion.especial:
-        return 'especial';
-      case TipoSuscripcion.premium:
-        return 'premium';
+  static SubscriptionType fromString(String value) {
+    return SubscriptionType.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => SubscriptionType.general,
+    );
+  }
+
+  String toShortString() => name;
+}
+
+enum OrderStatus {
+  pending,
+  accepted,
+  onTheWay,
+  delivered,
+  cancelled;
+
+  static OrderStatus fromString(String value) {
+    switch (value) {
+      case 'pending':
+        return OrderStatus.pending;
+      case 'accepted':
+        return OrderStatus.accepted;
+      case 'on_the_way':
+        return OrderStatus.onTheWay;
+      case 'delivered':
+        return OrderStatus.delivered;
+      case 'cancelled':
+        return OrderStatus.cancelled;
+      default:
+        return OrderStatus.pending;
     }
   }
 
-  static TipoSuscripcion fromString(String value) {
-    switch (value) {
-      case 'especial':
-        return TipoSuscripcion.especial;
-      case 'premium':
-        return TipoSuscripcion.premium;
-      case 'general':
+  String toShortString() {
+    switch (this) {
+      case OrderStatus.onTheWay:
+        return 'on_the_way';
       default:
-        return TipoSuscripcion.general;
+        return name;
     }
   }
 }
 
-enum EstadoPedido { pendiente, aceptado, encamino, entregado, cancelado }
+enum DeliveryMethod {
+  delivery,
+  pickup;
 
-extension EstadoPedidoExtension on EstadoPedido {
-  String get value {
-    switch (this) {
-      case EstadoPedido.pendiente:
-        return 'pendiente';
-      case EstadoPedido.aceptado:
-        return 'aceptado';
-      case EstadoPedido.encamino:
-        return 'en_camino';
-      case EstadoPedido.entregado:
-        return 'entregado';
-      case EstadoPedido.cancelado:
-        return 'cancelado';
-    }
+  static DeliveryMethod fromString(String value) {
+    return DeliveryMethod.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => DeliveryMethod.delivery,
+    );
   }
 
-  static EstadoPedido fromString(String value) {
-    switch (value) {
-      case 'aceptado':
-        return EstadoPedido.aceptado;
-      case 'en_camino':
-        return EstadoPedido.encamino;
-      case 'entregado':
-        return EstadoPedido.entregado;
-      case 'cancelado':
-        return EstadoPedido.cancelado;
-      case 'pendiente':
-      default:
-        return EstadoPedido.pendiente;
-    }
-  }
-}
-
-enum MetodoEntrega { delivery, pickup }
-
-extension MetodoEntregaExtension on MetodoEntrega {
-  String get value {
-    switch (this) {
-      case MetodoEntrega.delivery:
-        return 'delivery';
-      case MetodoEntrega.pickup:
-        return 'pickup';
-    }
-  }
-
-  static MetodoEntrega fromString(String value) {
-    switch (value) {
-      case 'pickup':
-        return MetodoEntrega.pickup;
-      case 'delivery':
-      default:
-        return MetodoEntrega.delivery;
-    }
-  }
+  String toShortString() => name;
 }

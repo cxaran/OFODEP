@@ -1,22 +1,21 @@
-class UserModel {
-  final String id;
+import 'package:ofodep/models/abstract_model.dart';
+
+class UserModel extends ModelComponent {
   final String authId;
   String name;
   String email;
   String phone;
   bool admin;
-  DateTime createdAt;
-  DateTime updatedAt;
 
   UserModel({
-    required this.id,
+    required super.id,
     required this.authId,
     required this.name,
     required this.email,
     required this.phone,
     required this.admin,
-    required this.createdAt,
-    required this.updatedAt,
+    super.createdAt,
+    super.updatedAt,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -27,8 +26,52 @@ class UserModel {
       email: map['email'].toString(),
       phone: map['phone'].toString(),
       admin: map['admin'] as bool? ?? false,
-      createdAt: DateTime.parse(map['created_at']),
-      updatedAt: DateTime.parse(map['updated_at']),
+      createdAt: DateTime.tryParse(map['created_at'] ?? ''),
+      updatedAt: DateTime.tryParse(map['updated_at'] ?? ''),
     );
   }
+
+  @override
+  Map<String, dynamic> toMap({
+    bool includeId = true,
+  }) =>
+      {
+        if (includeId) 'id': id,
+        'auth_id': authId,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'admin': admin,
+      };
+
+  @override
+  UserModel copyWith({
+    String? name,
+    String? email,
+    String? phone,
+    bool? admin,
+  }) {
+    return UserModel(
+      id: id,
+      authId: authId,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      admin: admin ?? this.admin,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
+  @override
+  String toString() => 'UserModel('
+      'id: $id, '
+      'authId: $authId, '
+      'name: $name, '
+      'email: $email, '
+      'phone: $phone, '
+      'admin: $admin, '
+      'createdAt: $createdAt, '
+      'updatedAt: $updatedAt'
+      ')';
 }
