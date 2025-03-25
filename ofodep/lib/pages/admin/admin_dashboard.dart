@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ofodep/blocs/curd_cubits/session_cubit.dart';
+import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/pages/error_page.dart';
 
 class AdminDashboardPage extends StatelessWidget {

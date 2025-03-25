@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/product_cubit.dart';
+import 'package:ofodep/pages/admin/product/product_configuration_page.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/product_model.dart';
 
@@ -74,6 +75,9 @@ class ProductPage extends StatelessWidget {
                         Text("Precio: ${state.model.price}"),
                         Text("Categoría: ${state.model.category}"),
                         Text("Etiquetas: ${state.model.tags}"),
+                        AdminProductConfigurationsPage(
+                          productId: state.model.id,
+                        ),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () =>

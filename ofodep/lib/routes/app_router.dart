@@ -1,25 +1,24 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ofodep/blocs/curd_cubits/session_cubit.dart';
+import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/pages/admin/admin_store_admins.dart';
-import 'package:ofodep/pages/admin/admin_store_schedule_exceptions.dart';
-import 'package:ofodep/pages/admin/admin_store_schedules.dart';
-import 'package:ofodep/pages/admin/admin_store_subscriptions.dart';
-import 'package:ofodep/pages/admin/admin_stores.dart';
+import 'package:ofodep/pages/admin/store_schedule_exception/admin_store_schedule_exceptions.dart';
+import 'package:ofodep/pages/admin/store_schedule/admin_store_schedules.dart';
+import 'package:ofodep/pages/admin/store_subscriptions/admin_store_subscriptions.dart';
+import 'package:ofodep/pages/admin/store/admin_stores.dart';
 import 'package:ofodep/pages/admin/admin_dashboard.dart';
-import 'package:ofodep/pages/admin/admin_orders.dart';
-import 'package:ofodep/pages/admin/admin_products.dart';
-import 'package:ofodep/pages/admin/admin_users.dart';
+import 'package:ofodep/pages/admin/order/admin_orders.dart';
+import 'package:ofodep/pages/admin/product/admin_products.dart';
+import 'package:ofodep/pages/admin/user/admin_users.dart';
 import 'package:ofodep/pages/auth/login_page.dart';
-import 'package:ofodep/pages/product/product_page.dart';
-import 'package:ofodep/pages/store/store_page.dart';
+import 'package:ofodep/pages/admin/product/product_page.dart';
+import 'package:ofodep/pages/admin/store/store_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
-import 'package:ofodep/pages/store_schedule/store_schedule_page.dart';
-import 'package:ofodep/pages/store_schedule_exception/store_schedule_exception_page.dart';
-import 'package:ofodep/pages/store_subscriptions/store_subscriptions_page.dart';
-import 'package:ofodep/pages/user/user_page.dart';
+import 'package:ofodep/pages/admin/store_schedule/store_schedule_page.dart';
+import 'package:ofodep/pages/admin/store_schedule_exception/store_schedule_exception_page.dart';
+import 'package:ofodep/pages/admin/store_subscriptions/store_subscriptions_page.dart';
+import 'package:ofodep/pages/admin/user/user_page.dart';
 
 /// Envuelve el SessionCubit en un ChangeNotifier para que go_router se actualice
 class SessionNotifier extends ChangeNotifier {
