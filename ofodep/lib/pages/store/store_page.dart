@@ -135,6 +135,11 @@ class StorePage extends StatelessWidget {
             title: const Text('Orders'),
             onTap: () => context.push('/admin/orders?store=${store.id}'),
           ),
+          const Divider(),
+          ListTile(
+            title: const Text('Subscription'),
+            onTap: () => context.push('/admin/subscription/${store.id}'),
+          ),
         ],
       );
     }
@@ -248,6 +253,14 @@ class StorePage extends StatelessWidget {
               ? const CircularProgressIndicator()
               : const Text("Save"),
         ),
+        ElevatedButton(
+          onPressed: state.isSubmitting
+              ? null
+              : () => context.read<StoreCubit>().cancelEditing(),
+          child: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Cancel"),
+        ),
       ],
     );
   }
@@ -289,6 +302,14 @@ class StorePage extends StatelessWidget {
               ? const CircularProgressIndicator()
               : const Text("Save"),
         ),
+        ElevatedButton(
+          onPressed: state.isSubmitting
+              ? null
+              : () => context.read<StoreCubit>().cancelEditing(),
+          child: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Cancel"),
+        ),
       ],
     );
   }
@@ -323,6 +344,14 @@ class StorePage extends StatelessWidget {
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Save"),
+        ),
+        ElevatedButton(
+          onPressed: state.isSubmitting
+              ? null
+              : () => context.read<StoreCubit>().cancelEditing(),
+          child: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Cancel"),
         ),
       ],
     );
@@ -382,6 +411,14 @@ class StorePage extends StatelessWidget {
               ? const CircularProgressIndicator()
               : const Text("Save"),
         ),
+        ElevatedButton(
+          onPressed: state.isSubmitting
+              ? null
+              : () => context.read<StoreCubit>().cancelEditing(),
+          child: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Cancel"),
+        ),
       ],
     );
   }
@@ -415,6 +452,14 @@ class StorePage extends StatelessWidget {
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Save"),
+        ),
+        ElevatedButton(
+          onPressed: state.isSubmitting
+              ? null
+              : () => context.read<StoreCubit>().cancelEditing(),
+          child: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Cancel"),
         ),
       ],
     );

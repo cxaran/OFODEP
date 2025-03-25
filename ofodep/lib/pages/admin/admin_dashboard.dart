@@ -27,6 +27,10 @@ class AdminDashboardPage extends StatelessWidget {
                   child: const Text('stores'),
                 ),
                 ElevatedButton(
+                  onPressed: () => context.push('/admin/subscriptions'),
+                  child: const Text('subscriptions'),
+                ),
+                ElevatedButton(
                   onPressed: () => context.push('/admin/products'),
                   child: const Text('products'),
                 ),

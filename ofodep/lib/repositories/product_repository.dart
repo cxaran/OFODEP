@@ -25,6 +25,8 @@ class ProductRepository extends Repository<ProductModel> {
   }) async =>
       super.getById(
         id,
+        select: select,
+        field: field,
       );
 
   /// Obtiene una lista paginada de productos, con la posibilidad de filtrar por store y búsqueda textual

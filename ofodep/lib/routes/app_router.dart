@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/session_cubit.dart';
+import 'package:ofodep/pages/admin/admin_store_subscriptions.dart';
 import 'package:ofodep/pages/admin/admin_stores.dart';
 import 'package:ofodep/pages/admin/admin_dashboard.dart';
 import 'package:ofodep/pages/admin/admin_orders.dart';
@@ -13,6 +14,7 @@ import 'package:ofodep/pages/auth/login_page.dart';
 import 'package:ofodep/pages/product/product_page.dart';
 import 'package:ofodep/pages/store/store_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
+import 'package:ofodep/pages/store_subscriptions/store_subscriptions_page.dart';
 import 'package:ofodep/pages/user/user_page.dart';
 
 /// Envuelve el SessionCubit en un ChangeNotifier para que go_router se actualice
@@ -106,6 +108,16 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           GoRoute(
             path: '/products/:storeId',
             builder: (context, state) => AdminProductsPage(
+              storeId: state.pathParameters['storeId'],
+            ),
+          ),
+          GoRoute(
+            path: '/subscriptions',
+            builder: (context, state) => const AdminStoreSubscriptionsPage(),
+          ),
+          GoRoute(
+            path: '/subscription/:storeId',
+            builder: (context, state) => StoreSubscriptionsPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),

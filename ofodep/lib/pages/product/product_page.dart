@@ -20,7 +20,7 @@ class ProductPage extends StatelessWidget {
         builder: (context) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Editar Producto'),
+              title: const Text('product'),
               actions: [
                 BlocBuilder<ProductCubit, CrudState<ProductModel>>(
                   builder: (context, state) {
@@ -215,7 +215,7 @@ class ProductPage extends StatelessWidget {
                               : const Text("Guardar"),
                         ),
                         ElevatedButton(
-                          onPressed: state.isSubmitting || !state.editMode
+                          onPressed: state.isSubmitting
                               ? null
                               : () =>
                                   context.read<ProductCubit>().cancelEditing(),

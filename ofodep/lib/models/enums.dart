@@ -1,7 +1,10 @@
 enum SubscriptionType {
-  general,
-  special,
-  premium;
+  general('general'),
+  special('special'),
+  premium('premium');
+
+  const SubscriptionType(this.description);
+  final String description;
 
   static SubscriptionType fromString(String value) {
     return SubscriptionType.values.firstWhere(

@@ -52,7 +52,6 @@ class ProductModel extends ModelComponent {
       {
         if (includeId) 'id': id,
         'store_id': storeId,
-        'stores': {'name': storeName},
         'name': name,
         'description': description,
         'image_url': imageUrl,

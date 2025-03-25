@@ -1,23 +1,22 @@
-import 'package:ofodep/models/store_subscriptions.dart';
+import 'package:ofodep/models/order_model.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
-class StoreSubscriptionsRepository extends Repository<StoreSubscriptionModel> {
+class OrderRepository extends Repository<OrderModel> {
   @override
-  String get tableName => 'store_subscriptions';
+  String get tableName => 'orders';
 
   @override
-  List<String> searchColumns = ['store_name'];
+  List<String> searchColumns = ['customer_name'];
 
   @override
-  StoreSubscriptionModel fromMap(Map<String, dynamic> map) =>
-      StoreSubscriptionModel.fromMap(map);
+  OrderModel fromMap(Map<String, dynamic> map) => OrderModel.fromMap(map);
 
   @override
-  Future<StoreSubscriptionModel?> getById(
+  Future<OrderModel?> getById(
     String id, {
-    String select = '*, stores(name)',
+    String select = '*, store(name)',
     String field = 'id',
-  }) =>
+  }) async =>
       super.getById(
         id,
         select: select,
@@ -25,7 +24,7 @@ class StoreSubscriptionsRepository extends Repository<StoreSubscriptionModel> {
       );
 
   @override
-  Future<List<StoreSubscriptionModel>> getPaginated({
+  Future<List<OrderModel>> getPaginated({
     int page = 1,
     int limit = 20,
     Map<String, dynamic>? filter,
@@ -33,7 +32,7 @@ class StoreSubscriptionsRepository extends Repository<StoreSubscriptionModel> {
     List<String>? searchColumns,
     String? orderBy,
     bool ascending = false,
-    String select = '*, stores(name)',
+    String select = '*, store(name)',
   }) async =>
       super.getPaginated(
         page: page,
