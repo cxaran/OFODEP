@@ -10,50 +10,22 @@ class UserRepository extends Repository<UserModel> {
   String get tableName => 'users';
 
   @override
-  UserModel fromMap(Map<String, dynamic> map) {
-    return UserModel.fromMap(map);
-  }
+  List<String> searchColumns = ['name', 'email', 'phone'];
+
+  @override
+  UserModel fromMap(Map<String, dynamic> map) => UserModel.fromMap(map);
 
   /// Obtiene el usuario desde la tabla 'users' filtrando por el auth_id.
   /// [userId] es el auth_id que se utiliza para la búsqueda.
   @override
-  Future<UserModel?> getById(String userId) async {
-    try {
-      final data = await client
-          .from(tableName)
-          .select()
-          .eq('auth_id', userId)
-          .maybeSingle();
-
-      if (data == null) return null;
-      return fromMap(data);
-    } catch (e) {
-      throw Exception('error(getById): $e');
-    }
-  }
-
-  /// Obtiene una lista paginada de usuarios, aplicando búsqueda textual en las columnas
-  /// name, email y phone (si no se especifican otras columnas en [searchColumns]).
-  @override
-  Future<List<UserModel>> getPaginated({
-    int page = 1,
-    int limit = 20,
-    Map<String, dynamic>? filter,
-    String? search,
-    List<String>? searchColumns,
-    String? orderBy,
-    bool ascending = false,
-  }) async {
-    // Si no se proveen columnas para la búsqueda, se utilizan por defecto.
-    final columns = searchColumns ?? ['name', 'email', 'phone'];
-    return super.getPaginated(
-      page: page,
-      limit: limit,
-      filter: filter,
-      search: search,
-      searchColumns: columns,
-      orderBy: orderBy,
-      ascending: ascending,
-    );
-  }
+  Future<UserModel?> getById(
+    String userId, {
+    String select = '*',
+    String field = 'auth_id',
+  }) =>
+      super.getById(
+        userId,
+        select: select,
+        field: field,
+      );
 }

@@ -5,6 +5,9 @@ abstract class Repository<T extends ModelComponent> {
   /// Nombre de la tabla en Supabase.
   String get tableName;
 
+  /// Lista de columnas para busqueda textual.
+  List<String> get searchColumns => ['name'];
+
   /// Función que convierte un Map en una instancia de [T].
   T fromMap(Map<String, dynamic> map);
 
@@ -13,13 +16,17 @@ abstract class Repository<T extends ModelComponent> {
 
   /// Obtiene una instancia del modelo por su ID único.
   /// [id] ID de la instancia a buscar.
-  Future<T?> getById(String id) async {
+  Future<T?> getById(
+    String id, {
+    String select = '*',
+    String field = 'id',
+  }) async {
     try {
       final data = await client
           .from(tableName)
-          .select()
+          .select(select)
           .eq(
-            'id',
+            field,
             id,
           )
           .maybeSingle();
@@ -104,10 +111,11 @@ abstract class Repository<T extends ModelComponent> {
     List<String>? searchColumns,
     String? orderBy,
     bool ascending = false,
+    String select = '*',
   }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-          client.from(tableName).select('*');
+          client.from(tableName).select(select);
 
       // Aplicar filtros personalizados
       if (filter != null) {
@@ -127,7 +135,7 @@ abstract class Repository<T extends ModelComponent> {
       // Búsqueda textual flexible: se pueden especificar una o más columnas
       if (search != null && search.isNotEmpty) {
         // Si no se provee, se utiliza 'name' por defecto.
-        final columns = searchColumns ?? ['name'];
+        final columns = searchColumns ?? this.searchColumns;
         // Se genera una cadena de búsqueda OR: columna1.ilike.%valor%,columna2.ilike.%valor%,...
         final searchFilter =
             columns.map((col) => "$col.ilike.%$search%").join(',');
