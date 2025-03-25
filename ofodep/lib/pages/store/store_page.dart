@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ofodep/blocs/abstract_curd_cubit.dart';
-import 'package:ofodep/blocs/store_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/store_cubit.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/store_model.dart';
 
@@ -124,7 +124,11 @@ class StorePage extends StatelessWidget {
           const Divider(),
           ListTile(
             title: const Text('Schedules'),
-            onTap: () => context.push('/admin/schedule/${store.id}'),
+            onTap: () => context.push('/admin/schedules/${store.id}'),
+          ),
+          ListTile(
+            title: const Text('Schedule Exceptions'),
+            onTap: () => context.push('/admin/schedule_exceptions/${store.id}'),
           ),
           ListTile(
             title: const Text('Products'),
@@ -139,6 +143,10 @@ class StorePage extends StatelessWidget {
           ListTile(
             title: const Text('Subscription'),
             onTap: () => context.push('/admin/subscription/${store.id}'),
+          ),
+          ListTile(
+            title: const Text('Store Admins'),
+            onTap: () => context.push('/admin/store_admins/${store.id}'),
           ),
         ],
       );

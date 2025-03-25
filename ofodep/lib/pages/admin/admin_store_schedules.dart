@@ -3,46 +3,56 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
-import 'package:ofodep/blocs/list_cubits/store_subscriptions_list_cubit.dart';
-import 'package:ofodep/models/store_subscription_model.dart';
+import 'package:ofodep/blocs/list_cubits/store_schedules_list_cubit.dart';
+import 'package:ofodep/models/store_schedule_model.dart';
+import 'package:ofodep/pages/error_page.dart';
 
-class AdminStoreSubscriptionsPage extends StatefulWidget {
-  const AdminStoreSubscriptionsPage({super.key});
+class AdminStoreSchedulesPage extends StatefulWidget {
+  final String? storeId;
+  const AdminStoreSchedulesPage({
+    super.key,
+    this.storeId,
+  });
 
   @override
-  State<AdminStoreSubscriptionsPage> createState() =>
-      _AdminStoreSubscriptionsPageState();
+  State<AdminStoreSchedulesPage> createState() =>
+      _AdminStoreSchedulesPageState();
 }
 
-class _AdminStoreSubscriptionsPageState
-    extends State<AdminStoreSubscriptionsPage> {
+class _AdminStoreSchedulesPageState extends State<AdminStoreSchedulesPage> {
   String? _selectedOrder;
   bool _ascending = false;
   DateTime? _createdAtGte;
   DateTime? _createdAtLte;
 
-  /// Builds and updates the combined filter.
+  // Este método arma el mapa de filtros combinando los valores actuales.
   void updateFilters() {
     Map<String, dynamic> filter = {};
+
     if (_createdAtGte != null) {
       filter['created_at_gte'] = _createdAtGte!.toIso8601String();
     }
     if (_createdAtLte != null) {
       filter['created_at_lte'] = _createdAtLte!.toIso8601String();
     }
+    // Si no hay ningún filtro, se envía null
     context
-        .read<StoreSubscriptionsListCubit>()
+        .read<StoreSchedulesListCubit>()
         .updateFilter(filter.isEmpty ? null : filter);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<StoreSubscriptionsListCubit>(
-      create: (context) => StoreSubscriptionsListCubit(),
+    if (widget.storeId == null) {
+      return const ErrorPage();
+    }
+
+    return BlocProvider<StoreSchedulesListCubit>(
+      create: (context) => StoreSchedulesListCubit(storeId: widget.storeId!),
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text('subscriptions'),
+            title: const Text('schedules'),
           ),
           body: Column(
             children: [
@@ -58,7 +68,7 @@ class _AdminStoreSubscriptionsPageState
                     ),
                     onChanged: (value) {
                       context
-                          .read<StoreSubscriptionsListCubit>()
+                          .read<StoreSchedulesListCubit>()
                           .updateSearch(value);
                     },
                   ),
@@ -82,17 +92,13 @@ class _AdminStoreSubscriptionsPageState
                               value: 'updated_at',
                               child: Text('updated_at'),
                             ),
-                            DropdownMenuItem(
-                              value: 'subscription_type',
-                              child: Text('subscription_type'),
-                            ),
                           ],
                           onChanged: (value) {
                             setState(() {
                               _selectedOrder = value;
                             });
                             context
-                                .read<StoreSubscriptionsListCubit>()
+                                .read<StoreSchedulesListCubit>()
                                 .updateOrdering(
                                   orderBy: value,
                                   ascending: _ascending,
@@ -111,7 +117,7 @@ class _AdminStoreSubscriptionsPageState
                                 _ascending = value;
                               });
                               context
-                                  .read<StoreSubscriptionsListCubit>()
+                                  .read<StoreSchedulesListCubit>()
                                   .updateOrdering(
                                     orderBy: _selectedOrder,
                                     ascending: _ascending,
@@ -175,8 +181,8 @@ class _AdminStoreSubscriptionsPageState
 
               // Lista de usuarios con scroll infinito.
               Expanded(
-                child: BlocConsumer<StoreSubscriptionsListCubit,
-                    BasicListFilterState>(
+                child:
+                    BlocConsumer<StoreSchedulesListCubit, BasicListFilterState>(
                   listener: (context, state) {
                     if (state.errorMessage != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -185,31 +191,24 @@ class _AdminStoreSubscriptionsPageState
                     }
                   },
                   builder: (context, state) {
-                    final cubit = context.read<StoreSubscriptionsListCubit>();
+                    final cubit = context.read<StoreSchedulesListCubit>();
                     return RefreshIndicator(
                       onRefresh: () async => cubit.pagingController.refresh(),
                       child: PagingListener(
                         controller: cubit.pagingController,
                         builder: (context, state, fetchNextPage) =>
-                            PagedListView<int, StoreSubscriptionModel>(
+                            PagedListView<int, StoreScheduleModel>(
                           state: state,
                           fetchNextPage: fetchNextPage,
                           builderDelegate:
-                              PagedChildBuilderDelegate<StoreSubscriptionModel>(
-                            itemBuilder: (context, subscription, index) =>
-                                ListTile(
-                              title: Text(subscription.storeName),
+                              PagedChildBuilderDelegate<StoreScheduleModel>(
+                            itemBuilder: (context, schedule, index) => ListTile(
+                              title: Text(schedule.days.toString()),
                               subtitle: Text(
-                                subscription.subscriptionType.description,
+                                '${schedule.openingTime} - ${schedule.closingTime}',
                               ),
-                              trailing: Text(
-                                subscription.expirationDate
-                                    .toLocal()
-                                    .toString(),
-                              ),
-                              onTap: () => context.push(
-                                '/admin/subscription/${subscription.storeId}',
-                              ),
+                              onTap: () => context
+                                  .push('/admin/schedule/${schedule.id}'),
                             ),
                             firstPageErrorIndicatorBuilder: (context) => Center(
                               child: Column(

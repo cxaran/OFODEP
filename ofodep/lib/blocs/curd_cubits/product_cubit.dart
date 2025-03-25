@@ -1,4 +1,4 @@
-import 'package:ofodep/blocs/abstract_curd_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/repositories/product_repository.dart';
 

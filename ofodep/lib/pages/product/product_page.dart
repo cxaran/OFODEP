@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ofodep/blocs/abstract_curd_cubit.dart';
-import 'package:ofodep/blocs/product_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/product_cubit.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/product_model.dart';
 

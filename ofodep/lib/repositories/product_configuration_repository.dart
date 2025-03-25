@@ -10,17 +10,4 @@ class ProductConfigurationRepository
   ProductConfigurationModel fromMap(Map<String, dynamic> map) {
     return ProductConfigurationModel.fromMap(map);
   }
-
-  /// Obtiene una lista de configuraciones para un producto específico.
-  /// [productId] es el ID del producto cuyos configurations se desean obtener.
-  Future<List<ProductConfigurationModel>> getByProductId(
-      String productId) async {
-    try {
-      final response =
-          await client.from(tableName).select('*').eq('product_id', productId);
-      return response.map((data) => fromMap(data)).toList();
-    } catch (e) {
-      throw Exception('error(getByProductId): $e');
-    }
-  }
 }

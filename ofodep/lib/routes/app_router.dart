@@ -2,18 +2,22 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ofodep/blocs/session_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/session_cubit.dart';
+import 'package:ofodep/pages/admin/admin_store_admins.dart';
+import 'package:ofodep/pages/admin/admin_store_schedule_exceptions.dart';
+import 'package:ofodep/pages/admin/admin_store_schedules.dart';
 import 'package:ofodep/pages/admin/admin_store_subscriptions.dart';
 import 'package:ofodep/pages/admin/admin_stores.dart';
 import 'package:ofodep/pages/admin/admin_dashboard.dart';
 import 'package:ofodep/pages/admin/admin_orders.dart';
 import 'package:ofodep/pages/admin/admin_products.dart';
-import 'package:ofodep/pages/admin/admin_schedule.dart';
 import 'package:ofodep/pages/admin/admin_users.dart';
 import 'package:ofodep/pages/auth/login_page.dart';
 import 'package:ofodep/pages/product/product_page.dart';
 import 'package:ofodep/pages/store/store_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
+import 'package:ofodep/pages/store_schedule/store_schedule_page.dart';
+import 'package:ofodep/pages/store_schedule_exception/store_schedule_exception_page.dart';
 import 'package:ofodep/pages/store_subscriptions/store_subscriptions_page.dart';
 import 'package:ofodep/pages/user/user_page.dart';
 
@@ -102,6 +106,16 @@ GoRouter createRouter(SessionCubit sessionCubit) {
             ),
           ),
           GoRoute(
+            path: '/store_admins',
+            builder: (context, state) => const AdminStoreAdminsPage(),
+          ),
+          GoRoute(
+            path: '/store_admins/:storeId',
+            builder: (context, state) => AdminStoreAdminsPage(
+              storeId: state.pathParameters['storeId'],
+            ),
+          ),
+          GoRoute(
             path: '/products',
             builder: (context, state) => const AdminProductsPage(),
           ),
@@ -128,9 +142,27 @@ GoRouter createRouter(SessionCubit sessionCubit) {
             ),
           ),
           GoRoute(
-            path: '/schedule/:storeId',
-            builder: (context, state) => AdminSchedulePage(
+            path: '/schedules/:storeId',
+            builder: (context, state) => AdminStoreSchedulesPage(
               storeId: state.pathParameters['storeId'],
+            ),
+          ),
+          GoRoute(
+            path: '/schedule/:scheduleId',
+            builder: (context, state) => StoreSchedulePage(
+              scheduleId: state.pathParameters['scheduleId'],
+            ),
+          ),
+          GoRoute(
+            path: '/schedule_exceptions/:storeId',
+            builder: (context, state) => AdminStoreScheduleExceptionsPage(
+              storeId: state.pathParameters['storeId'],
+            ),
+          ),
+          GoRoute(
+            path: '/schedule_exception/:scheduleId',
+            builder: (context, state) => StoreScheduleExceptionPage(
+              scheduleId: state.pathParameters['scheduleId'],
             ),
           ),
           GoRoute(

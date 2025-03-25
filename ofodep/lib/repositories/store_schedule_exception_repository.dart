@@ -1,4 +1,4 @@
-import 'package:ofodep/models/store_schedule_exceptions_model.dart';
+import 'package:ofodep/models/store_schedule_exception_model.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
 class StoreScheduleExceptionRepository

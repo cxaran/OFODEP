@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/config/supabase_config.dart';
-import 'blocs/session_cubit.dart';
+import 'blocs/curd_cubits/session_cubit.dart';
 import 'routes/app_router.dart';
 
 void main() async {

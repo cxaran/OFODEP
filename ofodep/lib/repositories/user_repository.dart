@@ -13,19 +13,8 @@ class UserRepository extends Repository<UserModel> {
   List<String> searchColumns = ['name', 'email', 'phone'];
 
   @override
-  UserModel fromMap(Map<String, dynamic> map) => UserModel.fromMap(map);
+  String get fieldId => 'auth_id';
 
-  /// Obtiene el usuario desde la tabla 'users' filtrando por el auth_id.
-  /// [userId] es el auth_id que se utiliza para la búsqueda.
   @override
-  Future<UserModel?> getById(
-    String userId, {
-    String select = '*',
-    String field = 'auth_id',
-  }) =>
-      super.getById(
-        userId,
-        select: select,
-        field: field,
-      );
+  UserModel fromMap(Map<String, dynamic> map) => UserModel.fromMap(map);
 }

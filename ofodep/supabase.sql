@@ -901,6 +901,19 @@ USING (
     )
 );
 
+CREATE POLICY public_read_store_admins ON store_admins
+FOR SELECT
+USING (true);
+
+CREATE POLICY modify_store_admins ON store_admins
+FOR ALL
+USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      WHERE u.auth_id = auth.uid() AND u.admin = true
+    )
+);
+
 ---------------------------------------------------------------------
 -- Tablas de PRODUCTS y CONFIGURATIONS
 

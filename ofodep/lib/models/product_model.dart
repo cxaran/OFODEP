@@ -1,5 +1,4 @@
 import 'package:ofodep/models/abstract_model.dart';
-import 'package:ofodep/models/product_configuration_model.dart';
 
 class ProductModel extends ModelComponent {
   final String storeId;
@@ -10,8 +9,6 @@ class ProductModel extends ModelComponent {
   num? price;
   String? category;
   List<String>? tags;
-
-  List<ProductConfigurationModel> configurations;
 
   ProductModel({
     required super.id,
@@ -25,7 +22,6 @@ class ProductModel extends ModelComponent {
     this.tags,
     super.createdAt,
     super.updatedAt,
-    this.configurations = const [],
   });
 
   @override
@@ -68,7 +64,6 @@ class ProductModel extends ModelComponent {
     num? price,
     String? category,
     List<String>? tags,
-    List<ProductConfigurationModel>? configurations,
   }) {
     return ProductModel(
       id: id,
@@ -82,7 +77,6 @@ class ProductModel extends ModelComponent {
       tags: tags ?? this.tags,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      configurations: configurations ?? this.configurations,
     );
   }
 
@@ -99,6 +93,5 @@ class ProductModel extends ModelComponent {
       'tags: $tags, '
       'createdAt: $createdAt, '
       'updatedAt: $updatedAt, '
-      'configurations: $configurations'
       ')';
 }

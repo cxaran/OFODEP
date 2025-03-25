@@ -8,6 +8,12 @@ abstract class Repository<T extends ModelComponent> {
   /// Lista de columnas para busqueda textual.
   List<String> get searchColumns => ['name'];
 
+  /// Select from supabase.
+  String get select => '*';
+
+  /// Field id for get.
+  String get fieldId => 'id';
+
   /// Función que convierte un Map en una instancia de [T].
   T fromMap(Map<String, dynamic> map);
 
@@ -18,15 +24,15 @@ abstract class Repository<T extends ModelComponent> {
   /// [id] ID de la instancia a buscar.
   Future<T?> getById(
     String id, {
-    String select = '*',
-    String field = 'id',
+    String? select,
+    String? field,
   }) async {
     try {
       final data = await client
           .from(tableName)
-          .select(select)
+          .select(select ?? this.select)
           .eq(
-            field,
+            field ?? this.fieldId,
             id,
           )
           .maybeSingle();
@@ -78,6 +84,16 @@ abstract class Repository<T extends ModelComponent> {
     }
   }
 
+  Future<List<T>> find(String field, dynamic value) async {
+    try {
+      final response =
+          await client.from(tableName).select(select).eq(field, value);
+      return response.map((data) => fromMap(data)).toList();
+    } catch (e) {
+      throw Exception('error(getByFieldValue): $e');
+    }
+  }
+
   /// Elimina una instancia del modelo por su ID.
   /// Retorna true si la eliminación fue exitosa.
   /// [id] ID de la instancia a eliminar.
@@ -111,11 +127,11 @@ abstract class Repository<T extends ModelComponent> {
     List<String>? searchColumns,
     String? orderBy,
     bool ascending = false,
-    String select = '*',
+    String? select,
   }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-          client.from(tableName).select(select);
+          client.from(tableName).select(select ?? this.select);
 
       // Aplicar filtros personalizados
       if (filter != null) {

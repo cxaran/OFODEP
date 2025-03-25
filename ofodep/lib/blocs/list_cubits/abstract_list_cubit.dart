@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/models/abstract_model.dart';
-import 'package:ofodep/blocs/catalogs/filter_state.dart';
+import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
 abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>

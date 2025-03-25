@@ -1,7 +1,7 @@
-import 'package:ofodep/blocs/catalogs/abstract_list_cubit.dart';
+import 'package:ofodep/blocs/list_cubits/abstract_list_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/repositories/product_repository.dart';
-import 'package:ofodep/blocs/catalogs/filter_state.dart';
+import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 
 class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
   String? storeId;
@@ -56,14 +56,18 @@ class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
     String? orderBy,
     bool ascending = false,
   }) {
-    return (super.repository as ProductRepository).getPaginated(
-      storeId: storeId,
+    if (storeId != null) {
+      filter ??= {};
+      filter['store_id'] = storeId;
+    }
+    return repository.getPaginated(
       page: page,
       limit: limit,
       filter: filter,
       search: search,
       orderBy: orderBy,
       ascending: ascending,
+      select: '*, stores(name)',
     );
   }
 }

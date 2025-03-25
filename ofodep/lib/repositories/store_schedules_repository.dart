@@ -1,4 +1,4 @@
-import 'package:ofodep/models/store_schedules_model.dart';
+import 'package:ofodep/models/store_schedule_model.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
 class StoreScheduleRepository extends Repository<StoreScheduleModel> {

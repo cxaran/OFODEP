@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ofodep/blocs/abstract_curd_cubit.dart';
-import 'package:ofodep/blocs/session_cubit.dart';
-import 'package:ofodep/blocs/user_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/session_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/user_cubit.dart';
 import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/pages/error_page.dart';
 

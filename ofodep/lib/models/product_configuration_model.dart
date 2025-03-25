@@ -1,13 +1,10 @@
 import 'package:ofodep/models/abstract_model.dart';
-import 'package:ofodep/models/product_option_model.dart';
 
 class ProductConfigurationModel extends ModelComponent {
   final String productId;
   String name;
   int rangeMin;
   int rangeMax;
-
-  List<ProductOptionModel> options;
 
   ProductConfigurationModel({
     required super.id,
@@ -17,7 +14,6 @@ class ProductConfigurationModel extends ModelComponent {
     required this.rangeMax,
     super.createdAt,
     super.updatedAt,
-    this.options = const [],
   });
 
   @override
@@ -50,7 +46,6 @@ class ProductConfigurationModel extends ModelComponent {
     String? name,
     int? rangeMin,
     int? rangeMax,
-    List<ProductOptionModel>? options,
   }) {
     return ProductConfigurationModel(
       id: id,
@@ -60,7 +55,6 @@ class ProductConfigurationModel extends ModelComponent {
       rangeMax: rangeMax ?? this.rangeMax,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      options: options ?? this.options,
     );
   }
 
@@ -78,6 +72,5 @@ class ProductConfigurationModel extends ModelComponent {
       ': $createdAt, '
       'updatedAt'
       ': $updatedAt, '
-      'options'
-      ': $options)';
+      ')';
 }

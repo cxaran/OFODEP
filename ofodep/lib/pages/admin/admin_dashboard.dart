@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ofodep/blocs/session_cubit.dart';
+import 'package:ofodep/blocs/curd_cubits/session_cubit.dart';
 import 'package:ofodep/pages/error_page.dart';
 
 class AdminDashboardPage extends StatelessWidget {
@@ -29,6 +29,10 @@ class AdminDashboardPage extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () => context.push('/admin/subscriptions'),
                   child: const Text('subscriptions'),
+                ),
+                ElevatedButton(
+                  onPressed: () => context.push('/admin/store_admins'),
+                  child: const Text('store_admins'),
                 ),
                 ElevatedButton(
                   onPressed: () => context.push('/admin/products'),

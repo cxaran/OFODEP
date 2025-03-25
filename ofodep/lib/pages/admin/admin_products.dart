@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:ofodep/blocs/catalogs/filter_state.dart';
-import 'package:ofodep/blocs/catalogs/products_list_cubit.dart';
+import 'package:ofodep/blocs/list_cubits/filter_state.dart';
+import 'package:ofodep/blocs/list_cubits/products_list_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
 
 class AdminProductsPage extends StatefulWidget {
@@ -51,7 +51,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
           body: Column(
             children: [
               // Filtros, search, and ordering section
-              // Filters, search, and sorting section
+
               Column(
                 children: [
                   // Search field (by name or description)
