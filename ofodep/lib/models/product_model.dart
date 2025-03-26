@@ -9,6 +9,7 @@ class ProductModel extends ModelComponent {
   num? price;
   String? category;
   List<String>? tags;
+  List<String>? zipcodes;
 
   ProductModel({
     required super.id,
@@ -20,6 +21,7 @@ class ProductModel extends ModelComponent {
     this.price,
     this.category,
     this.tags,
+    this.zipcodes,
     super.createdAt,
     super.updatedAt,
   });
@@ -36,6 +38,11 @@ class ProductModel extends ModelComponent {
       price: map['price'],
       category: map['category'],
       tags: (map['tags'] as List?)?.map((e) => e.toString()).toList(),
+      zipcodes: (map['stores']?['zipcodes'] as List?)
+          ?.map(
+            (e) => e.toString(),
+          )
+          .toList(),
       createdAt: DateTime.tryParse(map['created_at'] ?? ''),
       updatedAt: DateTime.tryParse(map['updated_at'] ?? ''),
     );

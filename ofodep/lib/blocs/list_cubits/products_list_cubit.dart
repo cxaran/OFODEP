@@ -9,9 +9,10 @@ class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
   ProductsListCubit({
     this.storeId,
     ProductRepository? productRepository,
+    BasicListFilterState? initialState,
     super.limit,
   }) : super(
-          initialState: const BasicListFilterState(),
+          initialState: initialState ?? const BasicListFilterState(),
           repository: productRepository ?? ProductRepository(),
         );
 
@@ -67,7 +68,6 @@ class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
       search: search,
       orderBy: orderBy,
       ascending: ascending,
-      select: '*, stores(name)',
     );
   }
 }

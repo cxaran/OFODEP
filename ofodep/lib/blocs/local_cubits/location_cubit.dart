@@ -148,8 +148,6 @@ class LocationCubit extends Cubit<LocationState> {
         if (data['results'] != null && data['results'].isNotEmpty) {
           final components = data['results'][0]['components'];
 
-          print(components);
-
           if (components['postcode'] == null) {
             return null;
           }

@@ -16,27 +16,27 @@ class AdminDashboardPage extends StatelessWidget {
             appBar: AppBar(
               title: const Text('admin_dashboard'),
             ),
-            body: Column(
+            body: ListView(
               children: [
-                ElevatedButton(
-                  onPressed: () => context.push('/admin/users'),
-                  child: const Text('users'),
+                ListTile(
+                  title: const Text('users'),
+                  onTap: () => context.push('/admin/users'),
                 ),
-                ElevatedButton(
-                  onPressed: () => context.push('/admin/stores'),
-                  child: const Text('stores'),
+                ListTile(
+                  title: const Text('stores'),
+                  onTap: () => context.push('/admin/stores'),
                 ),
-                ElevatedButton(
-                  onPressed: () => context.push('/admin/subscriptions'),
-                  child: const Text('subscriptions'),
+                ListTile(
+                  title: const Text('subscriptions'),
+                  onTap: () => context.push('/admin/subscriptions'),
                 ),
-                ElevatedButton(
-                  onPressed: () => context.push('/admin/store_admins'),
-                  child: const Text('store_admins'),
+                ListTile(
+                  title: const Text('store_admins'),
+                  onTap: () => context.push('/admin/store_admins'),
                 ),
-                ElevatedButton(
-                  onPressed: () => context.push('/admin/products'),
-                  child: const Text('products'),
+                ListTile(
+                  title: const Text('products'),
+                  onTap: () => context.push('/admin/products'),
                 ),
               ],
             ),

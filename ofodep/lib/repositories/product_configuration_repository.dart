@@ -7,7 +7,6 @@ class ProductConfigurationRepository
   String get tableName => 'product_configurations';
 
   @override
-  ProductConfigurationModel fromMap(Map<String, dynamic> map) {
-    return ProductConfigurationModel.fromMap(map);
-  }
+  ProductConfigurationModel fromMap(Map<String, dynamic> map) =>
+      ProductConfigurationModel.fromMap(map);
 }

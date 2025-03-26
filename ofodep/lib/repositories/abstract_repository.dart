@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:ofodep/models/abstract_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,6 +8,9 @@ abstract class Repository<T extends ModelComponent> {
 
   /// Lista de columnas para busqueda textual.
   List<String> get searchColumns => ['name'];
+
+  /// Lista de columnas para busqueda textual en listas.
+  List<String> get arraySearchColumns => ['tags'];
 
   /// Select from supabase.
   String get select => '*';
@@ -111,12 +115,64 @@ abstract class Repository<T extends ModelComponent> {
     }
   }
 
+  PostgrestFilterBuilder<List<Map<String, dynamic>>> getSearch({
+    Map<String, dynamic>? filter,
+    String? search,
+    List<String>? searchColumns,
+    List<String>? arraySearchColumns,
+    String? orderBy,
+    bool ascending = false,
+    String? select,
+  }) {
+    try {
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
+          client.from(tableName).select(select ?? this.select);
+
+      if (filter != null) {
+        debugPrint('Filter: $filter');
+        filter.forEach((k, v) {
+          query = k.endsWith('#gte')
+              ? query.gte(k.replaceAll('#gte', ''), v)
+              : k.endsWith('#lte')
+                  ? query.lte(k.replaceAll('#lte', ''), v)
+                  : k.endsWith('#neq')
+                      ? query.neq(k.replaceAll('#neq', ''), v)
+                      : k.endsWith('#like')
+                          ? query.ilike(k.replaceAll('#like', ''), v)
+                          : k.endsWith('#contains')
+                              ? query.contains(k.replaceAll('#contains', ''), v)
+                              : query.eq(k, v);
+        });
+      }
+
+      // Búsqueda textual flexible: se pueden especificar una o más columnas
+      if (search != null && search.isNotEmpty) {
+        final textColumns = searchColumns ?? this.searchColumns;
+        final arrayColumns = arraySearchColumns ?? this.arraySearchColumns;
+
+        final textFilter =
+            textColumns.map((col) => "$col.ilike.%$search%").join(',');
+        final arrayFilter =
+            arrayColumns.map((col) => "$col.cs.{$search}").join(',');
+
+        // Combina ambas condiciones OR en una sola cadena.
+        final combinedFilter = '$textFilter,$arrayFilter';
+        query = query.or(combinedFilter);
+      }
+
+      return query;
+    } catch (e) {
+      throw Exception('error(getSearch): $e');
+    }
+  }
+
   /// Obtiene una lista paginada de modelos con opciones de filtrado y ordenamiento.
   /// [page] número de página (empezando en 1).
   /// [limit] cantidad de registros por página.
   /// [filter] mapa de filtros aplicables (como fechas o flags).
   /// [search] texto a buscar en los campos.
-  /// [searchColumns] lista de columnas a buscar en.
+  /// [searchColumns] lista de columnas a buscar en el texto.
+  /// [arraySearchColumns] lista de columnas de tipo array a buscar en el texto.
   /// [orderBy] campo por el cual se ordena (ej: 'created_at').
   /// [ascending] orden ascendente si es true, descendente si es false.
   Future<List<T>> getPaginated({
@@ -125,38 +181,20 @@ abstract class Repository<T extends ModelComponent> {
     Map<String, dynamic>? filter,
     String? search,
     List<String>? searchColumns,
+    List<String>? arraySearchColumns,
     String? orderBy,
     bool ascending = false,
     String? select,
   }) async {
     try {
-      PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-          client.from(tableName).select(select ?? this.select);
-
-      // Aplicar filtros personalizados
-      if (filter != null) {
-        filter.forEach((filterKey, value) {
-          if (filterKey.endsWith('_gte')) {
-            query =
-                query.gte(filterKey.substring(0, filterKey.length - 4), value);
-          } else if (filterKey.endsWith('_lte')) {
-            query =
-                query.lte(filterKey.substring(0, filterKey.length - 4), value);
-          } else {
-            query = query.eq(filterKey, value);
-          }
-        });
-      }
-
-      // Búsqueda textual flexible: se pueden especificar una o más columnas
-      if (search != null && search.isNotEmpty) {
-        // Si no se provee, se utiliza 'name' por defecto.
-        final columns = searchColumns ?? this.searchColumns;
-        // Se genera una cadena de búsqueda OR: columna1.ilike.%valor%,columna2.ilike.%valor%,...
-        final searchFilter =
-            columns.map((col) => "$col.ilike.%$search%").join(',');
-        query = query.or(searchFilter);
-      }
+      // Búsqueda y filtros
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query = getSearch(
+        filter: filter,
+        search: search,
+        searchColumns: searchColumns,
+        arraySearchColumns: arraySearchColumns,
+        select: select,
+      );
 
       PostgrestTransformBuilder<List<Map<String, dynamic>>> paginationQuery;
 
@@ -179,6 +217,69 @@ abstract class Repository<T extends ModelComponent> {
           .toList();
     } catch (e) {
       throw Exception('error(getPaginated): $e');
+    }
+  }
+
+  /// Obtiene una lista de modelos de forma aleatoria.
+  /// [page] número de página (empezando en 1).
+  /// [limit] cantidad de registros por página.
+  /// [filter] mapa de filtros aplicables (como fechas o flags).
+  /// [search] texto a buscar en los campos.
+  /// [searchColumns] lista de columnas a buscar en el texto.
+  /// [arraySearchColumns] lista de columnas de tipo array a buscar en el texto.
+  /// [randomSeed] semilla para generar un orden aleatorio pero consistente.
+  /// [select] campos a seleccionar.
+  Future<List<T>> getRandom({
+    int page = 1,
+    int limit = 20,
+    Map<String, dynamic>? filter,
+    String? search,
+    List<String>? searchColumns,
+    List<String>? arraySearchColumns,
+    String? randomSeed,
+    String? select,
+  }) async {
+    try {
+      // Búsqueda y filtros
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query = getSearch(
+        filter: filter,
+        search: search,
+        searchColumns: searchColumns,
+        arraySearchColumns: arraySearchColumns,
+        select: select,
+      );
+
+      // Se verifica que se haya pasado un 'randomSeed'. Si no, se asigna uno por defecto.
+      if (randomSeed == null || randomSeed.isEmpty) {
+        randomSeed = 'default_seed';
+      }
+
+      // Se genera la expresión para obtener un hash MD5 estable por cada registro.
+      // La expresión "md5(id || '$randomSeed')" concatena el campo 'id' del registro con la semilla
+      // y aplica md5 para generar un hash. Este hash se usará para ordenar de forma aleatoria pero
+      // consistente mientras la semilla sea la misma.
+      final randomExpr = "md5(id || '$randomSeed')";
+
+      // Se aplica el ordenamiento usando la expresión generada.
+      // 'ascending: true' ordena de forma ascendente por el hash.
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> paginationQuery =
+          query.order(
+        randomExpr,
+        ascending: true,
+      );
+
+      // Se define el rango de resultados para la paginación.
+      paginationQuery = paginationQuery.range(
+        (page - 1) * limit,
+        (page * limit) - 1,
+      );
+
+      final List<dynamic> response = await paginationQuery;
+      return response
+          .map<T>((data) => fromMap(data as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw Exception('error(getRandom): $e');
     }
   }
 }

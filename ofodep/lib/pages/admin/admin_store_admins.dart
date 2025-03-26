@@ -28,10 +28,10 @@ class _AdminStoreAdminsPageState extends State<AdminStoreAdminsPage> {
     Map<String, dynamic> filter = {};
 
     if (_createdAtGte != null) {
-      filter['created_at_gte'] = _createdAtGte!.toIso8601String();
+      filter['created_at#gte'] = _createdAtGte!.toIso8601String();
     }
     if (_createdAtLte != null) {
-      filter['created_at_lte'] = _createdAtLte!.toIso8601String();
+      filter['created_at#lte'] = _createdAtLte!.toIso8601String();
     }
     // Si no hay ningún filtro, se envía null
     context

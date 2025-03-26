@@ -28,10 +28,10 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
     Map<String, dynamic> filter = {};
 
     if (_createdAtGte != null) {
-      filter['created_at_gte'] = _createdAtGte!.toIso8601String();
+      filter['created_at#gte'] = _createdAtGte!.toIso8601String();
     }
     if (_createdAtLte != null) {
-      filter['created_at_lte'] = _createdAtLte!.toIso8601String();
+      filter['created_at#lte'] = _createdAtLte!.toIso8601String();
     }
     // Si no hay ningún filtro, se envía null
     context
@@ -203,12 +203,16 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                               PagedChildBuilderDelegate<ProductModel>(
                             itemBuilder: (context, product, index) => ListTile(
                               title: Text(product.name),
-                              subtitle: Text('${product.category ?? ''}\n'
-                                  '${widget.storeId == null ? '${product.storeName}\n' : ''}'
-                                  '${product.description ?? ''}'),
+                              subtitle: Text(
+                                '${product.category ?? ''}\n'
+                                '${widget.storeId == null ? '${product.storeName}\n' : ''}'
+                                // '${widget.storeId == null ? '${product.zipcodes?.join(',') ?? ''}\n' : ''}'
+                                '${product.description ?? ''}',
+                              ),
                               trailing: Text(product.price?.toString() ?? ''),
-                              onTap: () =>
-                                  context.push('/admin/product/${product.id}'),
+                              onTap: () => context.push(
+                                '/admin/product/${product.id}',
+                              ),
                             ),
                             firstPageErrorIndicatorBuilder: (context) => Center(
                               child: Column(

@@ -37,7 +37,6 @@ class StoreScheduleExceptionsListCubit
       search: search,
       orderBy: orderBy,
       ascending: ascending,
-      select: '*, stores(name)',
     );
   }
 }

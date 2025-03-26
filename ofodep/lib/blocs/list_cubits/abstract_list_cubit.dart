@@ -31,8 +31,9 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
             ascending: state.ascending,
           );
           if (newItems.isEmpty) {
-            pagingController.value =
-                pagingController.value.copyWith(hasNextPage: false);
+            pagingController.value = pagingController.value.copyWith(
+              hasNextPage: false,
+            );
           }
           return newItems;
         } catch (e) {
