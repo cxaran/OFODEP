@@ -39,7 +39,9 @@ class HomePage extends StatelessWidget {
                         create: (context) => ProductsListCubit(
                           initialState: BasicListFilterState(
                             filter: {
-                              'stores.zipcodes#contains': [state.zipCode],
+                              'stores.zipcodes#contains': [
+                                state.location.zipCode,
+                              ],
                             },
                           ),
                         ),
