@@ -43,11 +43,12 @@ class LocationCubit extends Cubit<LocationState> {
 
   LocationCubit({LocationRepository? repository})
       : repository = repository ?? LocationRepository(),
-        super(LocationInitial());
+        super(LocationInitial()) {
+    getCurrentLocation();
+  }
 
   /// Obtiene la ubicación actual del usuario.
   /// Se intenta primero mediante GPS y, en caso de error, se usa el fallback por IP.
-
   Future<void> getCurrentLocation() async {
     emit(LocationLoading());
     try {
@@ -72,7 +73,7 @@ class LocationCubit extends Cubit<LocationState> {
         longitude: position.longitude,
       );
 
-      if (location == null || location.zipCode.isEmpty) {
+      if (location == null) {
         throw Exception("No se pudo obtener ubicación válida");
       }
 
@@ -97,8 +98,12 @@ class LocationCubit extends Cubit<LocationState> {
     String? city,
     String? state_,
     String? country,
+    String? countryCode,
   }) async {
-    if (zipCode != null && zipCode.isNotEmpty) {
+    if (zipCode != null &&
+        zipCode.isNotEmpty &&
+        countryCode != null &&
+        countryCode.isNotEmpty) {
       emit(
         LocationLoaded(
           location: LocationModel(
@@ -109,6 +114,7 @@ class LocationCubit extends Cubit<LocationState> {
             city: city,
             state: state_,
             country: country,
+            countryCode: countryCode,
           ),
         ),
       );
@@ -121,7 +127,7 @@ class LocationCubit extends Cubit<LocationState> {
         longitude: longitude,
       );
 
-      if (location == null || location.zipCode.isEmpty) {
+      if (location == null) {
         _emitWithError("error_location_not_found");
       } else {
         emit(LocationLoaded(location: location));

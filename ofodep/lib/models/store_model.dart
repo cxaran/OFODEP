@@ -19,6 +19,7 @@ class StoreModel extends ModelComponent {
   num? lng;
 
   // List of store zipcodes
+  String? countryCode;
   List<String>? zipcodes;
 
   // Delivery parameters
@@ -43,6 +44,7 @@ class StoreModel extends ModelComponent {
     this.addressState,
     this.lat,
     this.lng,
+    this.countryCode,
     this.zipcodes,
     this.whatsapp,
     this.deliveryMinimumOrder,
@@ -69,6 +71,7 @@ class StoreModel extends ModelComponent {
       addressState: map['address_state'] as String?,
       lat: map['lat'],
       lng: map['lng'],
+      countryCode: map['country_code'] as String?,
       zipcodes: (map['zipcodes'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList(),
@@ -100,6 +103,7 @@ class StoreModel extends ModelComponent {
         'address_state': addressState,
         'lat': lat,
         'lng': lng,
+        'country_code': countryCode,
         'zipcodes': zipcodes,
         'whatsapp': whatsapp,
         'delivery_minimum_order': deliveryMinimumOrder,
@@ -122,6 +126,7 @@ class StoreModel extends ModelComponent {
     String? addressState,
     num? lat,
     num? lng,
+    String? countryCode,
     List<String>? zipcodes,
     String? whatsapp,
     num? deliveryMinimumOrder,
@@ -143,6 +148,7 @@ class StoreModel extends ModelComponent {
       addressState: addressState ?? this.addressState,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
+      countryCode: countryCode ?? this.countryCode,
       zipcodes: zipcodes ?? this.zipcodes,
       whatsapp: whatsapp ?? this.whatsapp,
       deliveryMinimumOrder: deliveryMinimumOrder ?? this.deliveryMinimumOrder,
@@ -169,6 +175,7 @@ class StoreModel extends ModelComponent {
       'addressState: $addressState, '
       'lat: $lat, '
       'lng: $lng, '
+      'countryCode: $countryCode, '
       'zipcodes: $zipcodes, '
       'whatsapp: $whatsapp, '
       'deliveryMinimumOrder: $deliveryMinimumOrder, '

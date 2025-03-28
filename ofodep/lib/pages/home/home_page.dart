@@ -34,6 +34,7 @@ class HomePage extends StatelessWidget {
               BlocBuilder<LocationCubit, LocationState>(
                 builder: (context, state) {
                   if (state is LocationLoaded) {
+                    debugPrint(state.location.toString());
                     return Expanded(
                       child: BlocProvider<ProductsListCubit>(
                         create: (context) => ProductsListCubit(
@@ -42,6 +43,7 @@ class HomePage extends StatelessWidget {
                               'stores.zipcodes#contains': [
                                 state.location.zipCode,
                               ],
+                              'stores.country_code': state.location.countryCode,
                             },
                           ),
                         ),

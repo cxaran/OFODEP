@@ -15,7 +15,8 @@ class LocationRepository {
       if (placemarks.isNotEmpty) {
         final placemark = placemarks.first;
         final zipCode = placemark.postalCode ?? "";
-        if (zipCode.isNotEmpty) {
+        final countryCode = placemark.isoCountryCode ?? "";
+        if (zipCode.isNotEmpty && countryCode.isNotEmpty) {
           return LocationModel(
             latitude: latitude,
             longitude: longitude,
@@ -24,6 +25,7 @@ class LocationRepository {
             city: placemark.locality ?? "",
             state: placemark.administrativeArea ?? "",
             country: placemark.country ?? "",
+            countryCode: countryCode,
           );
         }
       }
@@ -41,7 +43,8 @@ class LocationRepository {
     try {
       final response = await http.get(
         Uri.parse(
-            'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon'),
+          'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon',
+        ),
         headers: {
           'User-Agent': 'Mozilla/5.0',
         },
@@ -51,8 +54,11 @@ class LocationRepository {
         final data = json.decode(response.body);
         final address = data['address'];
         final zipCode = address?['postcode'];
+        final countryCode = address?['country_code'] ?? "";
 
-        if (zipCode != null && zipCode.toString().isNotEmpty) {
+        if (zipCode != null &&
+            zipCode.toString().isNotEmpty &&
+            countryCode.isNotEmpty) {
           return LocationModel(
             latitude: lat,
             longitude: lon,
@@ -68,6 +74,7 @@ class LocationRepository {
                 "",
             state: address['state'] ?? "",
             country: address['country'] ?? "",
+            countryCode: countryCode,
           );
         }
       }
@@ -76,11 +83,15 @@ class LocationRepository {
   }
 
   /// Obtiene ubicación a partir de un código postal.
-  Future<LocationModel?> getLocationFromZipCode(String zipCode) async {
+  Future<LocationModel?> getLocationFromZipCode({
+    required String countryCode,
+    required String zipCode,
+  }) async {
     try {
       final response = await http.get(
         Uri.parse(
-            'https://nominatim.openstreetmap.org/search?postalcode=$zipCode&format=json&limit=1'),
+          'https://nominatim.openstreetmap.org/search?postalcode=$zipCode&format=json&limit=1&countrycodes=$countryCode',
+        ),
         headers: {
           'User-Agent': 'Mozilla/5.0',
         },
@@ -95,7 +106,9 @@ class LocationRepository {
 
           if (lat != null && lon != null) {
             return await getLocationFromCoordinates(
-                latitude: lat, longitude: lon);
+              latitude: lat,
+              longitude: lon,
+            );
           }
         }
       }
@@ -104,12 +117,17 @@ class LocationRepository {
   }
 
   /// Busca una lista de ubicaciones que contengan código postal no nulo.
-  Future<List<LocationModel>> searchLocations(String query) async {
+  Future<List<LocationModel>> searchLocations({
+    required String countryCode,
+    required String query,
+  }) async {
     List<LocationModel> results = [];
     try {
       final response = await http.get(
         Uri.parse(
-            'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=10'),
+          'https://nominatim.openstreetmap.org/search?q=$query'
+          '&format=json&addressdetails=1&limit=10&countrycodes=$countryCode',
+        ),
         headers: {
           'User-Agent': 'Mozilla/5.0',
         },
@@ -121,22 +139,28 @@ class LocationRepository {
         for (final item in data) {
           final address = item['address'];
           final zip = address?['postcode'];
+          final countryCode = address?['country_code'] ?? "";
 
-          if (zip != null && zip.toString().isNotEmpty) {
-            results.add(LocationModel(
-              latitude: double.tryParse(item['lat'] ?? '') ?? 0.0,
-              longitude: double.tryParse(item['lon'] ?? '') ?? 0.0,
-              zipCode: zip,
-              street: address['road'] ??
-                  address['pedestrian'] ??
-                  address['footway'],
-              city: address['city'] ??
-                  address['town'] ??
-                  address['village'] ??
-                  address['county'],
-              state: address['state'],
-              country: address['country'],
-            ));
+          if (zip != null &&
+              zip.toString().isNotEmpty &&
+              countryCode.isNotEmpty) {
+            results.add(
+              LocationModel(
+                latitude: double.tryParse(item['lat'] ?? '') ?? 0.0,
+                longitude: double.tryParse(item['lon'] ?? '') ?? 0.0,
+                zipCode: zip,
+                street: address['road'] ??
+                    address['pedestrian'] ??
+                    address['footway'],
+                city: address['city'] ??
+                    address['town'] ??
+                    address['village'] ??
+                    address['county'],
+                state: address['state'],
+                country: address['country'],
+                countryCode: countryCode,
+              ),
+            );
           }
         }
       }
@@ -153,8 +177,9 @@ class LocationRepository {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        if (data['zip'] == null)
+        if (data['zip'] == null || data['countryCode'] == null) {
           throw Exception("No se obtuvieron los datos de ubicación");
+        }
 
         return LocationModel(
           latitude: (data['lat'] as num?)?.toDouble() ?? 0.0,
@@ -164,6 +189,7 @@ class LocationRepository {
           city: data['city'] ?? data['county'],
           state: data['regionName'] ?? data['state'],
           country: data['country'],
+          countryCode: data['countryCode'] ?? data['country_code'] ?? "",
         );
       }
     } catch (_) {

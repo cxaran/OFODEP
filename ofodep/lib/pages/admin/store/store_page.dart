@@ -5,6 +5,8 @@ import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_cubit.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/store_model.dart';
+import 'package:ofodep/widgets/admin_image.dart';
+import 'package:ofodep/widgets/zipcodes_selector.dart';
 
 class StorePage extends StatelessWidget {
   final String? storeId;
@@ -169,13 +171,22 @@ class StorePage extends StatelessWidget {
                 .updateEditingState((model) => model.copyWith(name: value));
           },
         ),
-        TextFormField(
-          initialValue: edited.logoUrl ?? "",
-          decoration: const InputDecoration(labelText: "Logo URL"),
-          onChanged: (value) {
-            context
-                .read<StoreCubit>()
-                .updateEditingState((model) => model.copyWith(logoUrl: value));
+        // TextFormField(
+        //   initialValue: edited.logoUrl ?? "",
+        //   decoration: const InputDecoration(labelText: "Logo URL"),
+        //   onChanged: (value) {
+        //     context
+        //         .read<StoreCubit>()
+        //         .updateEditingState((model) => model.copyWith(logoUrl: value));
+        //   },
+        // ),
+        AdminImage(
+          clientId: edited.imgurClientId,
+          imageUrl: edited.logoUrl,
+          onImageUploaded: (url) {
+            context.read<StoreCubit>().updateEditingState(
+                  (model) => model.copyWith(logoUrl: url),
+                );
           },
         ),
         ElevatedButton(
@@ -332,44 +343,17 @@ class StorePage extends StatelessWidget {
 
   /// Sección de áreas de cobertura (zipcodes).
   Widget _buildCodePostalSection(BuildContext context, StoreCrudEditing state) {
-    final edited = state.editedModel;
-    final initialValue = edited.zipcodes?.join(', ') ?? "";
-    return ListView(
-      children: [
-        const Text("Edit coverage areas"),
-        TextFormField(
-          initialValue: initialValue,
-          decoration: const InputDecoration(
-            labelText: "Zipcodes (comma-separated)",
-          ),
-          onChanged: (value) {
-            final codes = value
-                .split(',')
-                .map((e) => e.trim())
-                .where((e) => e.isNotEmpty)
-                .toList();
-            context
-                .read<StoreCubit>()
-                .updateEditingState((model) => model.copyWith(zipcodes: codes));
-          },
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => context.read<StoreCubit>().submit(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Save"),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting
-              ? null
-              : () => context.read<StoreCubit>().cancelEditing(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancel"),
-        ),
-      ],
+    return ZipcodesSelector(
+      onZipcodeUpdated: (countryCode, zipcodes) {
+        context.read<StoreCubit>().updateEditingState(
+              (model) => model.copyWith(
+                countryCode: countryCode,
+                zipcodes: zipcodes,
+              ),
+            );
+      },
+      zipcodes: state.editedModel.zipcodes ?? [],
+      countryCode: state.editedModel.countryCode,
     );
   }
 

@@ -9,6 +9,7 @@ class ProductModel extends ModelComponent {
   num? price;
   String? category;
   List<String>? tags;
+  String? countryCode;
   List<String>? zipcodes;
 
   ProductModel({
@@ -21,6 +22,7 @@ class ProductModel extends ModelComponent {
     this.price,
     this.category,
     this.tags,
+    this.countryCode,
     this.zipcodes,
     super.createdAt,
     super.updatedAt,
@@ -38,6 +40,7 @@ class ProductModel extends ModelComponent {
       price: map['price'],
       category: map['category'],
       tags: (map['tags'] as List?)?.map((e) => e.toString()).toList(),
+      countryCode: map['stores']?['country_code'],
       zipcodes: (map['stores']?['zipcodes'] as List?)
           ?.map(
             (e) => e.toString(),
@@ -61,6 +64,8 @@ class ProductModel extends ModelComponent {
         'price': price,
         'category': category,
         'tags': tags,
+        'country_code': countryCode,
+        'zipcodes': zipcodes,
       };
 
   @override
@@ -71,6 +76,8 @@ class ProductModel extends ModelComponent {
     num? price,
     String? category,
     List<String>? tags,
+    String? countryCode,
+    List<String>? zipcodes,
   }) {
     return ProductModel(
       id: id,
@@ -82,6 +89,8 @@ class ProductModel extends ModelComponent {
       price: price ?? this.price,
       category: category ?? this.category,
       tags: tags ?? this.tags,
+      countryCode: countryCode ?? this.countryCode,
+      zipcodes: zipcodes ?? this.zipcodes,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -98,6 +107,8 @@ class ProductModel extends ModelComponent {
       'price: $price, '
       'category: $category, '
       'tags: $tags, '
+      'countryCode: $countryCode, '
+      'zipcodes: $zipcodes, '
       'createdAt: $createdAt, '
       'updatedAt: $updatedAt, '
       ')';

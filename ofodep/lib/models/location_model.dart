@@ -7,6 +7,7 @@ class LocationModel {
   final String? city;
   final String? state;
   final String? country;
+  late final String countryCode;
 
   LocationModel({
     required this.latitude,
@@ -16,5 +17,19 @@ class LocationModel {
     this.city,
     this.state,
     this.country,
-  });
+    required String countryCode,
+  }) : countryCode = countryCode.toUpperCase();
+
+  @override
+  String toString() {
+    return 'LocationModel(latitude: $latitude,'
+        ' longitude: $longitude,'
+        ' zipCode: $zipCode,'
+        ' street: $street,'
+        ' city: $city,'
+        ' state: $state,'
+        ' country: $country,'
+        ' countryCode: $countryCode'
+        ')';
+  }
 }

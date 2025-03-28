@@ -30,10 +30,16 @@ class ZipcodesCubit extends Cubit<ZipcodesState> {
         super(ZipcodesState());
 
   /// Busca ubicaciones por texto
-  Future<void> searchZipcodes(String query) async {
+  Future<void> searchZipcodes({
+    required String countryCode,
+    required String query,
+  }) async {
     emit(ZipcodesState());
     try {
-      final results = await repository.searchLocations(query);
+      final results = await repository.searchLocations(
+        countryCode: countryCode,
+        query: query,
+      );
 
       emit(ZipcodesState(searchResults: results));
     } catch (e) {

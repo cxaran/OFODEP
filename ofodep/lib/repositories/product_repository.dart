@@ -9,7 +9,7 @@ class ProductRepository extends Repository<ProductModel> {
   List<String> searchColumns = ['name', 'description', 'tags'];
 
   @override
-  String get select => '*, stores!inner(name, zipcodes)';
+  String get select => '*, stores!inner(name, country_code, zipcodes)';
 
   @override
   ProductModel fromMap(Map<String, dynamic> map) => ProductModel.fromMap(map);

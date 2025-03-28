@@ -61,6 +61,7 @@ CREATE TABLE stores (
     address_state text,                                         -- (antes "direccion_estado")
     lat numeric,                                                -- Latitud geográfica
     lng numeric,                                                -- Longitud geográfica
+    country_code text CHECK (country_code ~ '^[A-Z]{2,3}$'),    -- Código de país (ej. "MX", "US")
     zipcodes text[],                                            -- Lista de códigos postales asociados (antes "codigos_postales")
     whatsapp text CHECK (whatsapp ~ '^\+?[0-9]{7,15}$'),
     delivery_minimum_order numeric,                             -- (antes "minimo_compra_delivery")
