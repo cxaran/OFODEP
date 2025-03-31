@@ -2,7 +2,7 @@
 
 ---
 
-## 🚀 **Proyecto OFODEP (Open Food Delivery Platform)**
+## 🚀 **Proyecto OFODEP (Open-source food delivery platform)**
 
 **Versión:** 0.1.0  
 **Fecha de creación:** 2025-01-01  

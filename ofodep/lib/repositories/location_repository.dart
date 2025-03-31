@@ -82,40 +82,6 @@ class LocationRepository {
     return null;
   }
 
-  /// Obtiene ubicación a partir de un código postal.
-  Future<LocationModel?> getLocationFromZipCode({
-    required String countryCode,
-    required String zipCode,
-  }) async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://nominatim.openstreetmap.org/search?postalcode=$zipCode&format=json&limit=1&countrycodes=$countryCode',
-        ),
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
-        if (data.isNotEmpty) {
-          final item = data.first;
-          final lat = double.tryParse(item['lat'] ?? '');
-          final lon = double.tryParse(item['lon'] ?? '');
-
-          if (lat != null && lon != null) {
-            return await getLocationFromCoordinates(
-              latitude: lat,
-              longitude: lon,
-            );
-          }
-        }
-      }
-    } catch (_) {}
-    return null;
-  }
-
   /// Busca una lista de ubicaciones que contengan código postal no nulo.
   Future<List<LocationModel>> searchLocations({
     required String countryCode,

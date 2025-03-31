@@ -17,13 +17,14 @@ class AdminImage extends StatelessWidget {
     super.key,
     this.width = 100,
     this.height = 100,
-    this.fit = BoxFit.cover,
+    this.fit = BoxFit.contain,
     this.imageUrl,
     this.clientId,
     required this.onImageUploaded,
   });
 
   Future<void> pickImage(BuildContext context) async {
+    debugPrint('clientId: $clientId');
     if (clientId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -38,6 +39,7 @@ class AdminImage extends StatelessWidget {
       type: FileType.image,
       allowMultiple: false,
       allowCompression: true,
+      compressionQuality: 30,
     );
 
     if (result?.files.isEmpty ?? true) return;
@@ -62,7 +64,14 @@ class AdminImage extends StatelessWidget {
         width: width,
         height: height,
         child: imageUrl != null
-            ? Image.network(imageUrl!, fit: fit)
+            ? Image.network(
+                imageUrl!,
+                fit: fit,
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.image_not_supported_rounded,
+                  color: Colors.grey,
+                ),
+              )
             : Center(child: Icon(Icons.add_a_photo)),
       ),
     );

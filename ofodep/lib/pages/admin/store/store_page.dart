@@ -6,7 +6,8 @@ import 'package:ofodep/blocs/curd_cubits/store_cubit.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/store_model.dart';
 import 'package:ofodep/widgets/admin_image.dart';
-import 'package:ofodep/widgets/zipcodes_selector.dart';
+import 'package:ofodep/widgets/location_picker.dart';
+import 'package:ofodep/widgets/zone_polygon.dart';
 
 class StorePage extends StatelessWidget {
   final String? storeId;
@@ -69,8 +70,8 @@ class StorePage extends StatelessWidget {
           return _buildContactSection(context, state);
         case StoreEditSection.coordinates:
           return _buildCoordinatesSection(context, state);
-        case StoreEditSection.codePostal:
-          return _buildCodePostalSection(context, state);
+        case StoreEditSection.geom:
+          return _buildGeomSection(context, state);
         case StoreEditSection.delivery:
           return _buildDeliverySection(context, state);
         case StoreEditSection.imageApi:
@@ -106,10 +107,10 @@ class StorePage extends StatelessWidget {
                 .startEditing(editSection: StoreEditSection.coordinates),
           ),
           ListTile(
-            title: Text(StoreEditSection.codePostal.description),
+            title: Text(StoreEditSection.geom.description),
             onTap: () => context
                 .read<StoreCubit>()
-                .startEditing(editSection: StoreEditSection.codePostal),
+                .startEditing(editSection: StoreEditSection.geom),
           ),
           ListTile(
             title: Text(StoreEditSection.delivery.description),
@@ -162,24 +163,6 @@ class StorePage extends StatelessWidget {
     return ListView(
       children: [
         const Text("Edit general information"),
-        TextFormField(
-          initialValue: edited.name,
-          decoration: const InputDecoration(labelText: "Name"),
-          onChanged: (value) {
-            context
-                .read<StoreCubit>()
-                .updateEditingState((model) => model.copyWith(name: value));
-          },
-        ),
-        // TextFormField(
-        //   initialValue: edited.logoUrl ?? "",
-        //   decoration: const InputDecoration(labelText: "Logo URL"),
-        //   onChanged: (value) {
-        //     context
-        //         .read<StoreCubit>()
-        //         .updateEditingState((model) => model.copyWith(logoUrl: value));
-        //   },
-        // ),
         AdminImage(
           clientId: edited.imgurClientId,
           imageUrl: edited.logoUrl,
@@ -188,6 +171,16 @@ class StorePage extends StatelessWidget {
                   (model) => model.copyWith(logoUrl: url),
                 );
           },
+        ),
+        if (edited.imgurClientId == null) Text('imgur_client_is_null'),
+        TextFormField(
+          initialValue: edited.name,
+          decoration: const InputDecoration(labelText: "Name"),
+          onChanged: (value) => context.read<StoreCubit>().updateEditingState(
+                (model) => model.copyWith(
+                  name: value,
+                ),
+              ),
         ),
         ElevatedButton(
           onPressed: state.isSubmitting || !state.editMode
@@ -264,6 +257,14 @@ class StorePage extends StatelessWidget {
           },
         ),
         TextFormField(
+          initialValue: edited.countryCode,
+          decoration: const InputDecoration(labelText: "Country code, e.g. MX"),
+          onChanged: (value) {
+            context.read<StoreCubit>().updateEditingState(
+                (model) => model.copyWith(countryCode: value));
+          },
+        ),
+        TextFormField(
           initialValue: edited.whatsapp,
           decoration: const InputDecoration(labelText: "WhatsApp"),
           onChanged: (value) {
@@ -296,31 +297,36 @@ class StorePage extends StatelessWidget {
   Widget _buildCoordinatesSection(
       BuildContext context, StoreCrudEditing state) {
     final edited = state.editedModel;
-    return ListView(
+
+    if (edited.countryCode == null || edited.countryCode!.isEmpty) {
+      return const Center(
+        child: Text("country_code_null"),
+      );
+    }
+    return Column(
       children: [
-        const Text("Edit location"),
-        TextFormField(
-          initialValue: edited.lat?.toString() ?? "",
-          decoration: const InputDecoration(labelText: "Latitude"),
-          keyboardType: TextInputType.number,
-          onChanged: (value) {
-            final num? lat = num.tryParse(value);
-            context
-                .read<StoreCubit>()
-                .updateEditingState((model) => model.copyWith(lat: lat));
-          },
+        Expanded(
+          child: LocationPicker(
+            initialLatitude: edited.lat?.toDouble(),
+            initialLongitude: edited.lng?.toDouble(),
+            onLocationChanged: (p0) =>
+                context.read<StoreCubit>().updateEditingState(
+                      (model) => model.copyWith(
+                        lat: p0.latitude,
+                        lng: p0.longitude,
+                        geom: {
+                          'type': 'Polygon',
+                          'crs': {
+                            'type': 'name',
+                            'properties': {'name': 'EPSG:4326'},
+                          },
+                          'coordinates': [],
+                        },
+                      ),
+                    ),
+          ),
         ),
-        TextFormField(
-          initialValue: edited.lng?.toString() ?? "",
-          decoration: const InputDecoration(labelText: "Longitude"),
-          keyboardType: TextInputType.number,
-          onChanged: (value) {
-            final num? lng = num.tryParse(value);
-            context
-                .read<StoreCubit>()
-                .updateEditingState((model) => model.copyWith(lng: lng));
-          },
-        ),
+        Text('Lat: ${edited.lat} Lng: ${edited.lng}'),
         ElevatedButton(
           onPressed: state.isSubmitting || !state.editMode
               ? null
@@ -342,18 +348,44 @@ class StorePage extends StatelessWidget {
   }
 
   /// Sección de áreas de cobertura (zipcodes).
-  Widget _buildCodePostalSection(BuildContext context, StoreCrudEditing state) {
-    return ZipcodesSelector(
-      onZipcodeUpdated: (countryCode, zipcodes) {
-        context.read<StoreCubit>().updateEditingState(
-              (model) => model.copyWith(
-                countryCode: countryCode,
-                zipcodes: zipcodes,
-              ),
-            );
-      },
-      zipcodes: state.editedModel.zipcodes ?? [],
-      countryCode: state.editedModel.countryCode,
+  Widget _buildGeomSection(BuildContext context, StoreCrudEditing state) {
+    if (state.editedModel.lat == null || state.editedModel.lng == null) {
+      return const Center(
+        child: Text("coordinates_null"),
+      );
+    }
+
+    return Column(
+      children: [
+        Expanded(
+          child: ZonePolygon(
+            geom: state.editedModel.geom,
+            centerLatitude: state.editedModel.lat!.toDouble(),
+            centerLongitude: state.editedModel.lng!.toDouble(),
+            onGeomChanged: (geom) {
+              context.read<StoreCubit>().updateEditingState(
+                    (model) => model.copyWith(geom: geom),
+                  );
+            },
+          ),
+        ),
+        ElevatedButton(
+          onPressed: state.isSubmitting || !state.editMode
+              ? null
+              : () => context.read<StoreCubit>().submit(),
+          child: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Save"),
+        ),
+        ElevatedButton(
+          onPressed: state.isSubmitting
+              ? null
+              : () => context.read<StoreCubit>().cancelEditing(),
+          child: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Cancel"),
+        ),
+      ],
     );
   }
 
@@ -429,6 +461,7 @@ class StorePage extends StatelessWidget {
     return ListView(
       children: [
         const Text("Edit image configuration (Imgur)"),
+        Text('https://api.imgur.com/oauth2/addclient'),
         TextFormField(
           initialValue: edited.imgurClientId ?? "",
           decoration: const InputDecoration(labelText: "Imgur Client ID"),

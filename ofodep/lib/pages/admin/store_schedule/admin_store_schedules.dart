@@ -205,7 +205,9 @@ class _AdminStoreSchedulesPageState extends State<AdminStoreSchedulesPage> {
                             itemBuilder: (context, schedule, index) => ListTile(
                               title: Text(schedule.days.toString()),
                               subtitle: Text(
-                                '${schedule.openingTime} - ${schedule.closingTime}',
+                                '${schedule.openingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(schedule.openingTime!)}'
+                                ' - '
+                                '${schedule.closingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(schedule.closingTime!)}',
                               ),
                               onTap: () => context
                                   .push('/admin/schedule/${schedule.id}'),
@@ -236,6 +238,18 @@ class _AdminStoreSchedulesPageState extends State<AdminStoreSchedulesPage> {
               ),
             ],
           ),
+          floatingActionButton: widget.storeId == null
+              ? null
+              : FloatingActionButton(
+                  child: const Icon(Icons.add),
+                  onPressed: () => context.read<StoreSchedulesListCubit>().add(
+                        StoreScheduleModel(
+                          id: '',
+                          storeId: widget.storeId!,
+                          days: [],
+                        ),
+                      ),
+                ),
         ),
       ),
     );

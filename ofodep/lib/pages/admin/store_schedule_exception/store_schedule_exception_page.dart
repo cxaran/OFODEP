@@ -74,10 +74,18 @@ class StoreScheduleExceptionPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Date: ${state.model.date.toLocal().toString()}"),
+                        Text(
+                          "Date: ${state.model.date.toLocal().toString().split(' ')[0]}",
+                        ),
                         Text("Is Closed: ${state.model.isClosed}"),
-                        Text("Opening Time: ${state.model.openingTime}"),
-                        Text("Closing Time: ${state.model.closingTime}"),
+                        Text(
+                          'Opening Time: '
+                          '${state.model.openingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(state.model.openingTime!)}',
+                        ),
+                        Text(
+                          'Closing Time: '
+                          '${state.model.closingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(state.model.closingTime!)}',
+                        ),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () => context
@@ -97,15 +105,26 @@ class StoreScheduleExceptionPage extends StatelessWidget {
                         ElevatedButton(
                           onPressed: state.isSubmitting
                               ? null
-                              : () => context
-                                  .read<StoreScheduleExceptionCubit>()
-                                  .updateEditingState(
-                                    (model) => model.copyWith(
-                                      date: state.editedModel.date,
-                                    ),
-                                  ),
-                          child:
-                              Text(state.editedModel.date.toLocal().toString()),
+                              : () async {
+                                  StoreScheduleExceptionCubit cubit = context
+                                      .read<StoreScheduleExceptionCubit>();
+                                  final selectedDate = await showDatePicker(
+                                    context: context,
+                                    initialDate: state.editedModel.date,
+                                    firstDate: DateTime(2020),
+                                    lastDate: DateTime(2100),
+                                  );
+                                  if (selectedDate != null) {
+                                    cubit.updateEditingState(
+                                      (model) => model.copyWith(
+                                        date: selectedDate,
+                                      ),
+                                    );
+                                  }
+                                },
+                          child: Text(
+                            state.editedModel.date.toLocal().toString(),
+                          ),
                         ),
 
                         // Is Closed
@@ -121,34 +140,64 @@ class StoreScheduleExceptionPage extends StatelessWidget {
                           activeColor: Colors.blue,
                         ),
 
-                        // Opening Time
+                        // Botón para seleccionar la hora de apertura
                         ElevatedButton(
                           onPressed: state.isSubmitting
                               ? null
-                              : () => context
-                                  .read<StoreScheduleExceptionCubit>()
-                                  .updateEditingState(
-                                    (model) => model.copyWith(
-                                      openingTime:
-                                          state.editedModel.openingTime,
-                                    ),
-                                  ),
-                          child: Text(state.editedModel.openingTime ?? '-'),
+                              : () async {
+                                  StoreScheduleExceptionCubit cubit = context
+                                      .read<StoreScheduleExceptionCubit>();
+                                  final selectedTime = await showTimePicker(
+                                    context: context,
+                                    initialTime:
+                                        state.editedModel.openingTime ??
+                                            TimeOfDay.now(),
+                                  );
+                                  if (selectedTime != null) {
+                                    cubit.updateEditingState(
+                                      (model) => model.copyWith(
+                                        openingTime: selectedTime,
+                                      ),
+                                    );
+                                  }
+                                },
+                          child: Text(
+                            state.editedModel.openingTime != null
+                                ? MaterialLocalizations.of(context)
+                                    .formatTimeOfDay(
+                                        state.editedModel.openingTime!)
+                                : "Seleccionar hora de apertura",
+                          ),
                         ),
 
-                        // Closing Time
+                        // Botón para seleccionar la hora de cierre
                         ElevatedButton(
                           onPressed: state.isSubmitting
                               ? null
-                              : () => context
-                                  .read<StoreScheduleExceptionCubit>()
-                                  .updateEditingState(
-                                    (model) => model.copyWith(
-                                      closingTime:
-                                          state.editedModel.closingTime,
-                                    ),
-                                  ),
-                          child: Text(state.editedModel.closingTime ?? '-'),
+                              : () async {
+                                  StoreScheduleExceptionCubit cubit = context
+                                      .read<StoreScheduleExceptionCubit>();
+                                  final selectedTime = await showTimePicker(
+                                    context: context,
+                                    initialTime:
+                                        state.editedModel.closingTime ??
+                                            TimeOfDay.now(),
+                                  );
+                                  if (selectedTime != null) {
+                                    cubit.updateEditingState(
+                                      (model) => model.copyWith(
+                                        closingTime: selectedTime,
+                                      ),
+                                    );
+                                  }
+                                },
+                          child: Text(
+                            state.editedModel.closingTime != null
+                                ? MaterialLocalizations.of(context)
+                                    .formatTimeOfDay(
+                                        state.editedModel.closingTime!)
+                                : "Seleccionar hora de cierre",
+                          ),
                         ),
 
                         ElevatedButton(

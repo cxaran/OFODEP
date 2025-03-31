@@ -38,14 +38,7 @@ class HomePage extends StatelessWidget {
                     return Expanded(
                       child: BlocProvider<ProductsListCubit>(
                         create: (context) => ProductsListCubit(
-                          initialState: BasicListFilterState(
-                            filter: {
-                              'stores.zipcodes#contains': [
-                                state.location.zipCode,
-                              ],
-                              'stores.country_code': state.location.countryCode,
-                            },
-                          ),
+                          initialState: BasicListFilterState(),
                         ),
                         child: BlocConsumer<ProductsListCubit,
                             BasicListFilterState>(

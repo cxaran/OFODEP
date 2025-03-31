@@ -13,14 +13,14 @@ class StoreModel extends ModelComponent {
   String? addressZipcode;
   String? addressCity;
   String? addressState;
+  String? countryCode;
 
   // Geographical coordinates
   num? lat;
   num? lng;
 
-  // List of store zipcodes
-  String? countryCode;
-  List<String>? zipcodes;
+  // Zone for delivery
+  Map<String, dynamic>? geom;
 
   // Delivery parameters
   bool pickup;
@@ -42,10 +42,10 @@ class StoreModel extends ModelComponent {
     this.addressZipcode,
     this.addressCity,
     this.addressState,
+    this.countryCode,
     this.lat,
     this.lng,
-    this.countryCode,
-    this.zipcodes,
+    this.geom,
     this.whatsapp,
     this.deliveryMinimumOrder,
     this.pickup = false,
@@ -69,12 +69,10 @@ class StoreModel extends ModelComponent {
       addressZipcode: map['address_zipcode'] as String?,
       addressCity: map['address_city'] as String?,
       addressState: map['address_state'] as String?,
+      countryCode: map['country_code'] as String?,
       lat: map['lat'],
       lng: map['lng'],
-      countryCode: map['country_code'] as String?,
-      zipcodes: (map['zipcodes'] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList(),
+      geom: map['geom'] as Map<String, dynamic>?,
       whatsapp: map['whatsapp'] as String?,
       deliveryMinimumOrder: map['delivery_minimum_order'],
       pickup: map['pickup'] as bool? ?? false,
@@ -101,10 +99,10 @@ class StoreModel extends ModelComponent {
         'address_zipcode': addressZipcode,
         'address_city': addressCity,
         'address_state': addressState,
+        'country_code': countryCode,
         'lat': lat,
         'lng': lng,
-        'country_code': countryCode,
-        'zipcodes': zipcodes,
+        'geom': geom,
         'whatsapp': whatsapp,
         'delivery_minimum_order': deliveryMinimumOrder,
         'pickup': pickup,
@@ -124,10 +122,10 @@ class StoreModel extends ModelComponent {
     String? addressZipcode,
     String? addressCity,
     String? addressState,
+    String? countryCode,
     num? lat,
     num? lng,
-    String? countryCode,
-    List<String>? zipcodes,
+    Map<String, dynamic>? geom,
     String? whatsapp,
     num? deliveryMinimumOrder,
     bool? pickup,
@@ -146,10 +144,10 @@ class StoreModel extends ModelComponent {
       addressZipcode: addressZipcode ?? this.addressZipcode,
       addressCity: addressCity ?? this.addressCity,
       addressState: addressState ?? this.addressState,
+      countryCode: countryCode ?? this.countryCode,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
-      countryCode: countryCode ?? this.countryCode,
-      zipcodes: zipcodes ?? this.zipcodes,
+      geom: geom ?? this.geom,
       whatsapp: whatsapp ?? this.whatsapp,
       deliveryMinimumOrder: deliveryMinimumOrder ?? this.deliveryMinimumOrder,
       pickup: pickup ?? this.pickup,
@@ -173,10 +171,10 @@ class StoreModel extends ModelComponent {
       'addressZipcode: $addressZipcode, '
       'addressCity: $addressCity, '
       'addressState: $addressState, '
+      'countryCode: $countryCode, '
       'lat: $lat, '
       'lng: $lng, '
-      'countryCode: $countryCode, '
-      'zipcodes: $zipcodes, '
+      'geom: $geom, '
       'whatsapp: $whatsapp, '
       'deliveryMinimumOrder: $deliveryMinimumOrder, '
       'pickup: $pickup, '

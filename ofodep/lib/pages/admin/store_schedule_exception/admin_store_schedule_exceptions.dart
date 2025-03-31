@@ -206,9 +206,14 @@ class _AdminStoreScheduleExceptionsPageState
                           builderDelegate: PagedChildBuilderDelegate<
                               StoreScheduleExceptionModel>(
                             itemBuilder: (context, schedule, index) => ListTile(
-                              title: Text(schedule.date.toLocal().toString()),
+                              title: Text(schedule.date
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')[0]),
                               subtitle: Text(
-                                '${schedule.openingTime} - ${schedule.closingTime}',
+                                '${schedule.openingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(schedule.openingTime!)}'
+                                ' - '
+                                '${schedule.closingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(schedule.closingTime!)}',
                               ),
                               onTap: () => context.push(
                                   '/admin/schedule_exception/${schedule.id}'),
@@ -239,6 +244,21 @@ class _AdminStoreScheduleExceptionsPageState
               ),
             ],
           ),
+          floatingActionButton: widget.storeId == null
+              ? null
+              : FloatingActionButton(
+                  child: const Icon(Icons.add),
+                  onPressed: () =>
+                      context.read<StoreScheduleExceptionsListCubit>().add(
+                            StoreScheduleExceptionModel(
+                              id: '',
+                              storeId: widget.storeId!,
+                              date: DateTime.now().subtract(
+                                const Duration(days: 1),
+                              ),
+                            ),
+                          ),
+                ),
         ),
       ),
     );

@@ -7,7 +7,7 @@ enum StoreEditSection {
   general('general'),
   contact('contact'),
   coordinates('coordinates'),
-  codePostal('codePostal'),
+  geom('geom'),
   delivery('delivery'),
   imageApi('imageApi');
 

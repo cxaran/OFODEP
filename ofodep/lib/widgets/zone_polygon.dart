@@ -6,9 +6,17 @@ import 'package:latlong2/latlong.dart';
 
 class ZonePolygon extends StatefulWidget {
   final Map<String, dynamic>? geom;
+  final Function(Map<String, dynamic>) onGeomChanged;
+  final double centerLatitude;
+  final double centerLongitude;
+  final double maxDistance;
   const ZonePolygon({
     super.key,
     this.geom,
+    required this.onGeomChanged,
+    required this.centerLatitude,
+    required this.centerLongitude,
+    this.maxDistance = 5000,
   });
 
   @override
@@ -21,22 +29,39 @@ class _ZonePolygonState extends State<ZonePolygon> {
 
   @override
   void initState() {
-    polygonGeometry = PolygonGeometry.fromGeom(widget.geom);
+    polygonGeometry = PolygonGeometry.fromGeom(
+      widget.geom,
+      LatLng(
+        widget.centerLatitude,
+        widget.centerLongitude,
+      ),
+    );
 
     polyEditor = PolyEditor(
       addClosePathMarker: true,
       points: polygonGeometry.points,
-      pointIcon: const Icon(Icons.crop_square, size: 23),
-      intermediateIcon: const Icon(Icons.lens, size: 15, color: Colors.grey),
-      callbackRefresh: (LatLng? _) => {setState(() {})},
+      pointIcon: const Icon(
+        Icons.square,
+        size: 15,
+        color: Colors.orange,
+      ),
+      intermediateIcon: const Icon(
+        Icons.lens,
+        size: 10,
+        color: Colors.orangeAccent,
+      ),
+      callbackRefresh: (LatLng? _) => setState(
+        () => widget.onGeomChanged(
+          polygonGeometry.toGeMap,
+        ),
+      ),
     );
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final polygons = <Polygon>[];
+    List<Polygon> polygons = [];
 
     final testPolygon = polygonGeometry.polygon;
 
@@ -46,20 +71,66 @@ class _ZonePolygonState extends State<ZonePolygon> {
 
     return FlutterMap(
       options: MapOptions(
-        onTap: (_, ll) {
-          polyEditor.add(testPolygon.points, ll);
+        onTap: (_, tappedPoint) {
+          if (polygonGeometry.distance(tappedPoint) > widget.maxDistance) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('max distance:${widget.maxDistance}'),
+                duration: Duration(seconds: 1),
+              ),
+            );
+            return;
+          }
+          polyEditor.add(testPolygon.points, tappedPoint);
         },
-        initialCenter: polygonGeometry.center ?? LatLng(45.5231, -122.6765),
-        initialZoom: 10,
+        initialCenter: polygonGeometry.center,
+        initialZoom: polygonGeometry.zoom ?? 13,
       ),
       children: [
         TileLayer(
-          // Bring your own tiles
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.example.ofodep',
         ),
         PolygonLayer(polygons: polygons),
-        DragMarkers(markers: polyEditor.edit()),
+        DragMarkers(
+          markers: polyEditor.edit().map((marker) {
+            return DragMarker(
+              size: marker.size,
+              point: marker.point,
+              builder: marker.builder,
+              onDragUpdate: (details, position) {
+                if (polygonGeometry.distance(position) <= widget.maxDistance) {
+                  marker.onDragUpdate?.call(details, position);
+                } else {
+                  setState(() {});
+                }
+              },
+              onDragStart: (details, position) => marker.onDragStart?.call(
+                details,
+                position,
+              ),
+              onDragEnd: (details, position) => marker.onDragEnd?.call(
+                details,
+                position,
+              ),
+              onLongPress: (details) => marker.onLongPress?.call(details),
+            );
+          }).toList(),
+        ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: LatLng(widget.centerLatitude, widget.centerLongitude),
+              width: 20,
+              height: 20,
+              child: const Icon(
+                Icons.location_on,
+                color: Colors.red,
+                size: 30,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -67,13 +138,15 @@ class _ZonePolygonState extends State<ZonePolygon> {
 
 class PolygonGeometry {
   final List<LatLng> points;
+  final LatLng center;
 
-  PolygonGeometry({List<LatLng>? points}) : points = points ?? [];
+  PolygonGeometry({List<LatLng>? points, required this.center})
+      : points = points ?? [];
 
   // Constructor a partir de un Map (GeoJSON) o instancia vacía si es nulo o inválido.
-  factory PolygonGeometry.fromGeom(Map<String, dynamic>? geom) {
+  factory PolygonGeometry.fromGeom(Map<String, dynamic>? geom, LatLng center) {
     if (geom == null || geom['type'] != 'Polygon') {
-      return PolygonGeometry();
+      return PolygonGeometry(center: center);
     }
     final List<LatLng> points = [];
     final coordinates = geom['coordinates'];
@@ -88,11 +161,11 @@ class PolygonGeometry {
         }
       }
     }
-    return PolygonGeometry(points: points);
+    return PolygonGeometry(points: points, center: center);
   }
 
   // Método para convertir la instancia a un Map con formato GeoJSON
-  Map<String, dynamic> get toGeoJson {
+  Map<String, dynamic> get toGeMap {
     return {
       'type': 'Polygon',
       'crs': {
@@ -115,15 +188,41 @@ class PolygonGeometry {
     );
   }
 
-  // Getter para obtener el centro del polígono (promedio de las coordenadas)
-  LatLng? get center {
+  // Método para calcular la distancia entre un punto y el centro
+  double distance(LatLng point) {
+    final distanceCalculator = Distance();
+    return distanceCalculator.as(LengthUnit.Meter, center, point);
+  }
+
+  // Getter para obtener el zoom para visualizar el poligono
+  double? get zoom {
     if (points.isEmpty) return null;
-    double sumLat = 0.0;
-    double sumLng = 0.0;
-    for (final point in points) {
-      sumLat += point.latitude;
-      sumLng += point.longitude;
-    }
-    return LatLng(sumLat / points.length, sumLng / points.length);
+
+    final lats = points.map((p) => p.latitude);
+    final lngs = points.map((p) => p.longitude);
+    final maxDiff = (lats.reduce((a, b) => a > b ? a : b) -
+                    lats.reduce((a, b) => a < b ? a : b))
+                .clamp(0.0, double.infinity)
+                .compareTo((lngs.reduce((a, b) => a > b ? a : b) -
+                    lngs.reduce((a, b) => a < b ? a : b))) <
+            0
+        ? (lngs.reduce((a, b) => a > b ? a : b) -
+            lngs.reduce((a, b) => a < b ? a : b))
+        : (lats.reduce((a, b) => a > b ? a : b) -
+            lats.reduce((a, b) => a < b ? a : b));
+
+    return maxDiff < 0.005
+        ? 16
+        : maxDiff < 0.01
+            ? 15
+            : maxDiff < 0.05
+                ? 14
+                : maxDiff < 0.1
+                    ? 13
+                    : maxDiff < 0.5
+                        ? 12
+                        : maxDiff < 1.0
+                            ? 10
+                            : 8;
   }
 }

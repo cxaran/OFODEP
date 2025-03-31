@@ -5,6 +5,8 @@ import 'package:ofodep/blocs/curd_cubits/product_cubit.dart';
 import 'package:ofodep/pages/admin/product/product_configuration_page.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/product_model.dart';
+import 'package:ofodep/repositories/store_repository.dart';
+import 'package:ofodep/widgets/admin_image.dart';
 
 class ProductPage extends StatelessWidget {
   final String? productId;
@@ -92,6 +94,22 @@ class ProductPage extends StatelessWidget {
                   return SingleChildScrollView(
                     child: Column(
                       children: [
+                        FutureBuilder(
+                          future: StoreRepository().getValueById(
+                            state.model.storeId,
+                            'imgur_client_id',
+                          ),
+                          builder: (context, snapshot) => AdminImage(
+                            clientId: snapshot.data,
+                            imageUrl: state.editedModel.imageUrl,
+                            onImageUploaded: (url) =>
+                                context.read<ProductCubit>().updateEditingState(
+                                      (model) => model.copyWith(
+                                        imageUrl: url,
+                                      ),
+                                    ),
+                          ),
+                        ),
                         TextField(
                           key: const ValueKey('name_product'),
                           controller: TextEditingController.fromValue(
@@ -105,7 +123,6 @@ class ProductPage extends StatelessWidget {
                             labelText: 'Nombre',
                             border: OutlineInputBorder(),
                           ),
-                          enabled: false,
                         ),
                         TextField(
                           key: const ValueKey('description_product'),
@@ -126,25 +143,6 @@ class ProductPage extends StatelessWidget {
                               context.read<ProductCubit>().updateEditingState(
                                     (model) =>
                                         model.copyWith(description: value),
-                                  ),
-                        ),
-                        TextField(
-                          key: const ValueKey('image_url_product'),
-                          controller: TextEditingController.fromValue(
-                            TextEditingValue(
-                              text: state.editedModel.imageUrl ?? "",
-                              selection: TextSelection.collapsed(
-                                  offset:
-                                      state.editedModel.imageUrl?.length ?? 0),
-                            ),
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'Imagen URL',
-                            border: OutlineInputBorder(),
-                          ),
-                          onChanged: (value) =>
-                              context.read<ProductCubit>().updateEditingState(
-                                    (model) => model.copyWith(imageUrl: value),
                                   ),
                         ),
                         TextField(

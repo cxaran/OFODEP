@@ -48,6 +48,28 @@ abstract class Repository<T extends ModelComponent> {
     }
   }
 
+  Future<dynamic> getValueById(
+    String id,
+    String column, {
+    String? field,
+  }) async {
+    try {
+      final data = await client
+          .from(tableName)
+          .select(column)
+          .eq(
+            field ?? this.fieldId,
+            id,
+          )
+          .maybeSingle();
+
+      if (data == null) return null;
+      return data[column];
+    } catch (e) {
+      throw Exception('error(getFieldById): $e');
+    }
+  }
+
   /// Crea una nueva instancia del modelo en la base de datos Supabase.
   /// Retorna el ID generado por la base de datos (usualmente UUID).
   /// [model] instancia del modelo a insertar.

@@ -59,10 +59,10 @@ CREATE TABLE stores (
     address_zipcode text CHECK (address_zipcode ~ '^\d{4,10}$'),-- (antes "direccion_cp")
     address_city text,                                          -- (antes "direccion_ciudad")
     address_state text,                                         -- (antes "direccion_estado")
+    country_code text CHECK (country_code ~ '^[A-Z]{2,3}$'),    -- Código de país (ej. "MX", "US")
     lat numeric,                                                -- Latitud geográfica
     lng numeric,                                                -- Longitud geográfica
-    country_code text CHECK (country_code ~ '^[A-Z]{2,3}$'),    -- Código de país (ej. "MX", "US")
-    zipcodes text[],                                            -- Lista de códigos postales asociados (antes "codigos_postales")
+    geom geometry(Polygon, 4326),                               -- Polígono para delimitar la zona (SRID 4326)
     whatsapp text CHECK (whatsapp ~ '^\+?[0-9]{7,15}$'),
     delivery_minimum_order numeric,                             -- (antes "minimo_compra_delivery")
     pickup boolean DEFAULT false,
@@ -847,6 +847,10 @@ USING (
       WHERE sa.store_id = store_schedules.store_id
         AND sa.user_id = auth.uid()
     )
+    OR EXISTS (
+      SELECT 1 FROM users u
+      WHERE u.auth_id = auth.uid() AND u.admin = true
+    )
 );
 
 -- POLÍTICAS PARA LA TABLA store_schedule_exceptions
@@ -879,6 +883,10 @@ USING (
       SELECT 1 FROM store_admins sa
       WHERE sa.store_id = store_schedule_exceptions.store_id
         AND sa.user_id = auth.uid()
+    )
+    OR EXISTS (
+      SELECT 1 FROM users u
+      WHERE u.auth_id = auth.uid() AND u.admin = true
     )
 );
 
