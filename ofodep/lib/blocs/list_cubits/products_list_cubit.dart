@@ -24,7 +24,7 @@ class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
   /// [price] precio del producto.
   /// [category] categoría del producto.
   /// [tags] etiquetas del producto.
-  Future<void> addProduct({
+  Future<String?> addProduct({
     required String storeId,
     required String name,
     String? description,
@@ -32,7 +32,7 @@ class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
     num? price,
     String? category,
     List<String>? tags,
-  }) async {
+  }) {
     final newProduct = ProductModel(
       id: '',
       storeId: storeId,
@@ -45,7 +45,7 @@ class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
       tags: tags,
     );
 
-    await super.add(newProduct);
+    return super.add(newProduct);
   }
 
   @override

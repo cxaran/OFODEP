@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -237,6 +238,125 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                     );
                   },
                 ),
+              ),
+            ],
+          ),
+          floatingActionButton: widget.storeId == null
+              ? null
+              : FloatingActionButton(
+                  child: const Icon(Icons.add),
+                  onPressed: () async {
+                    final cubit = context.read<ProductsListCubit>();
+
+                    ProductModel? product = await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return ProductsAdd(
+                          storeId: widget.storeId!,
+                        );
+                      },
+                    );
+
+                    if (product != null) {
+                      cubit.addProduct(
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        storeId: product.storeId,
+                      );
+                    }
+                  },
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class ProductsAdd extends StatelessWidget {
+  final String storeId;
+  final _formKey = GlobalKey<FormState>();
+
+  ProductsAdd({super.key, required this.storeId});
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a product name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a description';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: priceController,
+                decoration: const InputDecoration(
+                  labelText: 'Price',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a price';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    Navigator.of(context).pop(ProductModel(
+                      id: '',
+                      storeId: storeId,
+                      storeName: '',
+                      name: nameController.text,
+                      description: descriptionController.text,
+                      price: double.parse(priceController.text),
+                    ));
+                  }
+                },
+                child: const Text('Add Product'),
               ),
             ],
           ),

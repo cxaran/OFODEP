@@ -89,7 +89,7 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
   }
 
   /// Agrega un elemento a la lista.
-  Future<void> add(T element) async {
+  Future<String?> add(T element) async {
     try {
       // Se invoca el método create del repositorio para insertar el elemento.
       final newId = await repository.create(element);
@@ -98,11 +98,13 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
         emit(state.copyWith(newElementId: newId) as FS);
         // Refresca la paginación para que el nuevo elemento aparezca en la lista.
         refresh();
+        return newId;
       }
     } catch (e) {
       // En caso de error, se actualiza el estado con el mensaje de error.
       emit(state.copyWith(errorMessage: e.toString()) as FS);
     }
+    return null;
   }
 
   @override
