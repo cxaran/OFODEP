@@ -1,5 +1,7 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/models/order_product_model.dart';
 import 'package:ofodep/models/product_model.dart';
+import 'package:ofodep/repositories/product_repository.dart';
 
 /// Estados genéricos para un cubit CURRENT_PRODUCT.
 abstract class CurrentProductState {}
@@ -30,4 +32,13 @@ class CurrentProductLoaded extends CurrentProductState {
       );
 }
 
-///
+class CurrentProductCubit extends Cubit<CurrentProductState> {
+  final ProductRepository productRepository;
+
+  CurrentProductCubit({
+    ProductRepository? productRepository,
+  })  : productRepository = productRepository ?? ProductRepository(),
+        super(CurrentProductInitial());
+
+  Future<void> load() async {}
+}
