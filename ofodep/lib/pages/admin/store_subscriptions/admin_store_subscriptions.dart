@@ -6,16 +6,16 @@ import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/blocs/list_cubits/store_subscriptions_list_cubit.dart';
 import 'package:ofodep/models/store_subscription_model.dart';
 
-class AdminStoreSubscriptionsPage extends StatefulWidget {
-  const AdminStoreSubscriptionsPage({super.key});
+class AdminStoreSubscriptionsAdminPage extends StatefulWidget {
+  const AdminStoreSubscriptionsAdminPage({super.key});
 
   @override
-  State<AdminStoreSubscriptionsPage> createState() =>
-      _AdminStoreSubscriptionsPageState();
+  State<AdminStoreSubscriptionsAdminPage> createState() =>
+      _AdminStoreSubscriptionsAdminPageState();
 }
 
-class _AdminStoreSubscriptionsPageState
-    extends State<AdminStoreSubscriptionsPage> {
+class _AdminStoreSubscriptionsAdminPageState
+    extends State<AdminStoreSubscriptionsAdminPage> {
   String? _selectedOrder;
   bool _ascending = false;
   DateTime? _createdAtGte;
@@ -226,7 +226,7 @@ class _AdminStoreSubscriptionsPageState
                             ),
                             noItemsFoundIndicatorBuilder: (context) =>
                                 const Center(
-                              child: Text('error_not_found'),
+                              child: Text('not_found'),
                             ),
                           ),
                         ),

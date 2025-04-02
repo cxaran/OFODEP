@@ -30,6 +30,11 @@ class HomePage extends StatelessWidget {
             children: [
               Text(message),
 
+              // sengtings
+              // rango distance
+              // rango precio
+              // in delivery zone
+
               // Show location zip code user location bloc
               BlocBuilder<LocationCubit, LocationState>(
                 builder: (context, state) {
@@ -46,7 +51,9 @@ class HomePage extends StatelessWidget {
                             if (state.errorMessage != null) {
                               debugPrint(state.errorMessage!);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.errorMessage!)),
+                                SnackBar(
+                                  content: Text(state.errorMessage!),
+                                ),
                               );
                             }
                           },
@@ -75,7 +82,7 @@ class HomePage extends StatelessWidget {
                                       trailing:
                                           Text(product.price?.toString() ?? ''),
                                       onTap: () => context.push(
-                                        '/admin/product/${product.id}',
+                                        '/product/${product.id}',
                                       ),
                                     ),
                                     firstPageErrorIndicatorBuilder: (context) =>
@@ -96,7 +103,7 @@ class HomePage extends StatelessWidget {
                                     ),
                                     noItemsFoundIndicatorBuilder: (context) =>
                                         const Center(
-                                      child: Text('error_not_found'),
+                                      child: Text('not_found'),
                                     ),
                                   ),
                                 ),

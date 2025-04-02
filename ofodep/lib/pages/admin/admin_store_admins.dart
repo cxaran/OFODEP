@@ -217,7 +217,7 @@ class _AdminStoreAdminsPageState extends State<AdminStoreAdminsPage> {
                             ),
                             noItemsFoundIndicatorBuilder: (context) =>
                                 const Center(
-                              child: Text('error_not_found'),
+                              child: Text('not_found'),
                             ),
                           ),
                         ),

@@ -6,9 +6,9 @@ import 'package:ofodep/models/store_schedule_exception_model.dart';
 
 import 'package:ofodep/pages/error_page.dart';
 
-class StoreScheduleExceptionPage extends StatelessWidget {
+class StoreScheduleExceptionAdminPage extends StatelessWidget {
   final String? scheduleId;
-  const StoreScheduleExceptionPage({
+  const StoreScheduleExceptionAdminPage({
     super.key,
     this.scheduleId,
   });

@@ -6,15 +6,17 @@ import 'package:ofodep/models/enums.dart';
 import 'package:ofodep/models/store_subscription_model.dart';
 import 'package:ofodep/pages/error_page.dart';
 
-class StoreSubscriptionsPage extends StatefulWidget {
+class StoreSubscriptionsAdminPage extends StatefulWidget {
   final String? storeId;
-  const StoreSubscriptionsPage({super.key, this.storeId});
+  const StoreSubscriptionsAdminPage({super.key, this.storeId});
 
   @override
-  State<StoreSubscriptionsPage> createState() => _StoreSubscriptionsPageState();
+  State<StoreSubscriptionsAdminPage> createState() =>
+      _StoreSubscriptionsAdminPageState();
 }
 
-class _StoreSubscriptionsPageState extends State<StoreSubscriptionsPage> {
+class _StoreSubscriptionsAdminPageState
+    extends State<StoreSubscriptionsAdminPage> {
   @override
   Widget build(BuildContext context) {
     if (widget.storeId == null) return const ErrorPage();

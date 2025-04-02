@@ -6,10 +6,10 @@ import 'package:ofodep/blocs/curd_cubits/user_cubit.dart';
 import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/pages/error_page.dart';
 
-class UserPage extends StatelessWidget {
+class UserAdminPage extends StatelessWidget {
   final String? userId;
 
-  const UserPage({
+  const UserAdminPage({
     super.key,
     required this.userId,
   });

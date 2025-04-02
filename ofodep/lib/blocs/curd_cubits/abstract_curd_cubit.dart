@@ -41,15 +41,14 @@ class CrudEditing<T extends ModelComponent> extends CrudState<T> {
     bool? editMode,
     bool? isSubmitting,
     String? errorMessage,
-  }) {
-    return CrudEditing<T>(
-      model: model ?? this.model,
-      editedModel: editedModel ?? this.editedModel,
-      editMode: editMode ?? this.editMode,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-      errorMessage: errorMessage,
-    );
-  }
+  }) =>
+      CrudEditing<T>(
+        model: model ?? this.model,
+        editedModel: editedModel ?? this.editedModel,
+        editMode: editMode ?? this.editMode,
+        isSubmitting: isSubmitting ?? this.isSubmitting,
+        errorMessage: errorMessage,
+      );
 }
 
 class CrudError<T extends ModelComponent> extends CrudState<T> {
@@ -71,7 +70,8 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
   CrudCubit({
     required this.id,
     required this.repository,
-  }) : super(CrudInitial<T>());
+    CrudState<T>? initialState,
+  }) : super(initialState ?? CrudInitial<T>());
 
   /// Carga el modelo a partir de su ID.
   /// [id] ID del modelo a cargar.
@@ -82,7 +82,7 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
       if (model != null) {
         emit(CrudLoaded<T>(model));
       } else {
-        emit(CrudError<T>('error_not_found: $id'));
+        emit(CrudError<T>('not_found: $id'));
       }
     } catch (e) {
       emit(CrudError<T>(e.toString()));

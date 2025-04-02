@@ -58,14 +58,13 @@ class BasicListFilterState implements ListFilterState {
     bool? ascending,
     String? newElementId,
     String? errorMessage,
-  }) {
-    return BasicListFilterState(
-      filter: filter ?? this.filter,
-      search: search ?? this.search,
-      orderBy: orderBy ?? this.orderBy,
-      ascending: ascending ?? this.ascending,
-      newElementId: newElementId ?? this.newElementId,
-      errorMessage: errorMessage ?? this.errorMessage,
-    );
-  }
+  }) =>
+      BasicListFilterState(
+        filter: filter ?? this.filter,
+        search: search ?? this.search,
+        orderBy: orderBy ?? this.orderBy,
+        ascending: ascending ?? this.ascending,
+        newElementId: newElementId ?? this.newElementId,
+        errorMessage: errorMessage ?? this.errorMessage,
+      );
 }

@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/product_cubit.dart';
-import 'package:ofodep/pages/admin/product/product_configuration_page.dart';
+import 'package:ofodep/pages/admin/product/product_configuration_admin_page.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/repositories/store_repository.dart';
 import 'package:ofodep/widgets/admin_image.dart';
+import 'package:ofodep/widgets/preview_image.dart';
 
-class ProductPage extends StatelessWidget {
+class ProductAdminPage extends StatelessWidget {
   final String? productId;
 
-  const ProductPage({super.key, this.productId});
+  const ProductAdminPage({super.key, this.productId});
 
   @override
   Widget build(BuildContext context) {
@@ -24,20 +25,6 @@ class ProductPage extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: const Text('product'),
-              actions: [
-                BlocBuilder<ProductCubit, CrudState<ProductModel>>(
-                  builder: (context, state) {
-                    if (state is CrudLoaded<ProductModel>) {
-                      return IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () =>
-                            context.read<ProductCubit>().startEditing(),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ],
             ),
             body: BlocConsumer<ProductCubit, CrudState<ProductModel>>(
               listener: (context, state) {
@@ -68,23 +55,22 @@ class ProductPage extends StatelessWidget {
                   // Estado no editable: muestra los datos y un botón para editar
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: ListView(
+                      // crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        PreviewImage(imageUrl: state.model.imageUrl),
                         Text("Nombre: ${state.model.name}"),
                         Text("Descripción: ${state.model.description}"),
-                        Text("Imagen URL: ${state.model.imageUrl}"),
                         Text("Precio: ${state.model.price}"),
                         Text("Categoría: ${state.model.category}"),
                         Text("Etiquetas: ${state.model.tags}"),
-                        AdminProductConfigurationsPage(
-                          productId: state.model.id,
-                        ),
-                        const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () =>
                               context.read<ProductCubit>().startEditing(),
                           child: const Text("Editar"),
+                        ),
+                        AdminProductConfigurationsPage(
+                          productId: state.model.id,
                         ),
                       ],
                     ),
@@ -123,6 +109,12 @@ class ProductPage extends StatelessWidget {
                             labelText: 'Nombre',
                             border: OutlineInputBorder(),
                           ),
+                          onChanged: (value) =>
+                              context.read<ProductCubit>().updateEditingState(
+                                    (model) => model.copyWith(
+                                      name: value,
+                                    ),
+                                  ),
                         ),
                         TextField(
                           key: const ValueKey('description_product'),
@@ -141,8 +133,9 @@ class ProductPage extends StatelessWidget {
                           ),
                           onChanged: (value) =>
                               context.read<ProductCubit>().updateEditingState(
-                                    (model) =>
-                                        model.copyWith(description: value),
+                                    (model) => model.copyWith(
+                                      description: value,
+                                    ),
                                   ),
                         ),
                         TextField(
@@ -160,12 +153,12 @@ class ProductPage extends StatelessWidget {
                             labelText: 'Precio',
                             border: OutlineInputBorder(),
                           ),
-                          onChanged: (value) => context
-                              .read<ProductCubit>()
-                              .updateEditingState(
-                                (model) =>
-                                    model.copyWith(price: num.tryParse(value)),
-                              ),
+                          onChanged: (value) =>
+                              context.read<ProductCubit>().updateEditingState(
+                                    (model) => model.copyWith(
+                                      price: num.tryParse(value),
+                                    ),
+                                  ),
                         ),
                         TextField(
                           key: const ValueKey('category_product'),
@@ -173,8 +166,8 @@ class ProductPage extends StatelessWidget {
                             TextEditingValue(
                               text: state.editedModel.category ?? "",
                               selection: TextSelection.collapsed(
-                                  offset:
-                                      state.editedModel.category?.length ?? 0),
+                                offset: state.editedModel.category?.length ?? 0,
+                              ),
                             ),
                           ),
                           decoration: const InputDecoration(
@@ -183,7 +176,9 @@ class ProductPage extends StatelessWidget {
                           ),
                           onChanged: (value) =>
                               context.read<ProductCubit>().updateEditingState(
-                                    (model) => model.copyWith(category: value),
+                                    (model) => model.copyWith(
+                                      category: value,
+                                    ),
                                   ),
                         ),
                         TextField(

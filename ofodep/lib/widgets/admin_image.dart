@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ofodep/repositories/image_repository.dart';
+import 'package:ofodep/widgets/preview_image.dart';
 
 class AdminImage extends StatelessWidget {
   final double width;
@@ -60,19 +61,11 @@ class AdminImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => pickImage(context),
-      child: SizedBox(
+      child: PreviewImage(
+        imageUrl: imageUrl,
         width: width,
         height: height,
-        child: imageUrl != null
-            ? Image.network(
-                imageUrl!,
-                fit: fit,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.image_not_supported_rounded,
-                  color: Colors.grey,
-                ),
-              )
-            : Center(child: Icon(Icons.add_a_photo)),
+        fit: fit,
       ),
     );
   }

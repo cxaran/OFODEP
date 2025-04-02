@@ -25,12 +25,11 @@ class LocationLoaded extends LocationState {
   LocationLoaded copyWith({
     LocationModel? location,
     String? errorMessage,
-  }) {
-    return LocationLoaded(
-      location: location ?? this.location,
-      errorMessage: this.errorMessage,
-    );
-  }
+  }) =>
+      LocationLoaded(
+        location: location ?? this.location,
+        errorMessage: this.errorMessage,
+      );
 }
 
 class LocationError extends LocationState {

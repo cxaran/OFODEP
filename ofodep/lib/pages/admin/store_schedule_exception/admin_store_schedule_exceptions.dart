@@ -233,7 +233,7 @@ class _AdminStoreScheduleExceptionsPageState
                             ),
                             noItemsFoundIndicatorBuilder: (context) =>
                                 const Center(
-                              child: Text('error_not_found'),
+                              child: Text('not_found'),
                             ),
                           ),
                         ),

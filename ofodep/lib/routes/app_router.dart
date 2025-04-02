@@ -12,13 +12,14 @@ import 'package:ofodep/pages/admin/order/admin_orders.dart';
 import 'package:ofodep/pages/admin/product/admin_products.dart';
 import 'package:ofodep/pages/admin/user/admin_users.dart';
 import 'package:ofodep/pages/auth/login_page.dart';
-import 'package:ofodep/pages/admin/product/product_page.dart';
-import 'package:ofodep/pages/admin/store/store_page.dart';
+import 'package:ofodep/pages/admin/product/product_admin_page.dart';
+import 'package:ofodep/pages/admin/store/store_admin_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
-import 'package:ofodep/pages/admin/store_schedule/store_schedule_page.dart';
-import 'package:ofodep/pages/admin/store_schedule_exception/store_schedule_exception_page.dart';
-import 'package:ofodep/pages/admin/store_subscriptions/store_subscriptions_page.dart';
-import 'package:ofodep/pages/admin/user/user_page.dart';
+import 'package:ofodep/pages/admin/store_schedule/store_schedule_admin_page.dart';
+import 'package:ofodep/pages/admin/store_schedule_exception/store_schedule_exception_admin_page.dart';
+import 'package:ofodep/pages/admin/store_subscriptions/store_subscriptions_admin_page.dart';
+import 'package:ofodep/pages/admin/user/user_admin_page.dart';
+import 'package:ofodep/pages/public/product/product_page.dart';
 
 /// Envuelve el SessionCubit en un ChangeNotifier para que go_router se actualice
 class SessionNotifier extends ChangeNotifier {
@@ -71,6 +72,12 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         builder: (context, state) => const HomePage(),
       ),
       GoRoute(
+        path: '/product/:productId',
+        builder: (context, state) => ProductPage(
+          productId: state.pathParameters['productId'],
+        ),
+      ),
+      GoRoute(
         path: '/admin',
         redirect: (context, state) {
           if (state.uri.pathSegments.length == 1 &&
@@ -90,7 +97,7 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           ),
           GoRoute(
             path: '/user/:userId',
-            builder: (context, state) => UserPage(
+            builder: (context, state) => UserAdminPage(
               userId: state.pathParameters['userId'],
             ),
           ),
@@ -100,7 +107,7 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           ),
           GoRoute(
             path: '/store/:storeId',
-            builder: (context, state) => StorePage(
+            builder: (context, state) => StoreAdminPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
@@ -126,17 +133,18 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           ),
           GoRoute(
             path: '/subscriptions',
-            builder: (context, state) => const AdminStoreSubscriptionsPage(),
+            builder: (context, state) =>
+                const AdminStoreSubscriptionsAdminPage(),
           ),
           GoRoute(
             path: '/subscription/:storeId',
-            builder: (context, state) => StoreSubscriptionsPage(
+            builder: (context, state) => StoreSubscriptionsAdminPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
           GoRoute(
             path: '/product/:productId',
-            builder: (context, state) => ProductPage(
+            builder: (context, state) => ProductAdminPage(
               productId: state.pathParameters['productId'],
             ),
           ),
@@ -148,7 +156,7 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           ),
           GoRoute(
             path: '/schedule/:scheduleId',
-            builder: (context, state) => StoreSchedulePage(
+            builder: (context, state) => StoreScheduleAdminPage(
               scheduleId: state.pathParameters['scheduleId'],
             ),
           ),
@@ -160,7 +168,7 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           ),
           GoRoute(
             path: '/schedule_exception/:scheduleId',
-            builder: (context, state) => StoreScheduleExceptionPage(
+            builder: (context, state) => StoreScheduleExceptionAdminPage(
               scheduleId: state.pathParameters['scheduleId'],
             ),
           ),

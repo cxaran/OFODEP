@@ -1,4 +1,5 @@
 // main.dart
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/local_cubits/location_cubit.dart';
@@ -29,7 +30,9 @@ class App extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'OFODEP',
-      theme: ThemeData.dark(),
+      theme: FlexThemeData.light(scheme: FlexScheme.blueWhale),
+      darkTheme: FlexThemeData.dark(scheme: FlexScheme.blueWhale),
+      themeMode: ThemeMode.dark,
       routerConfig: createRouter(
         context.watch<SessionCubit>(),
       ),

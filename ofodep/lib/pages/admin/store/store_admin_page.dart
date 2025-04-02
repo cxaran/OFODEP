@@ -8,11 +8,12 @@ import 'package:ofodep/models/store_model.dart';
 import 'package:ofodep/widgets/admin_image.dart';
 import 'package:ofodep/widgets/location_picker.dart';
 import 'package:ofodep/widgets/zone_polygon.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class StorePage extends StatelessWidget {
+class StoreAdminPage extends StatelessWidget {
   final String? storeId;
 
-  const StorePage({super.key, required this.storeId});
+  const StoreAdminPage({super.key, required this.storeId});
 
   @override
   Widget build(BuildContext context) {
@@ -461,7 +462,12 @@ class StorePage extends StatelessWidget {
     return ListView(
       children: [
         const Text("Edit image configuration (Imgur)"),
-        Text('https://api.imgur.com/oauth2/addclient'),
+        TextButton(
+          onPressed: () => launchUrl(
+            Uri.parse('https://api.imgur.com/oauth2/addclient'),
+          ),
+          child: Text('get imgur client id'),
+        ),
         TextFormField(
           initialValue: edited.imgurClientId ?? "",
           decoration: const InputDecoration(labelText: "Imgur Client ID"),

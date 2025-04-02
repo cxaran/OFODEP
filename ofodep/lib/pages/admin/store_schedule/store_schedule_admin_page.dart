@@ -5,9 +5,9 @@ import 'package:ofodep/blocs/curd_cubits/store_schedule_cubit.dart';
 import 'package:ofodep/models/store_schedule_model.dart';
 import 'package:ofodep/pages/error_page.dart';
 
-class StoreSchedulePage extends StatelessWidget {
+class StoreScheduleAdminPage extends StatelessWidget {
   final String? scheduleId;
-  const StoreSchedulePage({
+  const StoreScheduleAdminPage({
     super.key,
     this.scheduleId,
   });
