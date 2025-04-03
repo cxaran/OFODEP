@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
+import 'package:ofodep/layout/admin_layout.dart';
 import 'package:ofodep/pages/admin/admin_store_admins.dart';
+import 'package:ofodep/pages/admin/order/order_page.dart';
 import 'package:ofodep/pages/admin/store_schedule_exception/admin_store_schedule_exceptions.dart';
 import 'package:ofodep/pages/admin/store_schedule/admin_store_schedules.dart';
 import 'package:ofodep/pages/admin/store_subscriptions/admin_store_subscriptions.dart';
@@ -14,12 +16,16 @@ import 'package:ofodep/pages/admin/user/admin_users.dart';
 import 'package:ofodep/pages/auth/login_page.dart';
 import 'package:ofodep/pages/admin/product/product_admin_page.dart';
 import 'package:ofodep/pages/admin/store/store_admin_page.dart';
+import 'package:ofodep/pages/cart/cart_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
 import 'package:ofodep/pages/admin/store_schedule/store_schedule_admin_page.dart';
 import 'package:ofodep/pages/admin/store_schedule_exception/store_schedule_exception_admin_page.dart';
 import 'package:ofodep/pages/admin/store_subscriptions/store_subscriptions_admin_page.dart';
 import 'package:ofodep/pages/admin/user/user_admin_page.dart';
 import 'package:ofodep/pages/public/product/product_page.dart';
+import 'package:ofodep/pages/public/store/store_page.dart';
+import 'package:ofodep/pages/splash/splash.dart';
+import 'package:ofodep/pages/user/user_page.dart';
 
 /// Envuelve el SessionCubit en un ChangeNotifier para que go_router se actualice
 class SessionNotifier extends ChangeNotifier {
@@ -47,25 +53,48 @@ GoRouter createRouter(SessionCubit sessionCubit) {
     initialLocation: '/home',
     refreshListenable: sessionNotifier,
     redirect: (context, state) {
-      final isAuthenticated = sessionCubit.state is SessionAuthenticated;
-      final loggingIn = state.matchedLocation == '/login';
+      debugPrint(state.uri.toString());
+      debugPrint(sessionCubit.state.toString());
 
-      // Si no está autenticado y no se encuentra en la pantalla de login, redirige a /login
-      if (!isAuthenticated && !loggingIn) {
+      final isAuthenticated = sessionCubit.state is SessionAuthenticated;
+      final isInitial = sessionCubit.state is SessionInitial;
+      final loggingIn = state.matchedLocation == '/login';
+      final splash = state.matchedLocation == '/splash';
+
+      // Si el estado es inicial, mostrar Splash y preservar la ruta original.
+      if (isInitial) {
+        if (!splash) {
+          return '/splash?redirect=${Uri.encodeComponent(state.uri.toString())}';
+        }
+        // Mientras se muestra Splash, no se redirige.
+        return null;
+      }
+
+      // Si el usuario está autenticado y se intenta acceder a login, redirigir a home
+      if (isAuthenticated && loggingIn) {
+        // Aquí puedes también redirigir a la ruta guardada en el parámetro redirect
+        final redirectPath = state.uri.queryParameters['redirect'] ?? '/home';
+        return redirectPath;
+      }
+
+      final publicPaths = ['/home', '/product', '/store'];
+      final isPublicRoute =
+          publicPaths.any((path) => state.matchedLocation.startsWith(path));
+      if (!isAuthenticated && !loggingIn && !isPublicRoute) {
         return '/login?redirect=${Uri.encodeComponent(state.uri.toString())}';
       }
-      // Si ya está autenticado y se intenta acceder a /login, redirige a /home
-      if (isAuthenticated && loggingIn) {
-        return '/home';
-      }
+
+      debugPrint('entrando a ${state.uri.toString()}');
       return null;
     },
     routes: [
       GoRoute(
+        path: '/splash',
+        builder: (context, state) => const Splash(),
+      ),
+      GoRoute(
         path: '/login',
-        builder: (context, state) => LoginPage(
-          redirectPath: state.uri.queryParameters['redirect'],
-        ),
+        builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
         path: '/home',
@@ -78,102 +107,115 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         ),
       ),
       GoRoute(
-        path: '/admin',
-        redirect: (context, state) {
-          if (state.uri.pathSegments.length == 1 &&
-              state.matchedLocation == '/admin') {
-            return '/admin/dashboard';
-          }
-          return null;
-        },
+        path: '/store/:storeId',
+        builder: (context, state) => StorePage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/user/:userId',
+        builder: (context, state) => const UserPage(),
+      ),
+      GoRoute(
+        path: '/order/:orderId',
+        builder: (context, state) => OrderPage(
+          orderId: state.pathParameters['orderId'],
+        ),
+      ),
+      GoRoute(
+        path: '/cart',
+        builder: (context, state) => const CartPage(),
+      ),
+      ShellRoute(
+        builder: (context, state, child) => AdminLayout(child: child),
         routes: [
           GoRoute(
-            path: '/dashboard',
+            path: '/admin',
             builder: (context, state) => const AdminDashboardPage(),
           ),
           GoRoute(
-            path: '/users',
+            path: '/admin/users',
             builder: (context, state) => const AdminUsersPage(),
           ),
           GoRoute(
-            path: '/user/:userId',
+            path: '/admin/user/:userId',
             builder: (context, state) => UserAdminPage(
               userId: state.pathParameters['userId'],
             ),
           ),
           GoRoute(
-            path: '/stores',
+            path: '/admin/stores',
             builder: (context, state) => const AdminStoresPage(),
           ),
           GoRoute(
-            path: '/store/:storeId',
+            path: '/admin/store/:storeId',
             builder: (context, state) => StoreAdminPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
           GoRoute(
-            path: '/store_admins',
+            path: '/admin/store_admins',
             builder: (context, state) => const AdminStoreAdminsPage(),
           ),
           GoRoute(
-            path: '/store_admins/:storeId',
+            path: '/admin/store_admins/:storeId',
             builder: (context, state) => AdminStoreAdminsPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
           GoRoute(
-            path: '/products',
+            path: '/admin/products',
             builder: (context, state) => const AdminProductsPage(),
           ),
           GoRoute(
-            path: '/products/:storeId',
+            path: '/admin/products/:storeId',
             builder: (context, state) => AdminProductsPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
           GoRoute(
-            path: '/subscriptions',
+            path: '/admin/subscriptions',
             builder: (context, state) =>
                 const AdminStoreSubscriptionsAdminPage(),
           ),
           GoRoute(
-            path: '/subscription/:storeId',
+            path: '/admin/subscription/:storeId',
             builder: (context, state) => StoreSubscriptionsAdminPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
           GoRoute(
-            path: '/product/:productId',
+            path: '/admin/product/:productId',
             builder: (context, state) => ProductAdminPage(
               productId: state.pathParameters['productId'],
             ),
           ),
           GoRoute(
-            path: '/schedules/:storeId',
+            path: '/admin/schedules/:storeId',
             builder: (context, state) => AdminStoreSchedulesPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
           GoRoute(
-            path: '/schedule/:scheduleId',
+            path: '/admin/schedule/:scheduleId',
             builder: (context, state) => StoreScheduleAdminPage(
               scheduleId: state.pathParameters['scheduleId'],
             ),
           ),
           GoRoute(
-            path: '/schedule_exceptions/:storeId',
+            path: '/admin/schedule_exceptions/:storeId',
             builder: (context, state) => AdminStoreScheduleExceptionsPage(
               storeId: state.pathParameters['storeId'],
             ),
           ),
           GoRoute(
-            path: '/schedule_exception/:scheduleId',
+            path: '/admin/schedule_exception/:scheduleId',
             builder: (context, state) => StoreScheduleExceptionAdminPage(
               scheduleId: state.pathParameters['scheduleId'],
             ),
           ),
           GoRoute(
-            path: '/orders',
+            path: '/admin/orders',
             builder: (context, state) => AdminOrdersPage(
               storeId: state.uri.queryParameters['store'],
               userId: state.uri.queryParameters['user'],

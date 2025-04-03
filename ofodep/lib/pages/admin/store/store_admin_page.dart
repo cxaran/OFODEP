@@ -23,37 +23,32 @@ class StoreAdminPage extends StatelessWidget {
     return BlocProvider<StoreCubit>(
       create: (context) => StoreCubit(id: storeId!)..load(),
       child: Builder(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Edit Store'),
-          ),
-          body: BlocConsumer<StoreCubit, CrudState<StoreModel>>(
-            listener: (context, state) {
-              if (state is CrudError<StoreModel>) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-              if (state is StoreCrudEditing &&
-                  state.errorMessage != null &&
-                  state.errorMessage!.isNotEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
-                );
-              }
-            },
-            builder: (context, state) {
-              if (state is CrudLoading<StoreModel>) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is CrudLoaded<StoreModel> ||
-                  state is StoreCrudEditing) {
-                return _storePage(context, state);
-              } else if (state is CrudError<StoreModel>) {
-                return Center(child: Text(state.message));
-              }
-              return Container();
-            },
-          ),
+        builder: (context) => BlocConsumer<StoreCubit, CrudState<StoreModel>>(
+          listener: (context, state) {
+            if (state is CrudError<StoreModel>) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+            if (state is StoreCrudEditing &&
+                state.errorMessage != null &&
+                state.errorMessage!.isNotEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.errorMessage!)),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is CrudLoading<StoreModel>) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is CrudLoaded<StoreModel> ||
+                state is StoreCrudEditing) {
+              return _storePage(context, state);
+            } else if (state is CrudError<StoreModel>) {
+              return Center(child: Text(state.message));
+            }
+            return Container();
+          },
         ),
       ),
     );

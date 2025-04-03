@@ -41,9 +41,6 @@ class _AdminStoreSubscriptionsAdminPageState
       create: (context) => StoreSubscriptionsListCubit(),
       child: Builder(
         builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('subscriptions'),
-          ),
           body: Column(
             children: [
               // Filtros, search, and ordering section

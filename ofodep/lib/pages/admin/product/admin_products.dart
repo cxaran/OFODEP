@@ -46,9 +46,6 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       create: (context) => ProductsListCubit(storeId: widget.storeId),
       child: Builder(
         builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('products'),
-          ),
           body: Column(
             children: [
               // Filtros, search, and ordering section

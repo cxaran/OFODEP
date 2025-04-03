@@ -5,12 +5,10 @@ class ErrorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          "¡Ups! Algo salió mal",
-          style: TextStyle(color: Colors.red, fontSize: 18),
-        ),
+    return Center(
+      child: Text(
+        "¡Ups! Algo salió mal",
+        style: TextStyle(color: Colors.red, fontSize: 18),
       ),
     );
   }

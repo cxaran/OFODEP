@@ -18,49 +18,44 @@ class ProductPage extends StatelessWidget {
       create: (context) => ProductCubit(id: productId!)..load(),
       child: Builder(
         builder: (context) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('product'),
-            ),
-            body: BlocConsumer<ProductCubit, CrudState<ProductModel>>(
-              listener: (context, state) {
-                if (state is CrudError<ProductModel>) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.message)),
-                  );
-                }
-              },
-              builder: (context, state) {
-                if (state is CrudInitial<ProductModel> ||
-                    state is CrudLoading<ProductModel>) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is CrudError<ProductModel>) {
-                  return Center(child: Text(state.message));
-                } else if (state is CrudLoaded<ProductModel>) {
-                  // Estado no editable: muestra los datos y un botón para editar
-                  return Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: ListView(
-                      children: [
-                        PreviewImage(imageUrl: state.model.imageUrl),
-                        Text("Nombre: ${state.model.name}"),
-                        Text("Descripción: ${state.model.description}"),
-                        Text("Precio: ${state.model.price}"),
-                        Text("Categoría: ${state.model.category}"),
-                        ProductConfigurationsPage(
-                          productId: state.model.id,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Text("add_to_cart"),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                return Container();
-              },
-            ),
+          return BlocConsumer<ProductCubit, CrudState<ProductModel>>(
+            listener: (context, state) {
+              if (state is CrudError<ProductModel>) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+            builder: (context, state) {
+              if (state is CrudInitial<ProductModel> ||
+                  state is CrudLoading<ProductModel>) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is CrudError<ProductModel>) {
+                return Center(child: Text(state.message));
+              } else if (state is CrudLoaded<ProductModel>) {
+                // Estado no editable: muestra los datos y un botón para editar
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ListView(
+                    children: [
+                      PreviewImage(imageUrl: state.model.imageUrl),
+                      Text("Nombre: ${state.model.name}"),
+                      Text("Descripción: ${state.model.description}"),
+                      Text("Precio: ${state.model.price}"),
+                      Text("Categoría: ${state.model.category}"),
+                      ProductConfigurationsPage(
+                        productId: state.model.id,
+                      ),
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text("add_to_cart"),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return Container();
+            },
           );
         },
       ),

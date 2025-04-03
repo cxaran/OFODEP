@@ -42,9 +42,6 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       create: (context) => UsersListCubit(),
       child: Builder(
         builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('users'),
-          ),
           body: Column(
             children: [
               // Sección de filtros, búsqueda y ordenamiento.

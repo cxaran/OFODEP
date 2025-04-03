@@ -12,34 +12,29 @@ class AdminDashboardPage extends StatelessWidget {
     return BlocBuilder<SessionCubit, SessionState>(
       builder: (context, state) {
         if (state is SessionAuthenticated && state.user.admin) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('admin_dashboard'),
-            ),
-            body: ListView(
-              children: [
-                ListTile(
-                  title: const Text('users'),
-                  onTap: () => context.push('/admin/users'),
-                ),
-                ListTile(
-                  title: const Text('stores'),
-                  onTap: () => context.push('/admin/stores'),
-                ),
-                ListTile(
-                  title: const Text('subscriptions'),
-                  onTap: () => context.push('/admin/subscriptions'),
-                ),
-                ListTile(
-                  title: const Text('store_admins'),
-                  onTap: () => context.push('/admin/store_admins'),
-                ),
-                ListTile(
-                  title: const Text('products'),
-                  onTap: () => context.push('/admin/products'),
-                ),
-              ],
-            ),
+          return ListView(
+            children: [
+              ListTile(
+                title: const Text('users'),
+                onTap: () => context.push('/admin/users'),
+              ),
+              ListTile(
+                title: const Text('stores'),
+                onTap: () => context.push('/admin/stores'),
+              ),
+              ListTile(
+                title: const Text('subscriptions'),
+                onTap: () => context.push('/admin/subscriptions'),
+              ),
+              ListTile(
+                title: const Text('store_admins'),
+                onTap: () => context.push('/admin/store_admins'),
+              ),
+              ListTile(
+                title: const Text('products'),
+                onTap: () => context.push('/admin/products'),
+              ),
+            ],
           );
         } else {
           return const ErrorPage();

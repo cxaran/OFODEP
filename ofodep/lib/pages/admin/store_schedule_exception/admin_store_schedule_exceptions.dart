@@ -53,9 +53,6 @@ class _AdminStoreScheduleExceptionsPageState
           StoreScheduleExceptionsListCubit(storeId: widget.storeId!),
       child: Builder(
         builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('schedules'),
-          ),
           body: Column(
             children: [
               // Filtros, search, and ordering section

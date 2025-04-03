@@ -39,9 +39,6 @@ class _AdminStoresPageState extends State<AdminStoresPage> {
       create: (context) => StoresListCubit(),
       child: Builder(
         builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('stores'),
-          ),
           body: Column(
             children: [
               Column(
