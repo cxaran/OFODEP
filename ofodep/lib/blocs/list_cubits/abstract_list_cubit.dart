@@ -9,11 +9,13 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
   final Repository<T> repository;
   late final PagingController<int, T> pagingController;
   final int limit;
+  String? randomSeed;
 
   ListCubit({
     required FS initialState,
     required this.repository,
     this.limit = 10,
+    this.randomSeed,
   }) : super(initialState) {
     pagingController = PagingController<int, T>(
       getNextPageKey: (state) {
@@ -46,6 +48,12 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
     );
   }
 
+  /// Actualiza la semilla aleatoria y refresca la paginación.
+  void updateRandomSeed(String? seed) {
+    randomSeed = seed;
+    refresh();
+  }
+
   /// Refresca la paginación.
   void refresh() {
     pagingController.refresh();
@@ -60,14 +68,26 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
     String? orderBy,
     bool ascending = false,
   }) {
-    return repository.getPaginated(
-      page: page,
-      limit: limit,
-      filter: filter,
-      search: search,
-      orderBy: orderBy,
-      ascending: ascending,
-    );
+    if (randomSeed != null) {
+      return repository.getRandom(
+        page: page,
+        limit: limit,
+        filter: filter,
+        search: search,
+        orderBy: orderBy,
+        ascending: ascending,
+        randomSeed: randomSeed,
+      );
+    } else {
+      return repository.getPaginated(
+        page: page,
+        limit: limit,
+        filter: filter,
+        search: search,
+        orderBy: orderBy,
+        ascending: ascending,
+      );
+    }
   }
 
   /// Actualiza el término de búsqueda y refresca la paginación.

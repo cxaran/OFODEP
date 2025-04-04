@@ -18,5 +18,8 @@ class StoreRepository extends Repository<StoreModel> {
   ];
 
   @override
+  String get select => '*, store_is_open';
+
+  @override
   StoreModel fromMap(Map<String, dynamic> map) => StoreModel.fromMap(map);
 }

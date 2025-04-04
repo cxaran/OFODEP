@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
-import 'package:ofodep/pages/home/explore_page.dart';
+import 'package:ofodep/pages/home/explore/explore_page.dart';
 import 'package:ofodep/pages/home/profile_page.dart';
-import 'package:ofodep/widgets/container_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,11 +26,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ContainerPage(
-        padding: 0,
-        child: _widgetOptions.elementAt(
-          _selectedIndex,
-        ),
+      body: _widgetOptions.elementAt(
+        _selectedIndex,
       ),
       bottomNavigationBar: BlocConsumer<SessionCubit, SessionState>(
         listener: (context, state) {

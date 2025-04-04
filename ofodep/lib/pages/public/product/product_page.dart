@@ -14,50 +14,71 @@ class ProductPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (productId == null) return const ErrorPage();
-    return BlocProvider<ProductCubit>(
-      create: (context) => ProductCubit(id: productId!)..load(),
-      child: Builder(
-        builder: (context) {
-          return BlocConsumer<ProductCubit, CrudState<ProductModel>>(
-            listener: (context, state) {
-              if (state is CrudError<ProductModel>) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-            },
-            builder: (context, state) {
-              if (state is CrudInitial<ProductModel> ||
-                  state is CrudLoading<ProductModel>) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is CrudError<ProductModel>) {
-                return Center(child: Text(state.message));
-              } else if (state is CrudLoaded<ProductModel>) {
-                // Estado no editable: muestra los datos y un botón para editar
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ListView(
-                    children: [
-                      PreviewImage(imageUrl: state.model.imageUrl),
-                      Text("Nombre: ${state.model.name}"),
-                      Text("Descripción: ${state.model.description}"),
-                      Text("Precio: ${state.model.price}"),
-                      Text("Categoría: ${state.model.category}"),
-                      ProductConfigurationsPage(
-                        productId: state.model.id,
-                      ),
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text("add_to_cart"),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return Container();
-            },
-          );
+    return Scaffold(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              backgroundColor: Theme.of(context).colorScheme.onPrimary,
+              floating: true,
+              snap: true,
+              forceElevated: innerBoxIsScrolled,
+              actions: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.share),
+                ),
+                SizedBox(width: 8),
+              ],
+            ),
+          ];
         },
+        body: BlocProvider<ProductCubit>(
+          create: (context) => ProductCubit(id: productId!)..load(),
+          child: Builder(
+            builder: (context) {
+              return BlocConsumer<ProductCubit, CrudState<ProductModel>>(
+                listener: (context, state) {
+                  if (state is CrudError<ProductModel>) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message)),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is CrudInitial<ProductModel> ||
+                      state is CrudLoading<ProductModel>) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is CrudError<ProductModel>) {
+                    return Center(child: Text(state.message));
+                  } else if (state is CrudLoaded<ProductModel>) {
+                    // Estado no editable: muestra los datos y un botón para editar
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ListView(
+                        children: [
+                          PreviewImage(imageUrl: state.model.imageUrl),
+                          Text("Nombre: ${state.model.name}"),
+                          Text("Descripción: ${state.model.description}"),
+                          Text("Precio: ${state.model.price}"),
+                          Text("Categoría: ${state.model.category}"),
+                          ProductConfigurationsPage(
+                            productId: state.model.id,
+                          ),
+                          ElevatedButton(
+                            onPressed: () {},
+                            child: const Text("add_to_cart"),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return Container();
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

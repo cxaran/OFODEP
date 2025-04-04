@@ -25,7 +25,6 @@ class AdminImage extends StatelessWidget {
   });
 
   Future<void> pickImage(BuildContext context) async {
-    debugPrint('clientId: $clientId');
     if (clientId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

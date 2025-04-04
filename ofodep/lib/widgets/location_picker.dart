@@ -22,6 +22,7 @@ class LocationPicker extends StatefulWidget {
 
 class _LocationPickerState extends State<LocationPicker> {
   late LatLng currentLocation;
+  late double initialZoom;
 
   @override
   void initState() {
@@ -32,8 +33,10 @@ class _LocationPickerState extends State<LocationPicker> {
         widget.initialLatitude!,
         widget.initialLongitude!,
       );
+      initialZoom = widget.initialZoom;
     } else {
-      currentLocation = LatLng(0, 0);
+      currentLocation = LatLng(20, -100);
+      initialZoom = 5;
     }
   }
 
@@ -42,7 +45,7 @@ class _LocationPickerState extends State<LocationPicker> {
     return FlutterMap(
       options: MapOptions(
         initialCenter: currentLocation,
-        initialZoom: widget.initialZoom,
+        initialZoom: initialZoom,
         onTap: (_, tappedPoint) {
           setState(() {
             currentLocation = tappedPoint;
@@ -53,7 +56,7 @@ class _LocationPickerState extends State<LocationPicker> {
       children: [
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.app',
+          userAgentPackageName: 'Mozilla/5.0',
         ),
         DragMarkers(
           markers: [

@@ -53,9 +53,6 @@ GoRouter createRouter(SessionCubit sessionCubit) {
     initialLocation: '/home',
     refreshListenable: sessionNotifier,
     redirect: (context, state) {
-      debugPrint(state.uri.toString());
-      debugPrint(sessionCubit.state.toString());
-
       final isAuthenticated = sessionCubit.state is SessionAuthenticated;
       final isInitial = sessionCubit.state is SessionInitial;
       final loggingIn = state.matchedLocation == '/login';
@@ -84,7 +81,6 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         return '/login?redirect=${Uri.encodeComponent(state.uri.toString())}';
       }
 
-      debugPrint('entrando a ${state.uri.toString()}');
       return null;
     },
     routes: [

@@ -622,6 +622,98 @@ BEGIN
       END IF;
     END IF;
   END IF;
+
+CREATE OR REPLACE FUNCTION product_is_open(p products)
+RETURNS boolean AS $$
+DECLARE
+  day_of_week integer;
+BEGIN
+  -- Convertir el día actual al formato: 1 = lunes, …, 7 = domingo.
+  day_of_week := ((EXTRACT(DOW FROM CURRENT_DATE))::integer + 6) % 7 + 1;
+
+  -- Si hay una excepción que indique que la tienda está cerrada hoy, retorna false.
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedule_exceptions
+    WHERE store_id = p.store_id
+      AND date = CURRENT_DATE
+      AND is_closed = true
+  ) THEN
+    RETURN false;
+  END IF;
+
+  -- Si hay una excepción que indique que la tienda está abierta hoy en el horario actual, retorna true.
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedule_exceptions
+    WHERE store_id = p.store_id
+      AND date = CURRENT_DATE
+      AND is_closed = false
+      AND CURRENT_TIME BETWEEN opening_time AND closing_time
+  ) THEN
+    RETURN true;
+  END IF;
+
+  -- Verificar en el horario regular si la tienda debería estar abierta.
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedules
+    WHERE store_id = p.store_id
+      AND day_of_week = ANY(days)
+      AND CURRENT_TIME BETWEEN opening_time AND closing_time
+  ) THEN
+    RETURN true;
+  END IF;
+
+  RETURN false;
+END;
+
+CREATE OR REPLACE FUNCTION store_is_open(s stores)
+RETURNS boolean AS $$
+DECLARE
+  day_of_week integer;
+BEGIN
+  -- Convertir el día actual al formato: 1 = lunes, …, 7 = domingo.
+  day_of_week := ((EXTRACT(DOW FROM CURRENT_DATE))::integer + 6) % 7 + 1;
+
+  -- Si hay una excepción que indique que la tienda está cerrada hoy, retorna false.
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedule_exceptions
+    WHERE store_id = s.id
+      AND date = CURRENT_DATE
+      AND is_closed = true
+  ) THEN
+    RETURN false;
+  END IF;
+
+  -- Si hay una excepción que indique que la tienda está abierta hoy en el horario actual, retorna true.
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedule_exceptions
+    WHERE store_id = s.id
+      AND date = CURRENT_DATE
+      AND is_closed = false
+      AND CURRENT_TIME BETWEEN opening_time AND closing_time
+  ) THEN
+    RETURN true;
+  END IF;
+
+  -- Verificar en el horario regular si la tienda debería estar abierta.
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedules
+    WHERE store_id = s.id
+      AND day_of_week = ANY(days)
+      AND CURRENT_TIME BETWEEN opening_time AND closing_time
+  ) THEN
+    RETURN true;
+  END IF;
+
+  RETURN false;
+END;
+
+
   
   -- En ausencia de excepción, se verifica el horario regular
   FOR regular_record IN

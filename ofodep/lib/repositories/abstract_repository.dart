@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:ofodep/models/abstract_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -151,7 +150,6 @@ abstract class Repository<T extends ModelComponent> {
           client.from(tableName).select(select ?? this.select);
 
       if (filter != null) {
-        debugPrint('Filter: $filter');
         filter.forEach((k, v) {
           query = k.endsWith('#gte')
               ? query.gte(k.replaceAll('#gte', ''), v)
@@ -259,6 +257,8 @@ abstract class Repository<T extends ModelComponent> {
     List<String>? searchColumns,
     List<String>? arraySearchColumns,
     String? randomSeed,
+    String? orderBy,
+    bool ascending = false,
     String? select,
   }) async {
     try {
@@ -289,6 +289,11 @@ abstract class Repository<T extends ModelComponent> {
         randomExpr,
         ascending: true,
       );
+
+      // Ordenamiento
+      if (orderBy != null && orderBy.isNotEmpty) {
+        paginationQuery = query.order(orderBy, ascending: ascending);
+      }
 
       // Se define el rango de resultados para la paginación.
       paginationQuery = paginationQuery.range(

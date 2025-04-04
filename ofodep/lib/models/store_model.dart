@@ -28,6 +28,9 @@ class StoreModel extends ModelComponent {
   num? deliveryPrice;
   num? deliveryMinimumOrder;
 
+  // Is open
+  bool? isOpen;
+
   // Imgur
   String? imgurClientId;
   String? imgurClientSecret;
@@ -51,6 +54,7 @@ class StoreModel extends ModelComponent {
     this.pickup = false,
     this.delivery = false,
     this.deliveryPrice,
+    this.isOpen,
     this.imgurClientId,
     this.imgurClientSecret,
     super.createdAt,
@@ -78,6 +82,7 @@ class StoreModel extends ModelComponent {
       pickup: map['pickup'] as bool? ?? false,
       delivery: map['delivery'] as bool? ?? false,
       deliveryPrice: map['delivery_price'],
+      isOpen: map['store_is_open'] as bool?,
       imgurClientId: map['imgur_client_id'] as String?,
       imgurClientSecret: map['imgur_client_secret'] as String?,
       createdAt: DateTime.tryParse(map['created_at'] ?? ''),
@@ -108,6 +113,7 @@ class StoreModel extends ModelComponent {
         'pickup': pickup,
         'delivery': delivery,
         'delivery_price': deliveryPrice,
+        'store_is_open': isOpen,
         'imgur_client_id': imgurClientId,
         'imgur_client_secret': imgurClientSecret,
       };
@@ -131,6 +137,7 @@ class StoreModel extends ModelComponent {
     bool? pickup,
     bool? delivery,
     num? deliveryPrice,
+    bool? isOpen,
     String? imgurClientId,
     String? imgurClientSecret,
   }) {
@@ -153,6 +160,7 @@ class StoreModel extends ModelComponent {
       pickup: pickup ?? this.pickup,
       delivery: delivery ?? this.delivery,
       deliveryPrice: deliveryPrice ?? this.deliveryPrice,
+      isOpen: isOpen ?? this.isOpen,
       imgurClientId: imgurClientId ?? this.imgurClientId,
       imgurClientSecret: imgurClientSecret ?? this.imgurClientSecret,
       createdAt: createdAt,
@@ -182,6 +190,7 @@ class StoreModel extends ModelComponent {
       'deliveryPrice: $deliveryPrice, '
       'imgurClientId: $imgurClientId, '
       'imgurClientSecret: $imgurClientSecret, '
+      'isOpen: $isOpen, '
       'createdAt: $createdAt, '
       'updatedAt: $updatedAt'
       ')';
