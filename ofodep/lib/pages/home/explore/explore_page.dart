@@ -49,11 +49,19 @@ class ExplorePage extends StatelessWidget {
                 initialState: BasicListFilterState(
                   orderBy: 'product_is_open',
                   ascending: false,
+                  filter: {
+                    'distance#lte': 5000,
+                  },
+                  params: {
+                    'user_lat': state.location.latitude,
+                    'user_lng': state.location.longitude,
+                  },
                 ),
               ),
               child: BlocConsumer<ProductStoreListCubit, BasicListFilterState>(
                 listener: (context, state) {
                   if (state.errorMessage != null) {
+                    debugPrint(state.errorMessage);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(state.errorMessage!),

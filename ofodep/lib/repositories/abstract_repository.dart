@@ -14,6 +14,9 @@ abstract class Repository<T extends ModelComponent> {
   /// Select from supabase.
   String get select => '*';
 
+  /// RPC function name.
+  String? get rpc => null;
+
   /// Field id for get.
   String get fieldId => 'id';
 
@@ -23,17 +26,29 @@ abstract class Repository<T extends ModelComponent> {
   /// Cliente de Supabase (se usa la instancia global, aunque podría inyectarse).
   final SupabaseClient client = Supabase.instance.client;
 
+  PostgrestFilterBuilder<List<Map<String, dynamic>>> selectTable({
+    String? select,
+    Map<String, dynamic>? params,
+  }) {
+    if (rpc != null && select == null) {
+      return client.rpc(rpc!, params: params);
+    }
+    return client.from(tableName).select(select ?? this.select);
+  }
+
   /// Obtiene una instancia del modelo por su ID único.
   /// [id] ID de la instancia a buscar.
   Future<T?> getById(
     String id, {
     String? select,
     String? field,
+    Map<String, dynamic>? params,
   }) async {
     try {
-      final data = await client
-          .from(tableName)
-          .select(select ?? this.select)
+      final data = await selectTable(
+        select: select,
+        params: params,
+      )
           .eq(
             field ?? this.fieldId,
             id,
@@ -51,11 +66,13 @@ abstract class Repository<T extends ModelComponent> {
     String id,
     String column, {
     String? field,
+    Map<String, dynamic>? params,
   }) async {
     try {
-      final data = await client
-          .from(tableName)
-          .select(column)
+      final data = await selectTable(
+        select: column,
+        params: params,
+      )
           .eq(
             field ?? this.fieldId,
             id,
@@ -73,6 +90,7 @@ abstract class Repository<T extends ModelComponent> {
   /// Retorna el ID generado por la base de datos (usualmente UUID).
   /// [model] instancia del modelo a insertar.
   Future<String?> create(T model) async {
+    if (rpc != null) return null;
     try {
       final response = await client
           .from(tableName)
@@ -93,6 +111,7 @@ abstract class Repository<T extends ModelComponent> {
   /// Retorna true si la operación fue exitosa.
   /// [model] instancia del modelo con los campos modificados.
   Future<bool> update(T model) async {
+    if (rpc != null) return false;
     try {
       final response = await client
           .from(tableName)
@@ -109,10 +128,17 @@ abstract class Repository<T extends ModelComponent> {
     }
   }
 
-  Future<List<T>> find(String field, dynamic value) async {
+  Future<List<T>> find(
+    String field,
+    dynamic value, {
+    String? select,
+    Map<String, dynamic>? params,
+  }) async {
     try {
-      final response =
-          await client.from(tableName).select(select).eq(field, value);
+      final response = await selectTable(
+        select: select,
+        params: params,
+      ).eq(field, value);
       return response.map((data) => fromMap(data)).toList();
     } catch (e) {
       throw Exception('error(getByFieldValue): $e');
@@ -123,6 +149,7 @@ abstract class Repository<T extends ModelComponent> {
   /// Retorna true si la eliminación fue exitosa.
   /// [id] ID de la instancia a eliminar.
   Future<bool> delete(String id) async {
+    if (rpc != null) return false;
     try {
       final response =
           await client.from(tableName).delete().eq('id', id).select('id');
@@ -144,10 +171,13 @@ abstract class Repository<T extends ModelComponent> {
     String? orderBy,
     bool ascending = false,
     String? select,
+    Map<String, dynamic>? params,
   }) {
     try {
-      PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-          client.from(tableName).select(select ?? this.select);
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query = selectTable(
+        select: select,
+        params: params,
+      );
 
       if (filter != null) {
         filter.forEach((k, v) {
@@ -205,6 +235,7 @@ abstract class Repository<T extends ModelComponent> {
     String? orderBy,
     bool ascending = false,
     String? select,
+    Map<String, dynamic>? params,
   }) async {
     try {
       // Búsqueda y filtros
@@ -214,6 +245,7 @@ abstract class Repository<T extends ModelComponent> {
         searchColumns: searchColumns,
         arraySearchColumns: arraySearchColumns,
         select: select,
+        params: params,
       );
 
       PostgrestTransformBuilder<List<Map<String, dynamic>>> paginationQuery;
@@ -260,6 +292,7 @@ abstract class Repository<T extends ModelComponent> {
     String? orderBy,
     bool ascending = false,
     String? select,
+    Map<String, dynamic>? params,
   }) async {
     try {
       // Búsqueda y filtros

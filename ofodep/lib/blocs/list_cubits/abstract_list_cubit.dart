@@ -77,6 +77,7 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
         orderBy: orderBy,
         ascending: ascending,
         randomSeed: randomSeed,
+        params: state.params,
       );
     } else {
       return repository.getPaginated(
@@ -86,6 +87,7 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
         search: search,
         orderBy: orderBy,
         ascending: ascending,
+        params: state.params,
       );
     }
   }

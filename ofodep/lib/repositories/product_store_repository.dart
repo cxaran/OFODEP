@@ -19,16 +19,8 @@ class ProductStoreRepository extends Repository<ProductStoreModel> {
     stores!inner(
       name,
       logo_url,
-      address_street,
-      address_number,
-      address_colony,
-      address_zipcode,
-      address_city,
-      address_state,
-      country_code,
       lat,
       lng,
-      whatsapp,
       delivery_minimum_order,
       pickup,
       delivery,
@@ -38,6 +30,9 @@ class ProductStoreRepository extends Repository<ProductStoreModel> {
     ),
     product_is_open
   """;
+
+  @override
+  String get rpc => 'produc_store_info';
 
   @override
   ProductStoreModel fromMap(Map<String, dynamic> map) =>

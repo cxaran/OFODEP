@@ -22,6 +22,9 @@ class ProductStoreModel extends ModelComponent {
   // Store is open
   bool? isOpen;
 
+  // Store distance
+  num? distance;
+
   // Product info
   String name;
   String? description;
@@ -34,16 +37,17 @@ class ProductStoreModel extends ModelComponent {
     required super.id,
     required this.storeId,
     required this.storeName,
-    required this.name,
     this.storeLogoUrl,
-    this.isOpen,
     this.pickup,
     this.delivery,
-    this.deliveryPrice,
     this.deliveryMinimumOrder,
+    this.deliveryPrice,
     this.geom,
     this.lat,
     this.lng,
+    this.isOpen,
+    this.distance,
+    required this.name,
     this.description,
     this.imageUrl,
     this.price,
@@ -55,29 +59,33 @@ class ProductStoreModel extends ModelComponent {
 
   @override
   factory ProductStoreModel.fromMap(Map<String, dynamic> map) {
+    print(map);
     return ProductStoreModel(
       id: map['id'] as String,
 
       // Store info
       storeId: map['store_id'] as String,
-      storeName: map['stores']['name'],
-      storeLogoUrl: map['stores']['logo_url'] as String?,
+      storeName: map['store_name'],
+      storeLogoUrl: map['store_logo_url'] as String?,
 
       // Store delivery
-      pickup: map['stores']['pickup'] as bool?,
-      delivery: map['stores']['delivery'] as bool?,
-      deliveryPrice: map['stores']['delivery_price'],
-      deliveryMinimumOrder: map['stores']['delivery_minimum_order'],
+      pickup: map['pickup'] as bool?,
+      delivery: map['delivery'] as bool?,
+      deliveryPrice: map['delivery_price'],
+      deliveryMinimumOrder: map['delivery_minimum_order'],
 
       // Store delivery zone geom
-      geom: map['stores']['geom'] as Map<String, dynamic>?,
+      geom: map['geom'] as Map<String, dynamic>?,
 
       // Store coordinates
-      lat: map['stores']['lat'],
-      lng: map['stores']['lng'],
+      lat: map['lat'],
+      lng: map['lng'],
 
       // Store is open
       isOpen: map['product_is_open'] as bool?,
+
+      // Store distance
+      distance: map['distance'],
 
       // Product info
       name: map['name'].toString(),
@@ -99,20 +107,23 @@ class ProductStoreModel extends ModelComponent {
       'store_id': storeId,
       'store_name': storeName,
       'store_logo_url': storeLogoUrl,
-      'is_open': isOpen,
       'pickup': pickup,
       'delivery': delivery,
-      'delivery_price': deliveryPrice,
       'delivery_minimum_order': deliveryMinimumOrder,
+      'delivery_price': deliveryPrice,
       'geom': geom,
       'lat': lat,
       'lng': lng,
+      'is_open': isOpen,
+      'distance': distance,
       'name': name,
       'description': description,
       'image_url': imageUrl,
       'price': price,
       'category': category,
       'tags': tags,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
     };
   }
 
@@ -121,14 +132,15 @@ class ProductStoreModel extends ModelComponent {
     String? storeId,
     String? storeName,
     String? storeLogoUrl,
-    bool? isOpen,
     bool? pickup,
     bool? delivery,
-    num? deliveryPrice,
     num? deliveryMinimumOrder,
+    num? deliveryPrice,
     Map<String, dynamic>? geom,
     num? lat,
     num? lng,
+    bool? isOpen,
+    num? distance,
     String? name,
     String? description,
     String? imageUrl,
@@ -141,14 +153,15 @@ class ProductStoreModel extends ModelComponent {
       storeId: storeId ?? this.storeId,
       storeName: storeName ?? this.storeName,
       storeLogoUrl: storeLogoUrl ?? this.storeLogoUrl,
-      isOpen: isOpen ?? this.isOpen,
       pickup: pickup ?? this.pickup,
       delivery: delivery ?? this.delivery,
-      deliveryPrice: deliveryPrice ?? this.deliveryPrice,
       deliveryMinimumOrder: deliveryMinimumOrder ?? this.deliveryMinimumOrder,
+      deliveryPrice: deliveryPrice ?? this.deliveryPrice,
       geom: geom ?? this.geom,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
+      isOpen: isOpen ?? this.isOpen,
+      distance: distance ?? this.distance,
       name: name ?? this.name,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -167,20 +180,20 @@ class ProductStoreModel extends ModelComponent {
         'storeId: $storeId, '
         'storeName: $storeName, '
         'storeLogoUrl: $storeLogoUrl, '
-        'isOpen: $isOpen, '
         'pickup: $pickup, '
-        'delivery: $delivery, '
-        'deliveryPrice: $deliveryPrice, '
         'deliveryMinimumOrder: $deliveryMinimumOrder, '
-        'geom: $geom, '
-        'lat: $lat, '
-        'lng: $lng, '
+        'deliveryPrice: $deliveryPrice, '
+        'delivery: $delivery, '
+        'isOpen: $isOpen, '
+        'distance: $distance, '
         'name: $name, '
         'description: $description, '
         'imageUrl: $imageUrl, '
+        'lat: $lat, '
+        'lng: $lng, '
         'price: $price, '
         'category: $category, '
-        'tags: $tags, '
+        'tags: $tags'
         'createdAt: $createdAt, '
         'updatedAt: $updatedAt'
         ')';

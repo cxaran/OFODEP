@@ -5,6 +5,7 @@ abstract class ListFilterState {
   final bool ascending;
   final String? newElementId;
   final String? errorMessage;
+  final Map<String, dynamic>? params;
 
   const ListFilterState({
     this.filter,
@@ -13,6 +14,7 @@ abstract class ListFilterState {
     this.ascending = false,
     this.newElementId,
     this.errorMessage,
+    this.params,
   });
 
   /// Método que permite crear una copia modificada del estado.
@@ -40,6 +42,8 @@ class BasicListFilterState implements ListFilterState {
   final String? newElementId;
   @override
   final String? errorMessage;
+  @override
+  final Map<String, dynamic>? params;
 
   const BasicListFilterState({
     this.filter,
@@ -48,6 +52,7 @@ class BasicListFilterState implements ListFilterState {
     this.ascending = false,
     this.newElementId,
     this.errorMessage,
+    this.params,
   });
 
   @override
@@ -58,6 +63,7 @@ class BasicListFilterState implements ListFilterState {
     bool? ascending,
     String? newElementId,
     String? errorMessage,
+    Map<String, dynamic>? params,
   }) =>
       BasicListFilterState(
         filter: filter ?? this.filter,
@@ -66,5 +72,6 @@ class BasicListFilterState implements ListFilterState {
         ascending: ascending ?? this.ascending,
         newElementId: newElementId ?? this.newElementId,
         errorMessage: errorMessage ?? this.errorMessage,
+        params: params ?? this.params,
       );
 }
