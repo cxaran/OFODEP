@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_cubit.dart';
 import 'package:ofodep/const.dart';
+import 'package:ofodep/models/country_timezone.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/store_model.dart';
 import 'package:ofodep/widgets/admin_image.dart';
@@ -258,27 +259,32 @@ class StoreAdminPage extends StatelessWidget {
                 (model) => model.copyWith(addressState: value));
           },
         ),
-        DropdownButtonFormField<Map<String, String>>(
-          value: edited.timezone == null || edited.countryCode == null
+        DropdownButtonFormField<CountryTimezone>(
+          value: edited.countryCode == '' || edited.timezone == ''
               ? null
-              : {
-                  'zone': edited.timezone!,
-                  'country': edited.countryCode!,
-                },
-          decoration: const InputDecoration(labelText: "Zona horaria"),
+              : CountryTimezone(
+                  country: edited.countryCode ?? '',
+                  timezone: edited.timezone ?? '',
+                ),
           items: timeZonesLatAm
-              .map((tz) => DropdownMenuItem<Map<String, String>>(
+              .map((tz) => DropdownMenuItem<CountryTimezone>(
                     value: tz,
-                    child: Text('${tz['zone']} (${tz['country']})'),
+                    child: Text('${tz.timezone} (${tz.country})'),
                   ))
               .toList(),
           onChanged: (tz) {
             context.read<StoreCubit>().updateEditingState(
                   (model) => model.copyWith(
-                    timezone: tz?['zone'],
-                    countryCode: tz?['country'],
+                    countryCode: tz?.country,
+                    timezone: tz?.timezone,
                   ),
                 );
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, selecciona un zona horaria';
+            }
+            return null;
           },
         ),
         TextFormField(
@@ -474,7 +480,7 @@ class StoreAdminPage extends StatelessWidget {
 
   /// Sección de configuración de imágenes (Imgur).
   Widget _buildImageApiSection(BuildContext context, StoreCrudEditing state) {
-    final edited = state.editedModel;
+    // final edited = state.editedModel;
     return ListView(
       children: [
         const Text("Edit image configuration (Imgur)"),

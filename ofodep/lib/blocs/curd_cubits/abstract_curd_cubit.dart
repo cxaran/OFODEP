@@ -37,7 +37,7 @@ class CrudEditing<T extends ModelComponent> extends CrudState<T> {
 
   CrudEditing.fromModel(this.model)
       : editedModel = model.copyWith() as T,
-        editMode = true,
+        editMode = false,
         isSubmitting = false,
         errorMessage = null;
 
@@ -143,6 +143,30 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
         emit(current.copyWith(isSubmitting: false, errorMessage: e.toString()));
       }
     }
+  }
+
+  Future<String?> create() async {
+    final current = state;
+    if (current is CrudEditing<T>) {
+      emit(current.copyWith(isSubmitting: true, errorMessage: null));
+      try {
+        final createdId = await repository.create(current.editedModel);
+        if (createdId != null) {
+          emit(CrudLoaded<T>(current.editedModel));
+          return createdId;
+        } else {
+          emit(
+            current.copyWith(
+              isSubmitting: false,
+              errorMessage: 'error(create)',
+            ),
+          );
+        }
+      } catch (e) {
+        emit(current.copyWith(isSubmitting: false, errorMessage: e.toString()));
+      }
+    }
+    return null;
   }
 
   /// Elimina el modelo a partir de su ID.

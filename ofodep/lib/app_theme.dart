@@ -20,7 +20,7 @@ abstract final class AppTheme {
   // The FlexColorScheme defined light mode ThemeData.
   static ThemeData light = FlexThemeData.light(
     // Using FlexColorScheme built-in FlexScheme enum based colors
-    scheme: FlexScheme.deepBlue,
+    scheme: FlexScheme.blueM3,
     // Input color modifiers.
     usedColors: 3,
     swapLegacyOnMaterial3: true,
@@ -46,7 +46,6 @@ abstract final class AppTheme {
       inputDecoratorRadius: 6.0,
       inputDecoratorUnfocusedBorderIsColored: true,
       listTileStyle: ListTileStyle.drawer,
-      alignedDropdown: true,
       snackBarRadius: 10,
       snackBarElevation: 10,
       appBarCenterTitle: false,
@@ -68,7 +67,7 @@ abstract final class AppTheme {
   // The FlexColorScheme defined dark mode ThemeData.
   static ThemeData dark = FlexThemeData.dark(
     // Using FlexColorScheme built-in FlexScheme enum based colors.
-    scheme: FlexScheme.deepBlue,
+    scheme: FlexScheme.blueM3,
     // Input color modifiers.
     usedColors: 3,
     swapLegacyOnMaterial3: true,
@@ -97,7 +96,6 @@ abstract final class AppTheme {
       inputDecoratorRadius: 6.0,
       inputDecoratorUnfocusedBorderIsColored: true,
       listTileStyle: ListTileStyle.drawer,
-      alignedDropdown: true,
       snackBarRadius: 10,
       snackBarElevation: 10,
       appBarBackgroundSchemeColor: SchemeColor.onPrimary,

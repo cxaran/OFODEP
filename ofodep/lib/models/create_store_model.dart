@@ -21,6 +21,17 @@ class CreateStoreModel extends ModelComponent {
     required this.contactPhone,
   });
 
+  CreateStoreModel.empty()
+      : this(
+          id: '',
+          storeName: '',
+          countryCode: '',
+          timezone: '',
+          contactName: '',
+          contactEmail: '',
+          contactPhone: '',
+        );
+
   @override
   factory CreateStoreModel.fromMap(Map<String, dynamic> map) {
     return CreateStoreModel(

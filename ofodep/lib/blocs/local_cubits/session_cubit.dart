@@ -34,6 +34,18 @@ class SessionAuthenticated extends SessionState {
     super.admin = false,
     super.storeId,
   });
+
+  /// Crea un copia del estado de autenticación
+  SessionAuthenticated copyWith({
+    UserModel? user,
+    bool? admin,
+    String? storeId,
+  }) =>
+      SessionAuthenticated(
+        user ?? this.user,
+        admin: admin ?? this.admin,
+        storeId: storeId ?? this.storeId,
+      );
 }
 
 class SessionUnauthenticated extends SessionState {
@@ -75,15 +87,17 @@ class SessionCubit extends Cubit<SessionState> {
             session.user.id,
           );
 
-          // final storeAdmins = await StoreAdminRepository().find(
-          //   'user_id',
-          //   session.user.id,
-          // );
-          // if (storeAdmins.isNotEmpty) {
-          //   emit(
-          //       SessionAuthenticated(user, storeId: storeAdmins.first.storeId));
-          //   return;
-          // }
+          final storeAdmins = await StoreAdminRepository().find(
+            'user_id',
+            session.user.id,
+          );
+          if (storeAdmins.isNotEmpty) {
+            emit(SessionAuthenticated(
+              user,
+              storeId: storeAdmins.first.storeId,
+            ));
+            return;
+          }
 
           emit(SessionAuthenticated(user, admin: adminGlobal != null));
           return;
@@ -96,6 +110,14 @@ class SessionCubit extends Cubit<SessionState> {
       return;
     }
     emit(SessionUnauthenticated());
+  }
+
+  /// Agregar un store a la sesión actual
+  void addStore(String storeId) {
+    final current = state;
+    if (current is SessionAuthenticated) {
+      emit(current.copyWith(storeId: storeId));
+    }
   }
 
   /// Elimina la sesión actual

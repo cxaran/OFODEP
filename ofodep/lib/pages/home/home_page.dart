@@ -88,21 +88,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
-
-
- //         if (state.admin)
-    //           ElevatedButton(
-    //             onPressed: () => context.push('/admin'),
-    //             child: const Text('admin_dashboard'),
-    //           ),
-    //         ElevatedButton(
-    //           onPressed: () => context.read<SessionCubit>().signOut(),
-    //           child: const Text('sign_out'),
-    //         ),
-    //       ],
-    //     ),
-
-    // },
-    // );

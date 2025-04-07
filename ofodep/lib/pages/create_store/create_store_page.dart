@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/create_store_cubit.dart';
+import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/const.dart';
+import 'package:ofodep/models/country_timezone.dart';
 import 'package:ofodep/models/create_store_model.dart';
+import 'package:ofodep/pages/create_store/terms_create_store.dart';
+import 'package:ofodep/widgets/container_page.dart';
+import 'package:ofodep/widgets/crud_state_handler.dart';
 import 'package:ofodep/widgets/hero_layout_card.dart';
 
 const List<InfoImage> images = [
@@ -48,6 +53,7 @@ class CreateStorePage extends StatefulWidget {
 
 class _CreateStorePageState extends State<CreateStorePage> {
   final CarouselController controller = CarouselController(initialItem: 1);
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -57,15 +63,6 @@ class _CreateStorePageState extends State<CreateStorePage> {
 
   @override
   Widget build(BuildContext context) {
-    CarouselView _carouselView = CarouselView.weighted(
-      controller: controller,
-      itemSnapping: true,
-      flexWeights: const <int>[1, 7, 1],
-      children: images.map((InfoImage image) {
-        return HeroLayoutCard(imageInfo: image);
-      }).toList(),
-    );
-
     double height = MediaQuery.sizeOf(context).height / 2;
     return Scaffold(
       body: NestedScrollView(
@@ -79,194 +76,247 @@ class _CreateStorePageState extends State<CreateStorePage> {
               forceMaterialTransparency: true,
             ),
             SliverToBoxAdapter(
-              child: SizedBox(
-                height: height > 300 ? 300 : height,
-                child: CarouselView.weighted(
-                  controller: controller,
-                  itemSnapping: true,
-                  flexWeights: const <int>[1, 7, 1],
-                  children: images.map(
-                    (InfoImage image) {
-                      return HeroLayoutCard(imageInfo: image);
-                    },
-                  ).toList(),
+              child: ContainerPage(
+                child: SizedBox(
+                  height: height > 300 ? 300 : height,
+                  child: CarouselView.weighted(
+                    controller: controller,
+                    itemSnapping: true,
+                    flexWeights: const <int>[1, 7, 1],
+                    children: images
+                        .map(
+                          (InfoImage image) => HeroLayoutCard(
+                            imageInfo: image,
+                          ),
+                        )
+                        .toList(),
+                  ),
                 ),
               ),
             ),
           ];
         },
-        body: BlocProvider<CreateStoreCubit>(
-          create: (context) => CreateStoreCubit(
-            initialState: CrudEditing<CreateStoreModel>.fromModel(
-              CreateStoreModel(
-                id: '',
-                storeName: '',
-                countryCode: '',
-                timezone: '',
-                contactName: '',
-                contactEmail: '',
-                contactPhone: '',
-              ),
-            ),
-          ),
-          child: Builder(
-            builder: (context) =>
-                BlocConsumer<CreateStoreCubit, CrudState<CreateStoreModel>>(
-              listener: (context, state) {
-                if (state is CrudError<CreateStoreModel>) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.message)),
-                  );
-                }
-                if (state is CrudEditing<CreateStoreModel> &&
-                    state.errorMessage != null &&
-                    state.errorMessage!.isNotEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.errorMessage!)),
-                  );
-                }
-              },
+        body: ContainerPage(
+          child: BlocBuilder<SessionCubit, SessionState>(
               builder: (context, state) {
-                if (state is CrudLoading<CreateStoreModel>) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is CrudLoaded<CreateStoreModel> ||
-                    state is CrudEditing<CreateStoreModel>) {
-                  return _createStorePage(context, state);
-                } else if (state is CrudError<CreateStoreModel>) {
-                  return Center(child: Text(state.message));
-                }
-                return Container();
-              },
-            ),
-          ),
+            if (state is SessionUnauthenticated) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Debes iniciar sesión'),
+                ),
+              );
+            }
+            if (state is SessionAuthenticated) {
+              if (state.storeId != null) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      'Gracias por registrar tu comercio, te contactaremos lo antes posible.',
+                    ),
+                  ),
+                );
+              }
+            }
+
+            return CrudStateHandler<CreateStoreModel>(
+              createCubit: (context) => CreateStoreCubit(
+                initialState: CrudEditing<CreateStoreModel>.fromModel(
+                  CreateStoreModel.empty(),
+                ),
+              ),
+              loadedBuilder: (context, model) => SizedBox.shrink(),
+              editingBuilder: (
+                cubit,
+                model,
+                editedModel,
+                editMode,
+                isSubmitting,
+                errorMessage,
+              ) =>
+                  Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    gap,
+                    gap,
+                    Text(
+                      'Solicita tu prueba gratuita',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    gap,
+                    TextFormField(
+                      initialValue: editedModel.storeName,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre completo del comercio',
+                        hintText: 'Comercio',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, introduzca un nombre completo';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        cubit.updateEditingState(
+                          (model) => model.copyWith(
+                            storeName: value,
+                          ),
+                        );
+                      },
+                    ),
+                    gap,
+                    DropdownButtonFormField<CountryTimezone>(
+                      decoration: InputDecoration(
+                        labelText: 'Zona del comercio',
+                      ),
+                      value: editedModel.countryCode == '' ||
+                              editedModel.timezone == ''
+                          ? null
+                          : CountryTimezone(
+                              country: editedModel.countryCode,
+                              timezone: editedModel.timezone,
+                            ),
+                      items: timeZonesLatAm
+                          .map((tz) => DropdownMenuItem<CountryTimezone>(
+                                value: tz,
+                                child: Text('${tz.timezone} (${tz.country})'),
+                              ))
+                          .toList(),
+                      onChanged: (tz) {
+                        cubit.updateEditingState(
+                          (model) => model.copyWith(
+                            countryCode: tz?.country,
+                            timezone: tz?.timezone,
+                          ),
+                        );
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, selecciona un zona horaria';
+                        }
+                        return null;
+                      },
+                    ),
+                    gap,
+                    Text(
+                      'Los datos de contacto serán utilizados para que un representante se comunique contigo y coordine los detalles del proceso de evaluación y acuerdo comercial.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    gap,
+                    TextFormField(
+                      initialValue: editedModel.contactName,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre del contacto',
+                        hintText: 'Jhon Doe',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, introduzca un nombre';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        cubit.updateEditingState(
+                          (model) => model.copyWith(contactName: value),
+                        );
+                      },
+                    ),
+                    gap,
+                    TextFormField(
+                      initialValue: editedModel.contactEmail,
+                      decoration: const InputDecoration(
+                        labelText: 'Correo electrónico del contacto',
+                        hintText: 'correo@example.com',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, introduzca un correo electrónico';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        cubit.updateEditingState(
+                          (model) => model.copyWith(contactEmail: value),
+                        );
+                      },
+                    ),
+                    gap,
+                    TextFormField(
+                      initialValue: editedModel.contactPhone,
+                      decoration: const InputDecoration(
+                        labelText: 'Teléfono del contacto',
+                        hintText: '+52 123456789',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, introduzca un teléfono';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        cubit.updateEditingState(
+                          (model) => model.copyWith(contactPhone: value),
+                        );
+                      },
+                    ),
+                    gap,
+                    FormField<bool>(
+                      initialValue: false,
+                      validator: (value) {
+                        if (value != true) {
+                          return 'Debes aceptar los Términos y Condiciones';
+                        }
+                        return null;
+                      },
+                      builder: (state) => Row(
+                        children: [
+                          Checkbox(
+                            value: state.value,
+                            onChanged: (value) => state.didChange(value),
+                            isError: state.hasError,
+                          ),
+                          InkWell(
+                            onTap: () => showDialog(
+                              context: context,
+                              builder: (context) => TermsCreateStore(),
+                            ),
+                            child: const Text(
+                              'Acepto los Términos y Condiciones',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    gap,
+                    ElevatedButton(
+                      onPressed: !editMode || isSubmitting
+                          ? null
+                          : () async {
+                              final session = context.read<SessionCubit>();
+                              if (_formKey.currentState?.validate() ?? false) {
+                                final newId = await cubit.create();
+                                if (newId != null) {
+                                  session.addStore(newId);
+                                }
+                              }
+                            }, // verificar el from primero
+                      child: isSubmitting
+                          ? const CircularProgressIndicator()
+                          : const Text("Guardar"),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
         ),
       ),
     );
-  }
-
-  /// Renderiza la página de la tienda.
-  /// Muestra el formulario de edición,
-  Widget _createStorePage(
-      BuildContext context, CrudState<CreateStoreModel> state) {
-    if (state is CrudEditing<CreateStoreModel>) {
-      return Form(
-        child: ListView(
-          children: [
-            TextFormField(
-              initialValue: state.editedModel.storeName,
-              decoration: const InputDecoration(
-                labelText: 'Nombre completo del comercio',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, introduzca un nombre completo';
-                }
-                return null;
-              },
-              onChanged: (value) {
-                context.read<CreateStoreCubit>().updateEditingState(
-                      (model) => model.copyWith(storeName: value),
-                    );
-              },
-            ),
-            DropdownButton<Map<String, String>>(
-              value: state.editedModel.countryCode == '' ||
-                      state.editedModel.timezone == ''
-                  ? null
-                  : {
-                      'country': state.editedModel.countryCode,
-                      'timezone': state.editedModel.timezone,
-                    },
-              items: timeZonesLatAm
-                  .map((tz) => DropdownMenuItem<Map<String, String>>(
-                        value: tz,
-                        child: Text('${tz['country']} (${tz['timezone']})'),
-                      ))
-                  .toList(),
-              onChanged: (tz) {
-                context.read<CreateStoreCubit>().updateEditingState(
-                      (model) => model.copyWith(
-                        countryCode: tz?['country'],
-                        timezone: tz?['timezone'],
-                      ),
-                    );
-              },
-            ),
-            TextFormField(
-              initialValue: state.editedModel.contactName,
-              decoration: const InputDecoration(
-                labelText: 'Nombre del contacto',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, introduzca un nombre';
-                }
-                return null;
-              },
-              onChanged: (value) {
-                context.read<CreateStoreCubit>().updateEditingState(
-                      (model) => model.copyWith(contactName: value),
-                    );
-              },
-            ),
-            TextFormField(
-              initialValue: state.editedModel.contactEmail,
-              decoration: const InputDecoration(
-                labelText: 'Correo electrónico del contacto',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, introduzca un correo electrónico';
-                }
-                return null;
-              },
-              onChanged: (value) {
-                context.read<CreateStoreCubit>().updateEditingState(
-                      (model) => model.copyWith(contactEmail: value),
-                    );
-              },
-            ),
-            TextFormField(
-              initialValue: state.editedModel.contactPhone,
-              decoration: const InputDecoration(
-                labelText: 'Teléfono del contacto',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, introduzca un teléfono';
-                }
-                return null;
-              },
-              onChanged: (value) {
-                context.read<CreateStoreCubit>().updateEditingState(
-                      (model) => model.copyWith(contactPhone: value),
-                    );
-              },
-            ),
-            ElevatedButton(
-              onPressed: state.isSubmitting || !state.editMode
-                  ? null
-                  : () => context.read<CreateStoreCubit>().submit(),
-              child: state.isSubmitting
-                  ? const CircularProgressIndicator()
-                  : const Text("Guardar"),
-            ),
-            ElevatedButton(
-              onPressed: state.isSubmitting
-                  ? null
-                  : () => context.read<CreateStoreCubit>().cancelEditing(),
-              child: state.isSubmitting
-                  ? const CircularProgressIndicator()
-                  : const Text("Cancelar"),
-            ),
-          ],
-        ),
-      );
-    }
-    return Container();
   }
 }
