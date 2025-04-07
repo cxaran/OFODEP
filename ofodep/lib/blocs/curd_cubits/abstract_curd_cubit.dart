@@ -35,6 +35,12 @@ class CrudEditing<T extends ModelComponent> extends CrudState<T> {
     this.errorMessage,
   }) : editedModel = editedModel ?? (model.copyWith() as T);
 
+  CrudEditing.fromModel(this.model)
+      : editedModel = model.copyWith() as T,
+        editMode = true,
+        isSubmitting = false,
+        errorMessage = null;
+
   CrudEditing<T> copyWith({
     T? model,
     T? editedModel,

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/models/user_model.dart';
+import 'package:ofodep/repositories/admin_global_repository.dart';
+import 'package:ofodep/repositories/store_admin_repository.dart';
 import 'package:ofodep/repositories/user_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,11 +13,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// [SessionUnauthenticated] estado de no autenticación
 abstract class SessionState {
   final bool admin;
-  const SessionState({required this.admin});
+  final String? storeId;
+  const SessionState({
+    this.admin = false,
+    this.storeId,
+  });
 }
 
 class SessionInitial extends SessionState {
-  const SessionInitial() : super(admin: false);
+  const SessionInitial() : super();
 }
 
 class SessionAuthenticated extends SessionState {
@@ -23,11 +29,18 @@ class SessionAuthenticated extends SessionState {
 
   /// Crea el estado de autenticación a partir de un Usuario
   /// [user] Usuario a copiar
-  SessionAuthenticated(this.user) : super(admin: user.admin);
+  SessionAuthenticated(
+    this.user, {
+    super.admin = false,
+    super.storeId,
+  });
 }
 
 class SessionUnauthenticated extends SessionState {
-  const SessionUnauthenticated() : super(admin: false);
+  final String? errorMessage;
+  const SessionUnauthenticated({
+    this.errorMessage,
+  }) : super();
 }
 
 /// Cubit que gestiona el estado de autenticación
@@ -52,14 +65,34 @@ class SessionCubit extends Cubit<SessionState> {
 
   /// Verifica la sesión actual
   Future<void> checkSession() async {
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      final user = await userRepository.getById(session.user.id);
-      if (user != null) {
-        emit(SessionAuthenticated(user));
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        UserModel? user = await userRepository.getById(session.user.id);
+        if (user != null) {
+          // Verificar si el usuario es administrador global
+          final adminGlobal = await AdminGlobalRepository().getById(
+            session.user.id,
+          );
+
+          // final storeAdmins = await StoreAdminRepository().find(
+          //   'user_id',
+          //   session.user.id,
+          // );
+          // if (storeAdmins.isNotEmpty) {
+          //   emit(
+          //       SessionAuthenticated(user, storeId: storeAdmins.first.storeId));
+          //   return;
+          // }
+
+          emit(SessionAuthenticated(user, admin: adminGlobal != null));
+          return;
+        }
+        await Supabase.instance.client.auth.signOut();
         return;
       }
-      await Supabase.instance.client.auth.signOut();
+    } on Exception catch (e) {
+      emit(SessionUnauthenticated(errorMessage: e.toString()));
       return;
     }
     emit(SessionUnauthenticated());

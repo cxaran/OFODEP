@@ -31,8 +31,6 @@ class StoresListCubit extends ListCubit<StoreModel, BasicListFilterState> {
     bool pickup = false,
     bool delivery = false,
     num? deliveryPrice,
-    String? imgurClientId,
-    String? imgurClientSecret,
   }) async {
     final newStore = StoreModel(
       id: '',
@@ -52,8 +50,6 @@ class StoresListCubit extends ListCubit<StoreModel, BasicListFilterState> {
       pickup: pickup,
       delivery: delivery,
       deliveryPrice: deliveryPrice,
-      imgurClientId: imgurClientId,
-      imgurClientSecret: imgurClientSecret,
     );
     try {
       // Se invoca el método create del repositorio para insertar el elemento.

@@ -49,12 +49,10 @@ class ExplorePage extends StatelessWidget {
                 initialState: BasicListFilterState(
                   orderBy: 'product_is_open',
                   ascending: false,
-                  filter: {
-                    'distance#lte': 5000,
-                  },
                   params: {
                     'user_lat': state.location.latitude,
                     'user_lng': state.location.longitude,
+                    'distance_max': 50000,
                   },
                 ),
               ),
@@ -87,7 +85,8 @@ class ExplorePage extends StatelessWidget {
                             itemBuilder: (context, product, index) => ListTile(
                               title: Text(product.name),
                               subtitle: Text(
-                                '${product.isOpen ?? ''}\n'
+                                'open:${product.isOpen ?? ''}\n'
+                                'delivery:${product.deliveryArea ?? ''}\n'
                                 '${product.storeName}\n'
                                 '${product.description ?? ''}',
                               ),

@@ -38,10 +38,16 @@ CREATE TABLE users (
     name text NOT NULL,                          -- (antes "nombre")
     email text UNIQUE CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' AND email = LOWER(email)),
     phone text CHECK (phone IS NULL OR phone ~ '^\+?[0-9]{7,15}$'),   -- (antes "telefono")
-    admin boolean DEFAULT false,
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
+
+-- Admin global: puede seleccionar, insertar, actualizar y eliminar cualquier registro.
+CREATE TABLE admin_global (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    auth_id uuid UNIQUE NOT NULL,                -- Vincula el registro con auth.users
+    created_at timestamptz DEFAULT now(),
+)
 
 ---------------------------------------------------------------------
 -- FASE 2: TIENDAS (COMERCIOS) Y GESTIÓN DE HORARIOS
@@ -60,6 +66,7 @@ CREATE TABLE stores (
     address_city text,                                          -- (antes "direccion_ciudad")
     address_state text,                                         -- (antes "direccion_estado")
     country_code text CHECK (country_code ~ '^[A-Z]{2,3}$'),    -- Código de país (ej. "MX", "US")
+    timezone text DEFAULT 'UTC',                                 -- (antes "zona_horaria")
     lat numeric,                                                -- Latitud geográfica
     lng numeric,                                                -- Longitud geográfica
     geom geometry(Polygon, 4326),                               -- Polígono para delimitar la zona (SRID 4326)
@@ -105,7 +112,7 @@ CREATE TABLE store_schedule_exceptions (
 CREATE TABLE store_admins (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     store_id uuid REFERENCES stores(id) ON DELETE CASCADE,    -- (antes "store_id")
-    user_id uuid REFERENCES users(auth_id) ON DELETE CASCADE, -- (antes "usuario_id")
+    user_id uuid REFERENCES users(auth_id) ON DELETE CASCADE UNIQUE,  -- (antes "usuario_id")
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
@@ -842,14 +849,20 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 CREATE POLICY admin_full_access ON users
 FOR ALL
 USING (
-  public.is_global_admin()
+  EXISTS (
+    SELECT 1 FROM store_admins sa
+    WHERE sa.user_id = auth.uid()
+  )
 );
 
 -- 1.b. Usuario regular: puede SELECT, UPDATE y DELETE únicamente su propio registro.
 CREATE POLICY user_self_access ON users
-FOR ALL
+FOR SELECT
 USING ( auth.uid() = users.auth_id )
 WITH CHECK ( auth.uid() = users.auth_id );
+
+-- 1.c. Usuario regular: puede editar 
+
 
 ---------------------------------------------------------------------
 -- Tablas de STORES (antes "stores") y Horarios
@@ -1343,3 +1356,77 @@ USING (
       WHERE u.auth_id = auth.uid() AND u.admin = true
     )
 );
+
+
+ -- RPC function name.
+ CREATE OR REPLACE FUNCTION produc_store_info(
+  user_lat numeric,
+  user_lng numeric,
+  distance_max numeric DEFAULT 5000
+)
+RETURNS TABLE(
+  id uuid,
+  store_id uuid,
+  name text,
+  description text,
+  image_url text,
+  price numeric,
+  category text,
+  tags text[],
+  created_at timestamptz,
+  updated_at timestamptz,
+  store_name text,
+  store_logo_url text,
+  lat numeric,
+  lng numeric,
+  delivery_minimum_order numeric,
+  pickup boolean,
+  delivery boolean,
+  delivery_price numeric,
+  imgur_client_id text,
+  imgur_client_secret text,
+  product_is_open boolean,
+  distance numeric,
+  user_inside_polygon boolean
+)
+AS $$
+  SELECT
+    p.id,
+    p.store_id,
+    p.name,
+    p.description,
+    p.image_url,
+    p.price,
+    p.category,
+    p.tags,
+    p.created_at,
+    p.updated_at,
+    s.name AS store_name,
+    s.logo_url AS store_logo_url,
+    s.lat,
+    s.lng,
+    s.delivery_minimum_order,
+    s.pickup,
+    s.delivery,
+    s.delivery,
+    s.delivery_price,
+    s.imgur_client_id,
+    s.imgur_client_secret,
+    product_is_open(p) AS product_is_open,
+    ST_DistanceSphere(
+      ST_MakePoint(s.lng, s.lat),
+      ST_MakePoint(user_lng, user_lat)
+    ) AS distance,
+    ST_Contains(
+      s.geom,
+      ST_SetSRID(ST_MakePoint(user_lng, user_lat), 4326)
+    ) AS user_inside_polygon
+  FROM products p
+  JOIN stores s ON p.store_id = s.id
+  WHERE ST_DWithin(
+    ST_MakePoint(s.lng, s.lat)::geography,
+    ST_MakePoint(user_lng, user_lat)::geography,
+    distance_max
+  )
+  ORDER BY distance;
+$$ LANGUAGE sql STABLE;

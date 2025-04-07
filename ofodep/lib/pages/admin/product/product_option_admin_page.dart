@@ -101,154 +101,159 @@ class ProductOptionAdminPage extends StatelessWidget {
       child: Builder(
         builder: (context) =>
             BlocConsumer<ProductOptionCubit, CrudState<ProductOptionModel>>(
-                listener: (context, state) {
-          if (state is CrudError<ProductOptionModel>) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-          if (state is CrudEditing<ProductOptionModel> &&
-              state.errorMessage != null &&
-              state.errorMessage!.isNotEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!)),
-            );
-          }
-          if (state is CrudDeleted<ProductOptionModel>) {
-            // Por ejemplo, se puede redirigir a otra pantalla al eliminar
-            Navigator.of(context).pop();
-          }
-        }, builder: (context, state) {
-          if (state is CrudInitial<ProductOptionModel> ||
-              state is CrudLoading<ProductOptionModel>) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is CrudError<ProductOptionModel>) {
-            return Center(child: Text(state.message));
-          } else if (state is CrudLoaded<ProductOptionModel>) {
-            // Estado no editable: muestra los datos y un botón para editar
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Name: ${state.model.name}"),
-                  Text("Option min: ${state.model.optionMin}"),
-                  Text("Option max: ${state.model.optionMax}"),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<ProductOptionCubit>().startEditing(),
-                    child: const Text("Editar"),
-                  ),
-                ],
-              ),
-            );
-          } else if (state is CrudEditing<ProductOptionModel>) {
-            // En modo edición, se usan TextFields que muestran los valores de editedModel.
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextField(
-                    key: const ValueKey('name_product_option'),
-                    controller: TextEditingController.fromValue(
-                      TextEditingValue(
-                        text: state.editedModel.name,
-                        selection: TextSelection.collapsed(
-                          offset: state.editedModel.name.length,
+          listener: (context, state) {
+            if (state is CrudError<ProductOptionModel>) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+            if (state is CrudEditing<ProductOptionModel> &&
+                state.errorMessage != null &&
+                state.errorMessage!.isNotEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.errorMessage!)),
+              );
+            }
+            if (state is CrudDeleted<ProductOptionModel>) {
+              // Por ejemplo, se puede redirigir a otra pantalla al eliminar
+              Navigator.of(context).pop();
+            }
+          },
+          builder: (context, state) {
+            if (state is CrudInitial<ProductOptionModel> ||
+                state is CrudLoading<ProductOptionModel>) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is CrudError<ProductOptionModel>) {
+              return Center(child: Text(state.message));
+            } else if (state is CrudLoaded<ProductOptionModel>) {
+              // Estado no editable: muestra los datos y un botón para editar
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Name: ${state.model.name}"),
+                    Text("Option min: ${state.model.optionMin}"),
+                    Text("Option max: ${state.model.optionMax}"),
+                    ElevatedButton(
+                      onPressed: () =>
+                          context.read<ProductOptionCubit>().startEditing(),
+                      child: const Text("Editar"),
+                    ),
+                  ],
+                ),
+              );
+            } else if (state is CrudEditing<ProductOptionModel>) {
+              // En modo edición, se usan TextFields que muestran los valores de editedModel.
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextField(
+                      key: const ValueKey('name_product_option'),
+                      controller: TextEditingController.fromValue(
+                        TextEditingValue(
+                          text: state.editedModel.name,
+                          selection: TextSelection.collapsed(
+                            offset: state.editedModel.name.length,
+                          ),
                         ),
                       ),
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) =>
-                        context.read<ProductOptionCubit>().updateEditingState(
-                              (model) => model.copyWith(
-                                name: value,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) =>
+                          context.read<ProductOptionCubit>().updateEditingState(
+                                (model) => model.copyWith(
+                                  name: value,
+                                ),
                               ),
-                            ),
-                  ),
-                  TextField(
-                    key: const ValueKey('range_min_product_option'),
-                    controller: TextEditingController.fromValue(
-                      TextEditingValue(
-                        text: state.editedModel.optionMin.toString(),
-                        selection: TextSelection.collapsed(
-                          offset: state.editedModel.optionMin.toString().length,
+                    ),
+                    TextField(
+                      key: const ValueKey('range_min_product_option'),
+                      controller: TextEditingController.fromValue(
+                        TextEditingValue(
+                          text: state.editedModel.optionMin.toString(),
+                          selection: TextSelection.collapsed(
+                            offset:
+                                state.editedModel.optionMin.toString().length,
+                          ),
                         ),
                       ),
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Range min',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'\d{0,2}'),
+                      decoration: const InputDecoration(
+                        labelText: 'Range min',
+                        border: OutlineInputBorder(),
                       ),
-                    ],
-                    onChanged: (value) =>
-                        context.read<ProductOptionCubit>().updateEditingState(
-                              (model) => model.copyWith(
-                                optionMin: int.tryParse(value) ?? 0,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'\d{0,2}'),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          context.read<ProductOptionCubit>().updateEditingState(
+                                (model) => model.copyWith(
+                                  optionMin: int.tryParse(value) ?? 0,
+                                ),
                               ),
-                            ),
-                  ),
-                  TextField(
-                    key: const ValueKey('range_max_product_option'),
-                    controller: TextEditingController.fromValue(
-                      TextEditingValue(
-                        text: state.editedModel.optionMax.toString(),
-                        selection: TextSelection.collapsed(
-                          offset: state.editedModel.optionMax.toString().length,
+                    ),
+                    TextField(
+                      key: const ValueKey('range_max_product_option'),
+                      controller: TextEditingController.fromValue(
+                        TextEditingValue(
+                          text: state.editedModel.optionMax.toString(),
+                          selection: TextSelection.collapsed(
+                            offset:
+                                state.editedModel.optionMax.toString().length,
+                          ),
                         ),
                       ),
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Range max',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'\d{0,2}'),
+                      decoration: const InputDecoration(
+                        labelText: 'Range max',
+                        border: OutlineInputBorder(),
                       ),
-                    ],
-                    onChanged: (value) =>
-                        context.read<ProductOptionCubit>().updateEditingState(
-                              (model) => model.copyWith(
-                                optionMax: int.tryParse(value) ?? 0,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'\d{0,2}'),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          context.read<ProductOptionCubit>().updateEditingState(
+                                (model) => model.copyWith(
+                                  optionMax: int.tryParse(value) ?? 0,
+                                ),
                               ),
-                            ),
-                  ),
-                  ElevatedButton(
-                    onPressed: state.isSubmitting || !state.editMode
-                        ? null
-                        : () => context.read<ProductOptionCubit>().submit(),
-                    child: state.isSubmitting
-                        ? const CircularProgressIndicator()
-                        : const Text("Guardar"),
-                  ),
-                  ElevatedButton(
-                    onPressed: state.isSubmitting
-                        ? null
-                        : () =>
-                            context.read<ProductOptionCubit>().cancelEditing(),
-                    child: state.isSubmitting
-                        ? const CircularProgressIndicator()
-                        : const Text("Cancelar"),
-                  ),
-                ],
-              ),
-            );
-          }
-          return Container();
-        }),
+                    ),
+                    ElevatedButton(
+                      onPressed: state.isSubmitting || !state.editMode
+                          ? null
+                          : () => context.read<ProductOptionCubit>().submit(),
+                      child: state.isSubmitting
+                          ? const CircularProgressIndicator()
+                          : const Text("Guardar"),
+                    ),
+                    ElevatedButton(
+                      onPressed: state.isSubmitting
+                          ? null
+                          : () => context
+                              .read<ProductOptionCubit>()
+                              .cancelEditing(),
+                      child: state.isSubmitting
+                          ? const CircularProgressIndicator()
+                          : const Text("Cancelar"),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return Container();
+          },
+        ),
       ),
     );
   }

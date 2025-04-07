@@ -16,6 +16,7 @@ class LocationRepository {
         final placemark = placemarks.first;
         final zipCode = placemark.postalCode ?? "";
         final countryCode = placemark.isoCountryCode ?? "";
+        final timezone = DateTime.now().timeZoneName;
         if (zipCode.isNotEmpty && countryCode.isNotEmpty) {
           return LocationModel(
             latitude: latitude,
@@ -26,6 +27,7 @@ class LocationRepository {
             state: placemark.administrativeArea ?? "",
             country: placemark.country ?? "",
             countryCode: countryCode,
+            timezone: timezone,
           );
         }
       }
@@ -55,6 +57,7 @@ class LocationRepository {
         final address = data['address'];
         final zipCode = address?['postcode'];
         final countryCode = address?['country_code'] ?? "";
+        final timezone = address?['time_zone'] ?? DateTime.now().timeZoneName;
 
         if (zipCode != null &&
             zipCode.toString().isNotEmpty &&
@@ -75,6 +78,7 @@ class LocationRepository {
             state: address['state'] ?? "",
             country: address['country'] ?? "",
             countryCode: countryCode,
+            timezone: timezone,
           );
         }
       }
@@ -106,6 +110,7 @@ class LocationRepository {
           final address = item['address'];
           final zip = address?['postcode'];
           final countryCode = address?['country_code'] ?? "";
+          final timezone = address?['time_zone'] ?? DateTime.now().timeZoneName;
 
           if (zip != null &&
               zip.toString().isNotEmpty &&
@@ -125,6 +130,7 @@ class LocationRepository {
                 state: address['state'],
                 country: address['country'],
                 countryCode: countryCode,
+                timezone: timezone,
               ),
             );
           }
@@ -156,6 +162,7 @@ class LocationRepository {
           state: data['regionName'] ?? data['state'],
           country: data['country'],
           countryCode: data['countryCode'] ?? data['country_code'] ?? "",
+          timezone: data['timezone'] ?? DateTime.now().timeZoneName,
         );
       }
     } catch (_) {

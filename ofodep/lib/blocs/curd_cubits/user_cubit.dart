@@ -29,13 +29,13 @@ class UserCubit extends CrudCubit<UserModel> {
     final current = state;
     if (current is CrudEditing<UserModel>) {
       // Validación: nombre y teléfono obligatorios.
-      if (current.editedModel.name.trim().isEmpty ||
-          current.editedModel.phone.trim().isEmpty) {
-        emit(current.copyWith(errorMessage: "phone"));
+      if (current.editedModel.name.trim().isEmpty) {
+        emit(current.copyWith(errorMessage: "name"));
         return;
       }
       // Validación: el teléfono debe cumplir el formato.
-      if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(current.editedModel.phone)) {
+      if (!RegExp(r'^\+?[0-9]{7,15}$')
+          .hasMatch(current.editedModel.phone ?? '')) {
         emit(current.copyWith(errorMessage: "phone"));
         return;
       }

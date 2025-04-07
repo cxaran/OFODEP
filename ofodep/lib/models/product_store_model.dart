@@ -25,6 +25,9 @@ class ProductStoreModel extends ModelComponent {
   // Store distance
   num? distance;
 
+  // Store delivery area
+  bool? deliveryArea;
+
   // Product info
   String name;
   String? description;
@@ -47,6 +50,7 @@ class ProductStoreModel extends ModelComponent {
     this.lng,
     this.isOpen,
     this.distance,
+    this.deliveryArea,
     required this.name,
     this.description,
     this.imageUrl,
@@ -59,7 +63,6 @@ class ProductStoreModel extends ModelComponent {
 
   @override
   factory ProductStoreModel.fromMap(Map<String, dynamic> map) {
-    print(map);
     return ProductStoreModel(
       id: map['id'] as String,
 
@@ -86,6 +89,7 @@ class ProductStoreModel extends ModelComponent {
 
       // Store distance
       distance: map['distance'],
+      deliveryArea: map['delivery_area'] as bool?,
 
       // Product info
       name: map['name'].toString(),
@@ -114,8 +118,8 @@ class ProductStoreModel extends ModelComponent {
       'geom': geom,
       'lat': lat,
       'lng': lng,
-      'is_open': isOpen,
       'distance': distance,
+      'delivery_area': deliveryArea,
       'name': name,
       'description': description,
       'image_url': imageUrl,
@@ -141,6 +145,7 @@ class ProductStoreModel extends ModelComponent {
     num? lng,
     bool? isOpen,
     num? distance,
+    bool? deliveryArea,
     String? name,
     String? description,
     String? imageUrl,
@@ -162,6 +167,7 @@ class ProductStoreModel extends ModelComponent {
       lng: lng ?? this.lng,
       isOpen: isOpen ?? this.isOpen,
       distance: distance ?? this.distance,
+      deliveryArea: deliveryArea ?? this.deliveryArea,
       name: name ?? this.name,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,

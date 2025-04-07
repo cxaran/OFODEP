@@ -8,6 +8,7 @@ class LocationModel {
   final String? state;
   final String? country;
   late final String countryCode;
+  late final String timezone;
 
   LocationModel({
     required this.latitude,
@@ -18,6 +19,7 @@ class LocationModel {
     this.state,
     this.country,
     required String countryCode,
+    required this.timezone,
   }) : countryCode = countryCode.toUpperCase();
 
   @override
@@ -30,6 +32,7 @@ class LocationModel {
         ' state: $state,'
         ' country: $country,'
         ' countryCode: $countryCode'
+        ' timezone: $timezone'
         ')';
   }
 }

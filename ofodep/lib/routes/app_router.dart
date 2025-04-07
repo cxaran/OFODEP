@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
-import 'package:ofodep/layout/admin_layout.dart';
 import 'package:ofodep/pages/admin/admin_store_admins.dart';
 import 'package:ofodep/pages/admin/order/order_page.dart';
 import 'package:ofodep/pages/admin/store_schedule_exception/admin_store_schedule_exceptions.dart';
@@ -17,6 +16,7 @@ import 'package:ofodep/pages/auth/login_page.dart';
 import 'package:ofodep/pages/admin/product/product_admin_page.dart';
 import 'package:ofodep/pages/admin/store/store_admin_page.dart';
 import 'package:ofodep/pages/cart/cart_page.dart';
+import 'package:ofodep/pages/create_store/create_store_page.dart';
 import 'package:ofodep/pages/home/home_page.dart';
 import 'package:ofodep/pages/admin/store_schedule/store_schedule_admin_page.dart';
 import 'package:ofodep/pages/admin/store_schedule_exception/store_schedule_exception_admin_page.dart';
@@ -97,15 +97,19 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         builder: (context, state) => const HomePage(),
       ),
       GoRoute(
-        path: '/product/:productId',
-        builder: (context, state) => ProductPage(
-          productId: state.pathParameters['productId'],
-        ),
+        path: '/create_store',
+        builder: (context, state) => const CreateStorePage(),
       ),
       GoRoute(
         path: '/store/:storeId',
         builder: (context, state) => StorePage(
           storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/product/:productId',
+        builder: (context, state) => ProductPage(
+          productId: state.pathParameters['productId'],
         ),
       ),
       GoRoute(
@@ -122,102 +126,96 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         path: '/cart',
         builder: (context, state) => const CartPage(),
       ),
-      ShellRoute(
-        builder: (context, state, child) => AdminLayout(child: child),
-        routes: [
-          GoRoute(
-            path: '/admin',
-            builder: (context, state) => const AdminDashboardPage(),
-          ),
-          GoRoute(
-            path: '/admin/users',
-            builder: (context, state) => const AdminUsersPage(),
-          ),
-          GoRoute(
-            path: '/admin/user/:userId',
-            builder: (context, state) => UserAdminPage(
-              userId: state.pathParameters['userId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/stores',
-            builder: (context, state) => const AdminStoresPage(),
-          ),
-          GoRoute(
-            path: '/admin/store/:storeId',
-            builder: (context, state) => StoreAdminPage(
-              storeId: state.pathParameters['storeId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/store_admins',
-            builder: (context, state) => const AdminStoreAdminsPage(),
-          ),
-          GoRoute(
-            path: '/admin/store_admins/:storeId',
-            builder: (context, state) => AdminStoreAdminsPage(
-              storeId: state.pathParameters['storeId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/products',
-            builder: (context, state) => const AdminProductsPage(),
-          ),
-          GoRoute(
-            path: '/admin/products/:storeId',
-            builder: (context, state) => AdminProductsPage(
-              storeId: state.pathParameters['storeId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/subscriptions',
-            builder: (context, state) =>
-                const AdminStoreSubscriptionsAdminPage(),
-          ),
-          GoRoute(
-            path: '/admin/subscription/:storeId',
-            builder: (context, state) => StoreSubscriptionsAdminPage(
-              storeId: state.pathParameters['storeId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/product/:productId',
-            builder: (context, state) => ProductAdminPage(
-              productId: state.pathParameters['productId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/schedules/:storeId',
-            builder: (context, state) => AdminStoreSchedulesPage(
-              storeId: state.pathParameters['storeId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/schedule/:scheduleId',
-            builder: (context, state) => StoreScheduleAdminPage(
-              scheduleId: state.pathParameters['scheduleId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/schedule_exceptions/:storeId',
-            builder: (context, state) => AdminStoreScheduleExceptionsPage(
-              storeId: state.pathParameters['storeId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/schedule_exception/:scheduleId',
-            builder: (context, state) => StoreScheduleExceptionAdminPage(
-              scheduleId: state.pathParameters['scheduleId'],
-            ),
-          ),
-          GoRoute(
-            path: '/admin/orders',
-            builder: (context, state) => AdminOrdersPage(
-              storeId: state.uri.queryParameters['store'],
-              userId: state.uri.queryParameters['user'],
-            ),
-          ),
-        ],
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminDashboardPage(),
+      ),
+      GoRoute(
+        path: '/admin/users',
+        builder: (context, state) => const AdminUsersPage(),
+      ),
+      GoRoute(
+        path: '/admin/user/:userId',
+        builder: (context, state) => UserAdminPage(
+          userId: state.pathParameters['userId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/stores',
+        builder: (context, state) => const AdminStoresPage(),
+      ),
+      GoRoute(
+        path: '/admin/store/:storeId',
+        builder: (context, state) => StoreAdminPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/store_admins',
+        builder: (context, state) => const AdminStoreAdminsPage(),
+      ),
+      GoRoute(
+        path: '/admin/store_admins/:storeId',
+        builder: (context, state) => AdminStoreAdminsPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/products',
+        builder: (context, state) => const AdminProductsPage(),
+      ),
+      GoRoute(
+        path: '/admin/products/:storeId',
+        builder: (context, state) => AdminProductsPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/subscriptions',
+        builder: (context, state) => const AdminStoreSubscriptionsAdminPage(),
+      ),
+      GoRoute(
+        path: '/admin/subscription/:storeId',
+        builder: (context, state) => StoreSubscriptionsAdminPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/product/:productId',
+        builder: (context, state) => ProductAdminPage(
+          productId: state.pathParameters['productId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/schedules/:storeId',
+        builder: (context, state) => AdminStoreSchedulesPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/schedule/:scheduleId',
+        builder: (context, state) => StoreScheduleAdminPage(
+          scheduleId: state.pathParameters['scheduleId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/schedule_exceptions/:storeId',
+        builder: (context, state) => AdminStoreScheduleExceptionsPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/schedule_exception/:scheduleId',
+        builder: (context, state) => StoreScheduleExceptionAdminPage(
+          scheduleId: state.pathParameters['scheduleId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/orders',
+        builder: (context, state) => AdminOrdersPage(
+          storeId: state.uri.queryParameters['store'],
+          userId: state.uri.queryParameters['user'],
+        ),
       ),
     ],
   );

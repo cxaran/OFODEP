@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_cubit.dart';
+import 'package:ofodep/const.dart';
 import 'package:ofodep/pages/error_page.dart';
 import 'package:ofodep/models/store_model.dart';
 import 'package:ofodep/widgets/admin_image.dart';
 import 'package:ofodep/widgets/location_picker.dart';
+import 'package:ofodep/widgets/preview_image.dart';
 import 'package:ofodep/widgets/zone_polygon.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -20,35 +22,40 @@ class StoreAdminPage extends StatelessWidget {
     if (storeId == null) {
       return const ErrorPage();
     }
-    return BlocProvider<StoreCubit>(
-      create: (context) => StoreCubit(id: storeId!)..load(),
-      child: Builder(
-        builder: (context) => BlocConsumer<StoreCubit, CrudState<StoreModel>>(
-          listener: (context, state) {
-            if (state is CrudError<StoreModel>) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
-            }
-            if (state is StoreCrudEditing &&
-                state.errorMessage != null &&
-                state.errorMessage!.isNotEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage!)),
-              );
-            }
-          },
-          builder: (context, state) {
-            if (state is CrudLoading<StoreModel>) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is CrudLoaded<StoreModel> ||
-                state is StoreCrudEditing) {
-              return _storePage(context, state);
-            } else if (state is CrudError<StoreModel>) {
-              return Center(child: Text(state.message));
-            }
-            return Container();
-          },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Store'),
+      ),
+      body: BlocProvider<StoreCubit>(
+        create: (context) => StoreCubit(id: storeId!)..load(),
+        child: Builder(
+          builder: (context) => BlocConsumer<StoreCubit, CrudState<StoreModel>>(
+            listener: (context, state) {
+              if (state is CrudError<StoreModel>) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+              if (state is StoreCrudEditing &&
+                  state.errorMessage != null &&
+                  state.errorMessage!.isNotEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              }
+            },
+            builder: (context, state) {
+              if (state is CrudLoading<StoreModel>) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is CrudLoaded<StoreModel> ||
+                  state is StoreCrudEditing) {
+                return _storePage(context, state);
+              } else if (state is CrudError<StoreModel>) {
+                return Center(child: Text(state.message));
+              }
+              return Container();
+            },
+          ),
         ),
       ),
     );
@@ -78,7 +85,7 @@ class StoreAdminPage extends StatelessWidget {
       return ListView(
         children: [
           ListTile(
-            leading: const Icon(Icons.info),
+            leading: PreviewImage.mini(imageUrl: store.logoUrl),
             title: Text(store.name),
             onTap: () => context
                 .read<StoreCubit>()
@@ -160,7 +167,7 @@ class StoreAdminPage extends StatelessWidget {
       children: [
         const Text("Edit general information"),
         AdminImage(
-          clientId: edited.imgurClientId,
+          clientId: null,
           imageUrl: edited.logoUrl,
           onImageUploaded: (url) {
             context.read<StoreCubit>().updateEditingState(
@@ -168,7 +175,6 @@ class StoreAdminPage extends StatelessWidget {
                 );
           },
         ),
-        if (edited.imgurClientId == null) Text('imgur_client_is_null'),
         TextFormField(
           initialValue: edited.name,
           decoration: const InputDecoration(labelText: "Name"),
@@ -252,12 +258,27 @@ class StoreAdminPage extends StatelessWidget {
                 (model) => model.copyWith(addressState: value));
           },
         ),
-        TextFormField(
-          initialValue: edited.countryCode,
-          decoration: const InputDecoration(labelText: "Country code, e.g. MX"),
-          onChanged: (value) {
+        DropdownButtonFormField<Map<String, String>>(
+          value: edited.timezone == null || edited.countryCode == null
+              ? null
+              : {
+                  'zone': edited.timezone!,
+                  'country': edited.countryCode!,
+                },
+          decoration: const InputDecoration(labelText: "Zona horaria"),
+          items: timeZonesLatAm
+              .map((tz) => DropdownMenuItem<Map<String, String>>(
+                    value: tz,
+                    child: Text('${tz['zone']} (${tz['country']})'),
+                  ))
+              .toList(),
+          onChanged: (tz) {
             context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(countryCode: value));
+                  (model) => model.copyWith(
+                    timezone: tz?['zone'],
+                    countryCode: tz?['country'],
+                  ),
+                );
           },
         ),
         TextFormField(
@@ -463,22 +484,22 @@ class StoreAdminPage extends StatelessWidget {
           ),
           child: Text('get imgur client id'),
         ),
-        TextFormField(
-          initialValue: edited.imgurClientId ?? "",
-          decoration: const InputDecoration(labelText: "Imgur Client ID"),
-          onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(imgurClientId: value));
-          },
-        ),
-        TextFormField(
-          initialValue: edited.imgurClientSecret ?? "",
-          decoration: const InputDecoration(labelText: "Imgur Client Secret"),
-          onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(imgurClientSecret: value));
-          },
-        ),
+        // TextFormField(
+        //   initialValue: edited.imgurClientId ?? "",
+        //   decoration: const InputDecoration(labelText: "Imgur Client ID"),
+        //   onChanged: (value) {
+        //     context.read<StoreCubit>().updateEditingState(
+        //         (model) => model.copyWith(imgurClientId: value));
+        //   },
+        // ),
+        // TextFormField(
+        //   initialValue: edited.imgurClientSecret ?? "",
+        //   decoration: const InputDecoration(labelText: "Imgur Client Secret"),
+        //   onChanged: (value) {
+        //     context.read<StoreCubit>().updateEditingState(
+        //         (model) => model.copyWith(imgurClientSecret: value));
+        //   },
+        // ),
         ElevatedButton(
           onPressed: state.isSubmitting || !state.editMode
               ? null

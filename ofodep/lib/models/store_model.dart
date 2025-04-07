@@ -14,6 +14,7 @@ class StoreModel extends ModelComponent {
   String? addressCity;
   String? addressState;
   String? countryCode;
+  String? timezone;
 
   // Geographical coordinates
   num? lat;
@@ -31,10 +32,6 @@ class StoreModel extends ModelComponent {
   // Is open
   bool? isOpen;
 
-  // Imgur
-  String? imgurClientId;
-  String? imgurClientSecret;
-
   StoreModel({
     required super.id,
     required this.name,
@@ -46,6 +43,7 @@ class StoreModel extends ModelComponent {
     this.addressCity,
     this.addressState,
     this.countryCode,
+    this.timezone,
     this.lat,
     this.lng,
     this.geom,
@@ -55,8 +53,6 @@ class StoreModel extends ModelComponent {
     this.delivery = false,
     this.deliveryPrice,
     this.isOpen,
-    this.imgurClientId,
-    this.imgurClientSecret,
     super.createdAt,
     super.updatedAt,
   });
@@ -74,6 +70,7 @@ class StoreModel extends ModelComponent {
       addressCity: map['address_city'] as String?,
       addressState: map['address_state'] as String?,
       countryCode: map['country_code'] as String?,
+      timezone: map['timezone'] as String?,
       lat: map['lat'],
       lng: map['lng'],
       geom: map['geom'] as Map<String, dynamic>?,
@@ -83,8 +80,6 @@ class StoreModel extends ModelComponent {
       delivery: map['delivery'] as bool? ?? false,
       deliveryPrice: map['delivery_price'],
       isOpen: map['store_is_open'] as bool?,
-      imgurClientId: map['imgur_client_id'] as String?,
-      imgurClientSecret: map['imgur_client_secret'] as String?,
       createdAt: DateTime.tryParse(map['created_at'] ?? ''),
       updatedAt: DateTime.tryParse(map['updated_at'] ?? ''),
     );
@@ -105,6 +100,7 @@ class StoreModel extends ModelComponent {
         'address_city': addressCity,
         'address_state': addressState,
         'country_code': countryCode,
+        'timezone': timezone,
         'lat': lat,
         'lng': lng,
         'geom': geom,
@@ -113,9 +109,6 @@ class StoreModel extends ModelComponent {
         'pickup': pickup,
         'delivery': delivery,
         'delivery_price': deliveryPrice,
-        'store_is_open': isOpen,
-        'imgur_client_id': imgurClientId,
-        'imgur_client_secret': imgurClientSecret,
       };
 
   @override
@@ -129,6 +122,7 @@ class StoreModel extends ModelComponent {
     String? addressCity,
     String? addressState,
     String? countryCode,
+    String? timezone,
     num? lat,
     num? lng,
     Map<String, dynamic>? geom,
@@ -152,6 +146,7 @@ class StoreModel extends ModelComponent {
       addressCity: addressCity ?? this.addressCity,
       addressState: addressState ?? this.addressState,
       countryCode: countryCode ?? this.countryCode,
+      timezone: timezone ?? this.timezone,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
       geom: geom ?? this.geom,
@@ -161,8 +156,6 @@ class StoreModel extends ModelComponent {
       delivery: delivery ?? this.delivery,
       deliveryPrice: deliveryPrice ?? this.deliveryPrice,
       isOpen: isOpen ?? this.isOpen,
-      imgurClientId: imgurClientId ?? this.imgurClientId,
-      imgurClientSecret: imgurClientSecret ?? this.imgurClientSecret,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -180,6 +173,7 @@ class StoreModel extends ModelComponent {
       'addressCity: $addressCity, '
       'addressState: $addressState, '
       'countryCode: $countryCode, '
+      'timezone: $timezone, '
       'lat: $lat, '
       'lng: $lng, '
       'geom: $geom, '
@@ -188,8 +182,6 @@ class StoreModel extends ModelComponent {
       'pickup: $pickup, '
       'delivery: $delivery, '
       'deliveryPrice: $deliveryPrice, '
-      'imgurClientId: $imgurClientId, '
-      'imgurClientSecret: $imgurClientSecret, '
       'isOpen: $isOpen, '
       'createdAt: $createdAt, '
       'updatedAt: $updatedAt'

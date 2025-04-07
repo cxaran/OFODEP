@@ -24,60 +24,58 @@ class ProductConfigurationsPage extends StatelessWidget {
         productId: productId!,
       ),
       child: Builder(
-        builder: (context) => Expanded(
-          child: BlocConsumer<ProductConfigurationsListCubit,
-              BasicListFilterState>(
-            listener: (context, state) {
-              if (state.errorMessage != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
-                );
-              }
-            },
-            builder: (context, state) {
-              final cubit = context.read<ProductConfigurationsListCubit>();
+        builder: (context) =>
+            BlocConsumer<ProductConfigurationsListCubit, BasicListFilterState>(
+          listener: (context, state) {
+            if (state.errorMessage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.errorMessage!)),
+              );
+            }
+          },
+          builder: (context, state) {
+            final cubit = context.read<ProductConfigurationsListCubit>();
 
-              return RefreshIndicator(
-                onRefresh: () async => cubit.pagingController.refresh(),
-                child: PagingListener(
-                  controller: cubit.pagingController,
-                  builder: (context, state, fetchNextPage) =>
-                      PagedListView<int, ProductConfigurationModel>(
-                    state: state,
-                    fetchNextPage: fetchNextPage,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    builderDelegate:
-                        PagedChildBuilderDelegate<ProductConfigurationModel>(
-                      itemBuilder: (context, configuration, index) => ListTile(
-                        title: ProductConfigurationPage(
-                          configuration: configuration,
-                        ),
+            return RefreshIndicator(
+              onRefresh: () async => cubit.pagingController.refresh(),
+              child: PagingListener(
+                controller: cubit.pagingController,
+                builder: (context, state, fetchNextPage) =>
+                    PagedListView<int, ProductConfigurationModel>(
+                  state: state,
+                  fetchNextPage: fetchNextPage,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  builderDelegate:
+                      PagedChildBuilderDelegate<ProductConfigurationModel>(
+                    itemBuilder: (context, configuration, index) => ListTile(
+                      title: ProductConfigurationPage(
+                        configuration: configuration,
                       ),
-                      firstPageErrorIndicatorBuilder: (context) => Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('error_loading'),
-                            ElevatedButton(
-                              onPressed: () => cubit.pagingController.refresh(),
-                              child: const Text('retry'),
-                            ),
-                          ],
-                        ),
+                    ),
+                    firstPageErrorIndicatorBuilder: (context) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('error_loading'),
+                          ElevatedButton(
+                            onPressed: () => cubit.pagingController.refresh(),
+                            child: const Text('retry'),
+                          ),
+                        ],
                       ),
-                      noItemsFoundIndicatorBuilder: (context) => Center(
-                        child: const SizedBox.shrink(),
-                      ),
-                      noMoreItemsIndicatorBuilder: (context) => Center(
-                        child: const SizedBox.shrink(),
-                      ),
+                    ),
+                    noItemsFoundIndicatorBuilder: (context) => Center(
+                      child: const SizedBox.shrink(),
+                    ),
+                    noMoreItemsIndicatorBuilder: (context) => Center(
+                      child: const SizedBox.shrink(),
                     ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

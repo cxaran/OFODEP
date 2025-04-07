@@ -98,11 +98,14 @@ class LocationCubit extends Cubit<LocationState> {
     String? state_,
     String? country,
     String? countryCode,
+    String? timezone,
   }) async {
     if (zipCode != null &&
         zipCode.isNotEmpty &&
         countryCode != null &&
-        countryCode.isNotEmpty) {
+        countryCode.isNotEmpty &&
+        timezone != null &&
+        timezone.isNotEmpty) {
       emit(
         LocationLoaded(
           location: LocationModel(
@@ -114,6 +117,7 @@ class LocationCubit extends Cubit<LocationState> {
             state: state_,
             country: country,
             countryCode: countryCode,
+            timezone: timezone,
           ),
         ),
       );
