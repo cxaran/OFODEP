@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/models/abstract_model.dart';
+import 'package:ofodep/widgets/message_page.dart';
 
 /// Widget genérico que se encarga de crear el BlocProvider y administrar los estados CRUD.
 /// Recibe una función que construye el cubit y builders para cada uno de los estados.
@@ -16,17 +17,18 @@ class CrudStateHandler<T extends ModelComponent> extends StatelessWidget {
   final Widget Function(BuildContext context, String error) errorBuilder;
 
   /// Builder para mostrar la vista en estado cargado (no editable).
-  final Widget Function(BuildContext context, T model) loadedBuilder;
+  final Widget Function(
+    BuildContext context,
+    CrudCubit<T> cubit,
+    CrudLoaded<T> state,
+  ) loadedBuilder;
 
   /// Builder para mostrar la vista en estado de edición.
   /// Se reciben el modelo original, la copia editable, el flag de edición, el flag de envío y un posible mensaje de error.
   final Widget Function(
+    BuildContext context,
     CrudCubit<T> cubit,
-    T model,
-    T editedModel,
-    bool editMode,
-    bool isSubmitting,
-    String? errorMessage,
+    CrudEditing<T> state,
   ) editingBuilder;
 
   /// Builder opcional para mostrar la vista en caso de eliminación.
@@ -51,7 +53,7 @@ class CrudStateHandler<T extends ModelComponent> extends StatelessWidget {
   }
 
   static Widget _defaultErrorBuilder(BuildContext context, String error) {
-    return Center(child: Text(error));
+    return MessagePage.error(message: error);
   }
 
   @override
@@ -85,20 +87,21 @@ class CrudStateHandler<T extends ModelComponent> extends StatelessWidget {
             } else if (state is CrudError<T>) {
               return errorBuilder(context, state.message);
             } else if (state is CrudLoaded<T>) {
-              return loadedBuilder(context, state.model);
+              return loadedBuilder(
+                context,
+                context.read<CrudCubit<T>>(),
+                state,
+              );
             } else if (state is CrudEditing<T>) {
               return editingBuilder(
+                context,
                 context.read<CrudCubit<T>>(),
-                state.model,
-                state.editedModel,
-                state.editMode,
-                state.isSubmitting,
-                state.errorMessage,
+                state,
               );
             } else if (state is CrudDeleted<T>) {
               return deletedBuilder != null
                   ? deletedBuilder!(context, state.id)
-                  : Center(child: Text('El elemento ha sido eliminado.'));
+                  : MessagePage.warning('El elemento ha sido eliminado.');
             }
             return SizedBox.shrink();
           },

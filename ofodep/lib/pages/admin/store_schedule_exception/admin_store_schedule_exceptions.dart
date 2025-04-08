@@ -5,7 +5,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/blocs/list_cubits/store_schedule_exceptions_list_cubit.dart';
 import 'package:ofodep/models/store_schedule_exception_model.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/widgets/message_page.dart';
 
 class AdminStoreScheduleExceptionsPage extends StatefulWidget {
   final String? storeId;
@@ -45,7 +45,7 @@ class _AdminStoreScheduleExceptionsPageState
   @override
   Widget build(BuildContext context) {
     if (widget.storeId == null) {
-      return const ErrorPage();
+      return const MessagePage.error();
     }
 
     return Scaffold(

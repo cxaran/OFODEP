@@ -6,7 +6,7 @@ import 'package:ofodep/blocs/curd_cubits/product_option_cubit.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/blocs/list_cubits/product_options_list_cubit.dart';
 import 'package:ofodep/models/product_option_model.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/widgets/message_page.dart';
 
 class ProductOptionsPage extends StatelessWidget {
   final String? productConfigurationId;
@@ -17,7 +17,7 @@ class ProductOptionsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (productConfigurationId == null) return const ErrorPage();
+    if (productConfigurationId == null) return const MessagePage.error();
     return BlocProvider<ProductOptionsListCubit>(
       create: (context) => ProductOptionsListCubit(
         productConfigurationId: productConfigurationId!,
@@ -88,8 +88,8 @@ class ProductOptionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (option == null) return const ErrorPage();
-    if (option!.id.isEmpty) return const ErrorPage();
+    if (option == null) return const MessagePage.error();
+    if (option!.id.isEmpty) return const MessagePage.error();
     return BlocProvider<ProductOptionCubit>(
       create: (context) => ProductOptionCubit(
         id: option!.id,

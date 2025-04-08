@@ -11,6 +11,13 @@ class ContainerPage extends StatelessWidget {
     this.child,
   });
 
+  const ContainerPage.zero({
+    super.key,
+    this.maxWidth = 600,
+    this.padding = 0,
+    this.child,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Center(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/pages/admin/admin_store_admins.dart';
 import 'package:ofodep/pages/admin/order/order_page.dart';
+import 'package:ofodep/pages/admin/store_images/store_images_admin_page.dart';
 import 'package:ofodep/pages/admin/store_schedule_exception/admin_store_schedule_exceptions.dart';
 import 'package:ofodep/pages/admin/store_schedule/admin_store_schedules.dart';
 import 'package:ofodep/pages/admin/store_subscriptions/admin_store_subscriptions.dart';
@@ -157,6 +158,12 @@ GoRouter createRouter(SessionCubit sessionCubit) {
       GoRoute(
         path: '/admin/store_admins/:storeId',
         builder: (context, state) => AdminStoreAdminsPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/store_images/:storeId',
+        builder: (context, state) => StoreImagesAdminPage(
           storeId: state.pathParameters['storeId'],
         ),
       ),

@@ -8,8 +8,7 @@ enum StoreEditSection {
   contact('contact'),
   coordinates('coordinates'),
   geom('geom'),
-  delivery('delivery'),
-  imageApi('imageApi');
+  delivery('delivery');
 
   const StoreEditSection(this.description);
   final String description;

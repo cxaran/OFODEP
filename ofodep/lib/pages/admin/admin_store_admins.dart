@@ -192,11 +192,11 @@ class _AdminStoreAdminsPageState extends State<AdminStoreAdminsPage> {
                           builderDelegate:
                               PagedChildBuilderDelegate<StoreAdminModel>(
                             itemBuilder: (context, product, index) => ListTile(
-                              title: Text(product.userName),
-                              subtitle: Text(
-                                '${product.storeName}\n'
-                                '${product.userEmail}',
-                              ),
+                              // title: Text(product.userName),
+                              // subtitle: Text(
+                              //   '${product.storeName}\n'
+                              //   '${product.userEmail}',
+                              // ),
                               trailing: const Icon(Icons.admin_panel_settings),
                               onTap: () => context.push(
                                 '/admin/store_admin/${product.id}',

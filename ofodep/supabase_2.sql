@@ -170,7 +170,7 @@ CREATE TABLE store_subscriptions (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     store_id uuid UNIQUE REFERENCES stores(id) ON DELETE CASCADE,
     subscription_type subscription_type_enum NOT NULL DEFAULT 'general',
-    expiration_date timestamptz DEFAULT (now() - interval '1 day'),  -- Genera una suscripción inactiva por defecto.
+    expiration_date timestamptz DEFAULT (now() - interval '2 day'),  -- Genera una suscripción inactiva por defecto.
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
@@ -190,6 +190,7 @@ CREATE OR REPLACE FUNCTION public.create_store(
     country_code text,
     timezone text
 )
+
 RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -245,11 +246,28 @@ $$;
 
 -- Función auxiliar para verificar si un usuario es administrador de una tienda
 CREATE OR REPLACE FUNCTION public.is_store_admin(target_store_id uuid)
-RETURNS boolean LANGUAGE sql STABLE AS $$
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER AS $$
   SELECT EXISTS (
     SELECT 1 FROM store_admins
     WHERE store_id = target_store_id
       AND user_id = auth.uid()
+  );
+$$;
+
+-- Función auxiliar para verificar una tienda tiene su subscripcion activa 
+CREATE OR REPLACE FUNCTION public.is_store_subscription_active(target_store_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM store_subscriptions
+    WHERE store_id = target_store_id
+      AND expiration_date >= current_date
   );
 $$;
 
@@ -267,7 +285,7 @@ $$;
 ---------------------------------------------------------------------
 -- Permitir acceso completo a admin_global
 -- Permitir acceso completo a store_admin de su propia tienda
-CREATE POLICY admin_global_stores_access ON stores
+CREATE POLICY admin_stores_access ON stores
 FOR ALL
 USING (
   public.is_store_admin(stores.id)
@@ -278,10 +296,7 @@ USING (
 CREATE POLICY public_stores_access ON stores
 FOR SELECT
 USING (
-  EXISTS (
-    SELECT 1 FROM store_subscriptions ss
-    WHERE ss.store_id = stores.id AND ss.expiration_date > now()
-  )
+  public.is_store_subscription_active(stores.id)
 );
 
 -- Table: store_admins
@@ -349,4 +364,185 @@ CREATE POLICY store_admin_store_subscriptions_access ON store_subscriptions
 FOR SELECT
 USING (
   public.is_store_admin(store_subscriptions.store_id)
+);
+
+---------------------------------------------------------------------
+-- 3: HORARIOS DE COMERCIOS
+---------------------------------------------------------------------
+
+-- 3.1: Tablas 
+-- Registra los horarios regulares de apertura y cierre para cada tienda.
+CREATE TABLE store_schedules (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE,  
+    days int[],                                             -- "dias"; 1 = lunes, ... , 7 = domingo
+    opening_time time,
+    closing_time time,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE store_schedules ENABLE ROW LEVEL SECURITY;
+
+-- Registra excepciones en el horario, por ejemplo, festivos o días especiales.
+CREATE TABLE store_schedule_exceptions (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE,
+    date date NOT NULL,
+    is_closed boolean DEFAULT false,
+    opening_time time,
+    closing_time time,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE store_schedule_exceptions ENABLE ROW LEVEL SECURITY;
+
+-- 3.2: Funciones auxiliares
+
+-- Funcion para verificar si un comercio está abierto
+CREATE OR REPLACE FUNCTION public.store_is_open(s stores)
+RETURNS boolean AS $$
+DECLARE
+    local_ts timestamp without time zone;
+    local_date date;
+    local_time time;
+    day_of_week int;
+    exception_record record;
+    schedule_record record;
+BEGIN
+    -- Convertir CURRENT_TIMESTAMP a la zona horaria del comercio.
+    SELECT CURRENT_TIMESTAMP AT TIME ZONE s.timezone INTO local_ts;
+    local_date := local_ts::date;
+    local_time := local_ts::time;
+    
+    -- Obtener el día de la semana (ajustar para que 1 = lunes y 7 = domingo)
+    SELECT EXTRACT(DOW FROM local_ts)::int INTO day_of_week;
+    IF day_of_week = 0 THEN
+        day_of_week := 7;
+    END IF;
+    
+    -- Verificar si existe una excepción para la fecha actual.
+    SELECT *
+    INTO exception_record
+    FROM store_schedule_exceptions
+    WHERE store_id = s.id
+      AND date = local_date
+    LIMIT 1;
+    
+    IF FOUND THEN
+        IF exception_record.is_closed THEN
+            RETURN false;
+        ELSE
+            IF local_time >= exception_record.opening_time AND local_time <= exception_record.closing_time THEN
+                RETURN true;
+            ELSE
+                RETURN false;
+            END IF;
+        END IF;
+    END IF;
+    
+    -- Verificar en los horarios regulares.
+    FOR schedule_record IN
+         SELECT *
+         FROM store_schedules
+         WHERE store_id = s.id
+    LOOP
+        IF day_of_week = ANY(schedule_record.days) THEN
+            IF local_time >= schedule_record.opening_time AND local_time <= schedule_record.closing_time THEN
+                RETURN true;
+            END IF;
+        END IF;
+    END LOOP;
+    
+    RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3.3: Politicas de seguridad
+
+-- Table: store_schedules
+---------------------------------------------------------------------
+--              | ALL | SELECT | INSERT | UPDATE | DELETE |
+-- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- public       |  X  |    ✓*   |    X   |    X   |    X   |
+-- * Se permite el acceso público solo si la store tiene su subscripción activa.
+-- store_admin  se refiere al registro de su propia tienda.
+---------------------------------------------------------------------
+
+-- Permitir acceso completo a admin_global y store_admin de su propia tienda
+CREATE POLICY admin_store_schedules_access ON store_schedules
+FOR ALL
+USING (
+  public.is_store_admin(store_schedules.store_id)
+  OR public.is_global_admin()
+);
+
+-- Permitir lectura pública solo si la suscripción está activa
+CREATE POLICY public_store_schedules_access ON store_schedules
+FOR SELECT
+USING (
+  public.is_store_subscription_active(store_schedules.store_id)
+);
+
+-- Table: store_schedule_exceptions
+---------------------------------------------------------------------
+--              | ALL | SELECT | INSERT | UPDATE | DELETE |
+-- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- public       |  X  |    ✓*   |    X   |    X   |    X   |
+-- * Se permite el acceso público solo si la store tiene su subscripción activa.
+-- store_admin  se refiere al registro de su propia tienda.
+---------------------------------------------------------------------
+
+-- Permitir acceso completo a admin_global y store_admin de su propia tienda
+CREATE POLICY admin_store_exceptions_access ON store_schedule_exceptions
+FOR ALL
+USING (
+  public.is_store_admin(store_schedule_exceptions.store_id)
+  OR public.is_global_admin()
+);
+
+-- Permitir lectura pública solo si la suscripción está activa
+CREATE POLICY public_store_exceptions_access ON store_schedule_exceptions
+FOR SELECT
+USING (
+  public.is_store_subscription_active(store_schedule_exceptions.store_id)
+);
+
+---------------------------------------------------------------------
+-- 4: IMGUR DE COMERCIOS
+---------------------------------------------------------------------
+
+-- 4.1: Tablas
+-- Registra las configuraciones de imagen de los comercios.
+CREATE TABLE store_images (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    store_id uuid UNIQUE REFERENCES stores(id) ON DELETE CASCADE,
+    imgur_client_id text NOT NULL,                      -- Imgur Client ID
+    imgur_client_secret text NOT NULL,                  -- Imgur Client Secret
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE store_images ENABLE ROW LEVEL SECURITY;
+
+-- 4.2: Politicas de seguridad
+
+-- Table: store_images
+---------------------------------------------------------------------
+--              | ALL | SELECT | INSERT | UPDATE | DELETE |
+-- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- public       |  X  |    X    |    X   |    X   |    X   |
+-- store_admin  se refiere al registro de su propia tienda.
+---------------------------------------------------------------------
+
+-- Permitir acceso completo a admin_global y store_admin de su propia tienda
+CREATE POLICY admin_store_images_access ON store_images
+FOR ALL
+USING (
+  public.is_store_admin(store_images.store_id)
+  OR public.is_global_admin()
 );

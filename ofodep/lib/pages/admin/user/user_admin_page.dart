@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
-import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/user_cubit.dart';
 import 'package:ofodep/models/user_model.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/widgets/message_page.dart';
 
 class UserAdminPage extends StatelessWidget {
   final String? userId;
@@ -16,7 +15,7 @@ class UserAdminPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (userId == null) return const ErrorPage();
+    if (userId == null) return const MessagePage.error();
 
     return Scaffold(
       appBar: AppBar(
@@ -123,25 +122,25 @@ class UserAdminPage extends StatelessWidget {
                           onChanged: (value) =>
                               context.read<UserCubit>().phoneChanged(value),
                         ),
-                        BlocBuilder<SessionCubit, SessionState>(
-                          builder: (context, sessionState) {
-                            if (sessionState is SessionAuthenticated &&
-                                sessionState.admin) {
-                              return Row(
-                                children: [
-                                  const Text('Admin'),
-                                  // Checkbox(
-                                  //   value: state.editedModel.admin,
-                                  //   onChanged: (value) => context
-                                  //       .read<UserCubit>()
-                                  //       .adminChanged(value ?? false),
-                                  // ),
-                                ],
-                              );
-                            }
-                            return Container();
-                          },
-                        ),
+                        // BlocBuilder<SessionCubit, SessionState>(
+                        //   builder: (context, sessionState) {
+                        //     if (sessionState is SessionAuthenticated &&
+                        //         sessionState.admin) {
+                        //       return Row(
+                        //         children: [
+                        //           const Text('Admin'),
+                        //           // Checkbox(
+                        //           //   value: state.editedModel.admin,
+                        //           //   onChanged: (value) => context
+                        //           //       .read<UserCubit>()
+                        //           //       .adminChanged(value ?? false),
+                        //           // ),
+                        //         ],
+                        //       );
+                        //     }
+                        //     return Container();
+                        //   },
+                        // ),
                         if (state.isSubmitting)
                           const CircularProgressIndicator()
                         else

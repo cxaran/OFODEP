@@ -53,4 +53,13 @@ class StoreSubscriptionModel extends ModelComponent {
       updatedAt: updatedAt,
     );
   }
+
+  @override
+  String toString() => 'StoreSubscriptionModel('
+      'id: $id, '
+      'storeId: $storeId, '
+      'storeName: $storeName, '
+      'subscriptionType: $subscriptionType, '
+      'expirationDate: $expirationDate'
+      ')';
 }

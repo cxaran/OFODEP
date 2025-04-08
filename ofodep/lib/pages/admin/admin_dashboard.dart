@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/widgets/message_page.dart';
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
@@ -15,7 +15,7 @@ class AdminDashboardPage extends StatelessWidget {
       ),
       body: BlocBuilder<SessionCubit, SessionState>(
         builder: (context, state) {
-          if (state is SessionAuthenticated && state.admin) {
+          if (state is SessionAuthenticated) {
             return ListView(
               children: [
                 ListTile(
@@ -41,7 +41,7 @@ class AdminDashboardPage extends StatelessWidget {
               ],
             );
           } else {
-            return const ErrorPage();
+            return const MessagePage.error();
           }
         },
       ),

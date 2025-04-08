@@ -1,9 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/models/user_model.dart';
-import 'package:ofodep/repositories/admin_global_repository.dart';
-import 'package:ofodep/repositories/store_admin_repository.dart';
 import 'package:ofodep/repositories/user_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,12 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// [SessionAuthenticated] estado de autenticación
 /// [SessionUnauthenticated] estado de no autenticación
 abstract class SessionState {
-  final bool admin;
-  final String? storeId;
-  const SessionState({
-    this.admin = false,
-    this.storeId,
-  });
+  const SessionState();
 }
 
 class SessionInitial extends SessionState {
@@ -29,23 +21,7 @@ class SessionAuthenticated extends SessionState {
 
   /// Crea el estado de autenticación a partir de un Usuario
   /// [user] Usuario a copiar
-  SessionAuthenticated(
-    this.user, {
-    super.admin = false,
-    super.storeId,
-  });
-
-  /// Crea un copia del estado de autenticación
-  SessionAuthenticated copyWith({
-    UserModel? user,
-    bool? admin,
-    String? storeId,
-  }) =>
-      SessionAuthenticated(
-        user ?? this.user,
-        admin: admin ?? this.admin,
-        storeId: storeId ?? this.storeId,
-      );
+  SessionAuthenticated(this.user);
 }
 
 class SessionUnauthenticated extends SessionState {
@@ -82,24 +58,7 @@ class SessionCubit extends Cubit<SessionState> {
       if (session != null) {
         UserModel? user = await userRepository.getById(session.user.id);
         if (user != null) {
-          // Verificar si el usuario es administrador global
-          final adminGlobal = await AdminGlobalRepository().getById(
-            session.user.id,
-          );
-
-          final storeAdmins = await StoreAdminRepository().find(
-            'user_id',
-            session.user.id,
-          );
-          if (storeAdmins.isNotEmpty) {
-            emit(SessionAuthenticated(
-              user,
-              storeId: storeAdmins.first.storeId,
-            ));
-            return;
-          }
-
-          emit(SessionAuthenticated(user, admin: adminGlobal != null));
+          emit(SessionAuthenticated(user));
           return;
         }
         await Supabase.instance.client.auth.signOut();
@@ -110,14 +69,6 @@ class SessionCubit extends Cubit<SessionState> {
       return;
     }
     emit(SessionUnauthenticated());
-  }
-
-  /// Agregar un store a la sesión actual
-  void addStore(String storeId) {
-    final current = state;
-    if (current is SessionAuthenticated) {
-      emit(current.copyWith(storeId: storeId));
-    }
   }
 
   /// Elimina la sesión actual

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/create_store_cubit.dart';
-import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/const.dart';
 import 'package:ofodep/models/country_timezone.dart';
 import 'package:ofodep/models/create_store_model.dart';
 import 'package:ofodep/pages/create_store/terms_create_store.dart';
+import 'package:ofodep/repositories/store_admin_repository.dart';
+import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/container_page.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
+import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/hero_layout_card.dart';
+import 'package:ofodep/widgets/message_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 const List<InfoImage> images = [
   InfoImage(
@@ -64,6 +68,9 @@ class _CreateStorePageState extends State<CreateStorePage> {
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.sizeOf(context).height / 2;
+
+    String? authId = Supabase.instance.client.auth.currentSession?.user.id;
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -96,226 +103,205 @@ class _CreateStorePageState extends State<CreateStorePage> {
             ),
           ];
         },
-        body: ContainerPage(
-          child: BlocBuilder<SessionCubit, SessionState>(
-              builder: (context, state) {
-            if (state is SessionUnauthenticated) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('Debes iniciar sesión'),
+        body: authId == null
+            ? MessagePage.warning('Inicia sesión para registrar tu comercio.')
+            : FutureBuilder(
+                future: StoreAdminRepository().getById(
+                  authId,
+                  field: 'user_id',
                 ),
-              );
-            }
-            if (state is SessionAuthenticated) {
-              if (state.storeId != null) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Gracias por registrar tu comercio, te contactaremos lo antes posible.',
-                    ),
-                  ),
-                );
-              }
-            }
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.hasData && snapshot.data != null) {
+                      return MessagePage.warning(
+                        'Tu comercio "${snapshot.data?.storeName}" ya ha sido registrado.',
+                      );
+                    }
+                  }
 
-            return CrudStateHandler<CreateStoreModel>(
-              createCubit: (context) => CreateStoreCubit(
-                initialState: CrudEditing<CreateStoreModel>.fromModel(
-                  CreateStoreModel.empty(),
-                ),
-              ),
-              loadedBuilder: (context, model) => SizedBox.shrink(),
-              editingBuilder: (
-                cubit,
-                model,
-                editedModel,
-                editMode,
-                isSubmitting,
-                errorMessage,
-              ) =>
-                  Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    gap,
-                    gap,
-                    Text(
-                      'Solicita tu prueba gratuita',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    gap,
-                    TextFormField(
-                      initialValue: editedModel.storeName,
-                      decoration: const InputDecoration(
-                        labelText: 'Nombre completo del comercio',
-                        hintText: 'Comercio',
-                        border: OutlineInputBorder(),
+                  return CrudStateHandler<CreateStoreModel>(
+                    createCubit: (context) => CreateStoreCubit(
+                      initialState: CrudEditing<CreateStoreModel>.fromModel(
+                        CreateStoreModel.empty(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, introduzca un nombre completo';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        cubit.updateEditingState(
-                          (model) => model.copyWith(
-                            storeName: value,
+                    ),
+                    loadedBuilder: (_, __, ___) => SizedBox.shrink(),
+                    editingBuilder: (
+                      context,
+                      cubit,
+                      state,
+                    ) =>
+                        CustomListView(
+                      formKey: _formKey,
+                      actions: [
+                        ElevatedButton(
+                          onPressed: !state.editMode || state.isSubmitting
+                              ? null
+                              : () async {
+                                  if (_formKey.currentState?.validate() ??
+                                      false) {
+                                    final newId = await cubit.create();
+                                    if (newId != null && context.mounted) {
+                                      context.pushReplacement(
+                                        '/admin/store/$newId',
+                                      );
+                                    }
+                                  }
+                                }, // verificar el from primero
+                          child: state.isSubmitting
+                              ? const CircularProgressIndicator()
+                              : const Text("Guardar"),
+                        ),
+                      ],
+                      children: [
+                        Text(
+                          'Solicita tu prueba gratuita',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        TextFormField(
+                          initialValue: state.editedModel.storeName,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.storefront),
+                            labelText: 'Nombre completo del comercio',
+                            hintText: 'Comercio',
                           ),
-                        );
-                      },
-                    ),
-                    gap,
-                    DropdownButtonFormField<CountryTimezone>(
-                      decoration: InputDecoration(
-                        labelText: 'Zona del comercio',
-                      ),
-                      value: editedModel.countryCode == '' ||
-                              editedModel.timezone == ''
-                          ? null
-                          : CountryTimezone(
-                              country: editedModel.countryCode,
-                              timezone: editedModel.timezone,
-                            ),
-                      items: timeZonesLatAm
-                          .map((tz) => DropdownMenuItem<CountryTimezone>(
-                                value: tz,
-                                child: Text('${tz.timezone} (${tz.country})'),
-                              ))
-                          .toList(),
-                      onChanged: (tz) {
-                        cubit.updateEditingState(
-                          (model) => model.copyWith(
-                            countryCode: tz?.country,
-                            timezone: tz?.timezone,
+                          validator: validate,
+                          onChanged: (value) {
+                            cubit.updateEditingState(
+                              (model) => model.copyWith(
+                                storeName: value,
+                              ),
+                            );
+                          },
+                        ),
+                        DropdownButtonFormField<CountryTimezone>(
+                          decoration: InputDecoration(
+                            icon: const Icon(Icons.map),
+                            labelText: 'Zona del comercio',
                           ),
-                        );
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, selecciona un zona horaria';
-                        }
-                        return null;
-                      },
-                    ),
-                    gap,
-                    Text(
-                      'Los datos de contacto serán utilizados para que un representante se comunique contigo y coordine los detalles del proceso de evaluación y acuerdo comercial.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    gap,
-                    TextFormField(
-                      initialValue: editedModel.contactName,
-                      decoration: const InputDecoration(
-                        labelText: 'Nombre del contacto',
-                        hintText: 'Jhon Doe',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, introduzca un nombre';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        cubit.updateEditingState(
-                          (model) => model.copyWith(contactName: value),
-                        );
-                      },
-                    ),
-                    gap,
-                    TextFormField(
-                      initialValue: editedModel.contactEmail,
-                      decoration: const InputDecoration(
-                        labelText: 'Correo electrónico del contacto',
-                        hintText: 'correo@example.com',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, introduzca un correo electrónico';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        cubit.updateEditingState(
-                          (model) => model.copyWith(contactEmail: value),
-                        );
-                      },
-                    ),
-                    gap,
-                    TextFormField(
-                      initialValue: editedModel.contactPhone,
-                      decoration: const InputDecoration(
-                        labelText: 'Teléfono del contacto',
-                        hintText: '+52 123456789',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, introduzca un teléfono';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        cubit.updateEditingState(
-                          (model) => model.copyWith(contactPhone: value),
-                        );
-                      },
-                    ),
-                    gap,
-                    FormField<bool>(
-                      initialValue: false,
-                      validator: (value) {
-                        if (value != true) {
-                          return 'Debes aceptar los Términos y Condiciones';
-                        }
-                        return null;
-                      },
-                      builder: (state) => Row(
-                        children: [
-                          Checkbox(
-                            value: state.value,
-                            onChanged: (value) => state.didChange(value),
-                            isError: state.hasError,
+                          value: state.editedModel.countryCode == '' ||
+                                  state.editedModel.timezone == ''
+                              ? null
+                              : CountryTimezone(
+                                  country: state.editedModel.countryCode,
+                                  timezone: state.editedModel.timezone,
+                                ),
+                          items: timeZonesLatAm
+                              .map(
+                                (tz) => DropdownMenuItem<CountryTimezone>(
+                                  value: tz,
+                                  child: Text(
+                                      '${tz.timezone.replaceAll('America/', '')} (${tz.country})'),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (tz) {
+                            cubit.updateEditingState(
+                              (model) => model.copyWith(
+                                countryCode: tz?.country,
+                                timezone: tz?.timezone,
+                              ),
+                            );
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, selecciona un zona horaria';
+                            }
+                            return null;
+                          },
+                        ),
+                        Divider(),
+                        Text(
+                          'Los datos de contacto serán utilizados para que un representante se comunique contigo y coordine los detalles del proceso de evaluación y acuerdo comercial.',
+                        ),
+                        TextFormField(
+                          initialValue: state.editedModel.contactName,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.person),
+                            labelText: 'Nombre del contacto',
+                            hintText: 'Jhon Doe',
                           ),
-                          InkWell(
-                            onTap: () => showDialog(
-                              context: context,
-                              builder: (context) => TermsCreateStore(),
-                            ),
-                            child: const Text(
-                              'Acepto los Términos y Condiciones',
-                            ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, introduzca un nombre';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            cubit.updateEditingState(
+                              (model) => model.copyWith(contactName: value),
+                            );
+                          },
+                        ),
+                        TextFormField(
+                          initialValue: state.editedModel.contactEmail,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.email),
+                            labelText: 'Correo electrónico del contacto',
+                            hintText: 'correo@example.com',
                           ),
-                        ],
-                      ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, introduzca un correo electrónico';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            cubit.updateEditingState(
+                              (model) => model.copyWith(contactEmail: value),
+                            );
+                          },
+                        ),
+                        TextFormField(
+                          initialValue: state.editedModel.contactPhone,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.phone),
+                            labelText: 'Teléfono del contacto',
+                            hintText: '+52 123456789',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, introduzca un teléfono';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            cubit.updateEditingState(
+                              (model) => model.copyWith(contactPhone: value),
+                            );
+                          },
+                        ),
+                        FormField<bool>(
+                          initialValue: false,
+                          validator: (value) {
+                            if (value != true) {
+                              return 'Debes aceptar los Términos y Condiciones';
+                            }
+                            return null;
+                          },
+                          builder: (state) => Row(
+                            children: [
+                              Checkbox(
+                                value: state.value,
+                                onChanged: (value) => state.didChange(value),
+                                isError: state.hasError,
+                              ),
+                              InkWell(
+                                onTap: () => showDialog(
+                                  context: context,
+                                  builder: (context) => TermsCreateStore(),
+                                ),
+                                child: const Text(
+                                  'Acepto los Términos y Condiciones',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    gap,
-                    ElevatedButton(
-                      onPressed: !editMode || isSubmitting
-                          ? null
-                          : () async {
-                              final session = context.read<SessionCubit>();
-                              if (_formKey.currentState?.validate() ?? false) {
-                                final newId = await cubit.create();
-                                if (newId != null) {
-                                  session.addStore(newId);
-                                }
-                              }
-                            }, // verificar el from primero
-                      child: isSubmitting
-                          ? const CircularProgressIndicator()
-                          : const Text("Guardar"),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ),
+                  );
+                }),
       ),
     );
   }

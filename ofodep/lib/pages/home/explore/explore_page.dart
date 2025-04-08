@@ -69,8 +69,7 @@ class ExplorePage extends StatelessWidget {
                 },
                 builder: (context, state) {
                   final cubit = context.read<ProductStoreListCubit>();
-                  return ContainerPage(
-                    padding: 0,
+                  return ContainerPage.zero(
                     child: RefreshIndicator(
                       onRefresh: () async => cubit.pagingController.refresh(),
                       child: PagingListener(

@@ -4,7 +4,7 @@ import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_subscription_cubit.dart';
 import 'package:ofodep/models/enums.dart';
 import 'package:ofodep/models/store_subscription_model.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/widgets/message_page.dart';
 
 class StoreSubscriptionsAdminPage extends StatefulWidget {
   final String? storeId;
@@ -19,7 +19,7 @@ class _StoreSubscriptionsAdminPageState
     extends State<StoreSubscriptionsAdminPage> {
   @override
   Widget build(BuildContext context) {
-    if (widget.storeId == null) return const ErrorPage();
+    if (widget.storeId == null) return const MessagePage.error();
 
     return Scaffold(
       appBar: AppBar(

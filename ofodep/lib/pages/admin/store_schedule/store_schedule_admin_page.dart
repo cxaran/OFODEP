@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_schedule_cubit.dart';
 import 'package:ofodep/models/store_schedule_model.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/widgets/message_page.dart';
 
 class StoreScheduleAdminPage extends StatelessWidget {
   final String? scheduleId;
@@ -14,7 +14,7 @@ class StoreScheduleAdminPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (scheduleId == null) return const ErrorPage();
+    if (scheduleId == null) return const MessagePage.error();
 
     return Scaffold(
       appBar: AppBar(

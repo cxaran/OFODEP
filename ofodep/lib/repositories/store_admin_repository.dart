@@ -6,7 +6,7 @@ class StoreAdminRepository extends Repository<StoreAdminModel> {
   String get tableName => 'store_admins';
 
   @override
-  String get select => '*, stores(name), users(name, email)';
+  String get select => '*, stores(name)';
 
   @override
   StoreAdminModel fromMap(Map<String, dynamic> map) =>

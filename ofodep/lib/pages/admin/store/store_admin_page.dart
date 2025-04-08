@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_cubit.dart';
 import 'package:ofodep/const.dart';
 import 'package:ofodep/models/country_timezone.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/utils/aux_forms.dart';
+import 'package:ofodep/widgets/custom_list_view.dart';
+import 'package:ofodep/widgets/message_page.dart';
 import 'package:ofodep/models/store_model.dart';
+import 'package:ofodep/repositories/store_images_repository.dart';
+import 'package:ofodep/repositories/store_subscription_repository.dart';
 import 'package:ofodep/widgets/admin_image.dart';
+import 'package:ofodep/widgets/container_page.dart';
+import 'package:ofodep/widgets/crud_state_handler.dart';
 import 'package:ofodep/widgets/location_picker.dart';
 import 'package:ofodep/widgets/preview_image.dart';
 import 'package:ofodep/widgets/zone_polygon.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class StoreAdminPage extends StatelessWidget {
   final String? storeId;
@@ -21,245 +25,324 @@ class StoreAdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (storeId == null) {
-      return const ErrorPage();
+      return const MessagePage.error();
     }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Store'),
-      ),
-      body: BlocProvider<StoreCubit>(
-        create: (context) => StoreCubit(id: storeId!)..load(),
-        child: Builder(
-          builder: (context) => BlocConsumer<StoreCubit, CrudState<StoreModel>>(
-            listener: (context, state) {
-              if (state is CrudError<StoreModel>) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-              if (state is StoreCrudEditing &&
-                  state.errorMessage != null &&
-                  state.errorMessage!.isNotEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
-                );
-              }
-            },
-            builder: (context, state) {
-              if (state is CrudLoading<StoreModel>) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is CrudLoaded<StoreModel> ||
-                  state is StoreCrudEditing) {
-                return _storePage(context, state);
-              } else if (state is CrudError<StoreModel>) {
-                return Center(child: Text(state.message));
-              }
-              return Container();
-            },
-          ),
+      // appBar: AppBar(
+      //   title: const Text('Administrar comercio'),
+      // ),
+      body: ContainerPage.zero(
+        child: CrudStateHandler<StoreModel>(
+          createCubit: (context) => StoreCubit(id: storeId!)..load(),
+          loadedBuilder: loadedBuilder,
+          editingBuilder: editingBuilder,
         ),
       ),
     );
   }
 
-  /// Renderiza la página de la tienda.
-  /// Si el estado es de edición (StoreCrudEditing) muestra el formulario según la sección,
-  /// de lo contrario muestra un menú de secciones.
-  Widget _storePage(BuildContext context, CrudState<StoreModel> state) {
-    if (state is StoreCrudEditing) {
-      switch (state.editSection) {
-        case StoreEditSection.general:
-          return _buildGeneralSection(context, state);
-        case StoreEditSection.contact:
-          return _buildContactSection(context, state);
-        case StoreEditSection.coordinates:
-          return _buildCoordinatesSection(context, state);
-        case StoreEditSection.geom:
-          return _buildGeomSection(context, state);
-        case StoreEditSection.delivery:
-          return _buildDeliverySection(context, state);
-        case StoreEditSection.imageApi:
-          return _buildImageApiSection(context, state);
-      }
-    } else if (state is CrudLoaded<StoreModel>) {
-      final store = state.model;
-      return ListView(
+  Widget loadedBuilder(
+    BuildContext context,
+    CrudCubit<StoreModel> cubit,
+    CrudLoaded<StoreModel> state,
+  ) {
+    if (cubit is StoreCubit) {
+      StoreModel store = state.model;
+      return CustomListView(
+        title: 'Configura tu comercio',
         children: [
           ListTile(
             leading: PreviewImage.mini(imageUrl: store.logoUrl),
             title: Text(store.name),
-            onTap: () => context
-                .read<StoreCubit>()
-                .startEditing(editSection: StoreEditSection.general),
+            onTap: () =>
+                cubit.startEditing(editSection: StoreEditSection.general),
           ),
           const Divider(),
           ListTile(
-            title: Text(StoreEditSection.contact.description),
+            leading: const Icon(Icons.phone),
+            title: Text('Datos de contacto'),
             subtitle: Text(
-              '${store.addressStreet}, ${store.addressNumber}, '
-              '${store.addressColony}, ${store.addressZipcode}\n'
-              '${store.addressCity}, ${store.addressState}',
+              [
+                store.addressStreet,
+                store.addressNumber,
+                store.addressColony,
+                store.addressZipcode,
+                store.addressCity,
+                store.addressState
+              ].where((e) => e != null && e.isNotEmpty).join(', '),
             ),
-            onTap: () => context
-                .read<StoreCubit>()
-                .startEditing(editSection: StoreEditSection.contact),
+            onTap: () => cubit.startEditing(
+              editSection: StoreEditSection.contact,
+            ),
           ),
           ListTile(
-            title: Text(StoreEditSection.coordinates.description),
-            onTap: () => context
-                .read<StoreCubit>()
-                .startEditing(editSection: StoreEditSection.coordinates),
+            leading: const Icon(Icons.pin_drop),
+            title: Text('Ubicación'),
+            onTap: () => cubit.startEditing(
+              editSection: StoreEditSection.coordinates,
+            ),
           ),
           ListTile(
-            title: Text(StoreEditSection.geom.description),
-            onTap: () => context
-                .read<StoreCubit>()
-                .startEditing(editSection: StoreEditSection.geom),
+            leading: const Icon(Icons.map),
+            title: Text('Zona de cobertura'),
+            onTap: () => cubit.startEditing(
+              editSection: StoreEditSection.geom,
+            ),
           ),
           ListTile(
-            title: Text(StoreEditSection.delivery.description),
-            onTap: () => context
-                .read<StoreCubit>()
-                .startEditing(editSection: StoreEditSection.delivery),
-          ),
-          ListTile(
-            title: Text(StoreEditSection.imageApi.description),
-            onTap: () => context
-                .read<StoreCubit>()
-                .startEditing(editSection: StoreEditSection.imageApi),
+            leading: const Icon(Icons.delivery_dining),
+            title: Text('Configuración de entregas'),
+            onTap: () => cubit.startEditing(
+              editSection: StoreEditSection.delivery,
+            ),
           ),
           const Divider(),
           ListTile(
-            title: const Text('Schedules'),
+            leading: FutureBuilder(
+              future: StoreImagesRepository().getById(store.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (!snapshot.hasData) {
+                    return const Badge(
+                      label: Text('1'),
+                      child: Icon(Icons.image),
+                    );
+                  }
+                }
+                return const Icon(Icons.image);
+              },
+            ),
+            title: Text('Configuración de imagenes'),
+            onTap: () => context.push('/admin/store_images/${store.id}'),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.schedule),
+            title: const Text('Horarios'),
             onTap: () => context.push('/admin/schedules/${store.id}'),
           ),
           ListTile(
-            title: const Text('Schedule Exceptions'),
+            leading: const Icon(Icons.calendar_today),
+            title: const Text('Horarios especiales'),
             onTap: () => context.push('/admin/schedule_exceptions/${store.id}'),
           ),
           ListTile(
-            title: const Text('Products'),
+            leading: const Icon(Icons.shopping_cart),
+            title: const Text('Productos'),
             onTap: () => context.push('/admin/products/${store.id}'),
           ),
           const Divider(),
           ListTile(
-            title: const Text('Orders'),
+            leading: const Icon(Icons.shopping_bag),
+            title: const Text('Pedidos'),
             onTap: () => context.push('/admin/orders?store=${store.id}'),
           ),
           const Divider(),
           ListTile(
-            title: const Text('Subscription'),
+            leading: FutureBuilder(
+              future: StoreSubscriptionRepository().getById(store.id),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data?.expirationDate.isBefore(DateTime.now()) ??
+                      false) {
+                    return const Badge(
+                      label: Text('1'),
+                      child: Icon(Icons.sell),
+                    );
+                  }
+                }
+                return const Icon(Icons.sell);
+              },
+            ),
+            title: const Text('Suscripción'),
             onTap: () => context.push('/admin/subscription/${store.id}'),
           ),
           ListTile(
-            title: const Text('Store Admins'),
+            leading: const Icon(Icons.contacts),
+            title: const Text('Administradores del comercio'),
             onTap: () => context.push('/admin/store_admins/${store.id}'),
           ),
         ],
       );
     }
+    return SizedBox.shrink();
+  }
+
+  /// Renderiza la página de la tienda.
+  /// Si el estado es de edición (StoreCrudEditing) muestra el formulario según la sección,
+  /// de lo contrario muestra un menú de secciones.
+  Widget editingBuilder(
+    BuildContext context,
+    CrudCubit<StoreModel> cubit,
+    CrudEditing<StoreModel> state,
+  ) {
+    if (state is StoreCrudEditing && cubit is StoreCubit) {
+      switch (state.editSection) {
+        case StoreEditSection.general:
+          return _buildGeneralSection(cubit, state);
+        case StoreEditSection.contact:
+          return _buildContactSection(cubit, state);
+        case StoreEditSection.coordinates:
+          return _buildCoordinatesSection(cubit, state);
+        case StoreEditSection.geom:
+          return _buildGeomSection(cubit, state);
+        case StoreEditSection.delivery:
+          return _buildDeliverySection(cubit, state);
+      }
+    }
     return Container();
   }
 
   /// Sección general: nombre y logo de la tienda.
-  Widget _buildGeneralSection(BuildContext context, StoreCrudEditing state) {
+  Widget _buildGeneralSection(
+    StoreCubit cubit,
+    StoreCrudEditing state,
+  ) {
+    final formKey = GlobalKey<FormState>();
     final edited = state.editedModel;
-    return ListView(
+    return CustomListView(
+      formKey: formKey,
+      title: 'Logotipo del comercio',
+      onBack: state.isSubmitting ? null : () => cubit.cancelEditing(),
+      actions: [
+        ElevatedButton.icon(
+          onPressed: state.editMode ? () => submit(formKey, cubit) : null,
+          icon: const Icon(Icons.check),
+          label: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Guardar"),
+        ),
+      ],
       children: [
-        const Text("Edit general information"),
+        const Text(
+          'Con este logotipo y nombre aparecerá en la página de tu tienda en el portal.',
+        ),
+        Divider(),
         AdminImage(
           clientId: null,
           imageUrl: edited.logoUrl,
           onImageUploaded: (url) {
-            context.read<StoreCubit>().updateEditingState(
-                  (model) => model.copyWith(logoUrl: url),
-                );
+            cubit.updateEditingState(
+              (model) => model.copyWith(logoUrl: url),
+            );
           },
         ),
         TextFormField(
           initialValue: edited.name,
-          decoration: const InputDecoration(labelText: "Name"),
-          onChanged: (value) => context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(
-                  name: value,
-                ),
-              ),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => context.read<StoreCubit>().submit(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Save"),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting
-              ? null
-              : () => context.read<StoreCubit>().cancelEditing(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancel"),
+          decoration: const InputDecoration(
+            icon: Icon(Icons.storefront),
+            labelText: "Nombre del comercio",
+            hintText: "Comercio",
+          ),
+          validator: validate,
+          onChanged: (value) => cubit.updateEditingState(
+            (model) => model.copyWith(
+              name: value,
+            ),
+          ),
         ),
       ],
     );
   }
 
   /// Sección de contacto y dirección.
-  Widget _buildContactSection(BuildContext context, StoreCrudEditing state) {
+  Widget _buildContactSection(StoreCubit cubit, StoreCrudEditing state) {
+    final formKey = GlobalKey<FormState>();
     final edited = state.editedModel;
-    return ListView(
+    return CustomListView(
+      formKey: formKey,
+      title: 'Datos de contacto',
+      onBack: state.isSubmitting ? null : () => cubit.cancelEditing(),
+      actions: [
+        ElevatedButton.icon(
+          onPressed: state.editMode ? () => submit(formKey, cubit) : null,
+          icon: const Icon(Icons.check),
+          label: state.isSubmitting
+              ? const CircularProgressIndicator()
+              : const Text("Guardar"),
+        ),
+      ],
       children: [
-        const Text("Edit contact and address"),
+        const Text(
+          "Tu dirección y contacto se mostrarán en tu tienda y se utilizarán para validar los horarios de entrega segun tu zona horaria.",
+        ),
+        Divider(),
         TextFormField(
           initialValue: edited.addressStreet,
-          decoration: const InputDecoration(labelText: "Street"),
+          decoration: const InputDecoration(
+            labelText: "Calle",
+          ),
+          validator: validate,
           onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(addressStreet: value));
+            cubit.updateEditingState(
+              (model) => model.copyWith(addressStreet: value),
+            );
           },
         ),
         TextFormField(
           initialValue: edited.addressNumber,
-          decoration: const InputDecoration(labelText: "Number"),
+          decoration: const InputDecoration(
+            labelText: "Numero",
+          ),
+          validator: validate,
           onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(addressNumber: value));
+            cubit.updateEditingState(
+              (model) => model.copyWith(addressNumber: value),
+            );
           },
         ),
         TextFormField(
           initialValue: edited.addressColony,
-          decoration: const InputDecoration(labelText: "Neighborhood"),
+          decoration: const InputDecoration(
+            labelText: "Colonia o barrio",
+          ),
+          validator: validate,
           onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(addressColony: value));
+            cubit.updateEditingState(
+              (model) => model.copyWith(addressColony: value),
+            );
           },
         ),
         TextFormField(
           initialValue: edited.addressZipcode,
-          decoration: const InputDecoration(labelText: "Zipcode"),
+          decoration: const InputDecoration(
+            labelText: "Código postal",
+          ),
+          validator: validate,
           onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(addressZipcode: value));
+            cubit.updateEditingState(
+              (model) => model.copyWith(addressZipcode: value),
+            );
           },
         ),
         TextFormField(
           initialValue: edited.addressCity,
-          decoration: const InputDecoration(labelText: "City"),
+          decoration: const InputDecoration(
+            labelText: "Ciudad o municipio",
+          ),
+          validator: validate,
           onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(addressCity: value));
+            cubit.updateEditingState(
+              (model) => model.copyWith(addressCity: value),
+            );
           },
         ),
         TextFormField(
           initialValue: edited.addressState,
-          decoration: const InputDecoration(labelText: "State"),
+          decoration: const InputDecoration(
+            labelText: "Estado",
+          ),
+          validator: validate,
           onChanged: (value) {
-            context.read<StoreCubit>().updateEditingState(
-                (model) => model.copyWith(addressState: value));
+            cubit.updateEditingState(
+              (model) => model.copyWith(addressState: value),
+            );
           },
         ),
         DropdownButtonFormField<CountryTimezone>(
+          decoration: const InputDecoration(
+            labelText: "Pais y zona horaria",
+          ),
           value: edited.countryCode == '' || edited.timezone == ''
               ? null
               : CountryTimezone(
@@ -269,16 +352,17 @@ class StoreAdminPage extends StatelessWidget {
           items: timeZonesLatAm
               .map((tz) => DropdownMenuItem<CountryTimezone>(
                     value: tz,
-                    child: Text('${tz.timezone} (${tz.country})'),
+                    child: Text(
+                        '${tz.timezone.replaceAll('America/', '')} (${tz.country})'),
                   ))
               .toList(),
           onChanged: (tz) {
-            context.read<StoreCubit>().updateEditingState(
-                  (model) => model.copyWith(
-                    countryCode: tz?.country,
-                    timezone: tz?.timezone,
-                  ),
-                );
+            cubit.updateEditingState(
+              (model) => model.copyWith(
+                countryCode: tz?.country,
+                timezone: tz?.timezone,
+              ),
+            );
           },
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -290,35 +374,19 @@ class StoreAdminPage extends StatelessWidget {
         TextFormField(
           initialValue: edited.whatsapp,
           decoration: const InputDecoration(labelText: "WhatsApp"),
+          validator: validate,
           onChanged: (value) {
-            context
-                .read<StoreCubit>()
-                .updateEditingState((model) => model.copyWith(whatsapp: value));
+            cubit.updateEditingState(
+              (model) => model.copyWith(whatsapp: value),
+            );
           },
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => context.read<StoreCubit>().submit(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Save"),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting
-              ? null
-              : () => context.read<StoreCubit>().cancelEditing(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancel"),
         ),
       ],
     );
   }
 
   /// Sección de coordenadas geográficas.
-  Widget _buildCoordinatesSection(
-      BuildContext context, StoreCrudEditing state) {
+  Widget _buildCoordinatesSection(StoreCubit cubit, StoreCrudEditing state) {
     final edited = state.editedModel;
 
     if (edited.countryCode == null || edited.countryCode!.isEmpty) {
@@ -332,36 +400,33 @@ class StoreAdminPage extends StatelessWidget {
           child: LocationPicker(
             initialLatitude: edited.lat?.toDouble(),
             initialLongitude: edited.lng?.toDouble(),
-            onLocationChanged: (p0) =>
-                context.read<StoreCubit>().updateEditingState(
-                      (model) => model.copyWith(
-                        lat: p0.latitude,
-                        lng: p0.longitude,
-                        geom: {
-                          'type': 'Polygon',
-                          'crs': {
-                            'type': 'name',
-                            'properties': {'name': 'EPSG:4326'},
-                          },
-                          'coordinates': [],
-                        },
-                      ),
-                    ),
+            onLocationChanged: (p0) => cubit.updateEditingState(
+              (model) => model.copyWith(
+                lat: p0.latitude,
+                lng: p0.longitude,
+                geom: {
+                  'type': 'Polygon',
+                  'crs': {
+                    'type': 'name',
+                    'properties': {'name': 'EPSG:4326'},
+                  },
+                  'coordinates': [],
+                },
+              ),
+            ),
           ),
         ),
         Text('Lat: ${edited.lat} Lng: ${edited.lng}'),
         ElevatedButton(
           onPressed: state.isSubmitting || !state.editMode
               ? null
-              : () => context.read<StoreCubit>().submit(),
+              : () => cubit.submit(),
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Save"),
         ),
         ElevatedButton(
-          onPressed: state.isSubmitting
-              ? null
-              : () => context.read<StoreCubit>().cancelEditing(),
+          onPressed: state.isSubmitting ? null : () => cubit.cancelEditing(),
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Cancel"),
@@ -371,7 +436,7 @@ class StoreAdminPage extends StatelessWidget {
   }
 
   /// Sección de áreas de cobertura (zipcodes).
-  Widget _buildGeomSection(BuildContext context, StoreCrudEditing state) {
+  Widget _buildGeomSection(StoreCubit cubit, StoreCrudEditing state) {
     if (state.editedModel.lat == null || state.editedModel.lng == null) {
       return const Center(
         child: Text("coordinates_null"),
@@ -386,24 +451,22 @@ class StoreAdminPage extends StatelessWidget {
             centerLatitude: state.editedModel.lat!.toDouble(),
             centerLongitude: state.editedModel.lng!.toDouble(),
             onGeomChanged: (geom) {
-              context.read<StoreCubit>().updateEditingState(
-                    (model) => model.copyWith(geom: geom),
-                  );
+              cubit.updateEditingState(
+                (model) => model.copyWith(geom: geom),
+              );
             },
           ),
         ),
         ElevatedButton(
           onPressed: state.isSubmitting || !state.editMode
               ? null
-              : () => context.read<StoreCubit>().submit(),
+              : () => cubit.submit(),
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Save"),
         ),
         ElevatedButton(
-          onPressed: state.isSubmitting
-              ? null
-              : () => context.read<StoreCubit>().cancelEditing(),
+          onPressed: state.isSubmitting ? null : () => cubit.cancelEditing(),
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Cancel"),
@@ -413,7 +476,7 @@ class StoreAdminPage extends StatelessWidget {
   }
 
   /// Sección de configuración de delivery.
-  Widget _buildDeliverySection(BuildContext context, StoreCrudEditing state) {
+  Widget _buildDeliverySection(StoreCubit cubit, StoreCrudEditing state) {
     final edited = state.editedModel;
     return ListView(
       children: [
@@ -426,7 +489,7 @@ class StoreAdminPage extends StatelessWidget {
           keyboardType: TextInputType.number,
           onChanged: (value) {
             final num? minOrder = num.tryParse(value);
-            context.read<StoreCubit>().updateEditingState(
+            cubit.updateEditingState(
                 (model) => model.copyWith(deliveryMinimumOrder: minOrder));
           },
         ),
@@ -434,17 +497,14 @@ class StoreAdminPage extends StatelessWidget {
           title: const Text("Pickup"),
           value: edited.pickup,
           onChanged: (value) {
-            context
-                .read<StoreCubit>()
-                .updateEditingState((model) => model.copyWith(pickup: value));
+            cubit.updateEditingState((model) => model.copyWith(pickup: value));
           },
         ),
         SwitchListTile(
           title: const Text("Delivery"),
           value: edited.delivery,
           onChanged: (value) {
-            context
-                .read<StoreCubit>()
+            cubit
                 .updateEditingState((model) => model.copyWith(delivery: value));
           },
         ),
@@ -454,70 +514,20 @@ class StoreAdminPage extends StatelessWidget {
           keyboardType: TextInputType.number,
           onChanged: (value) {
             final num? price = num.tryParse(value);
-            context.read<StoreCubit>().updateEditingState(
+            cubit.updateEditingState(
                 (model) => model.copyWith(deliveryPrice: price));
           },
         ),
         ElevatedButton(
           onPressed: state.isSubmitting || !state.editMode
               ? null
-              : () => context.read<StoreCubit>().submit(),
+              : () => cubit.submit(),
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Save"),
         ),
         ElevatedButton(
-          onPressed: state.isSubmitting
-              ? null
-              : () => context.read<StoreCubit>().cancelEditing(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancel"),
-        ),
-      ],
-    );
-  }
-
-  /// Sección de configuración de imágenes (Imgur).
-  Widget _buildImageApiSection(BuildContext context, StoreCrudEditing state) {
-    // final edited = state.editedModel;
-    return ListView(
-      children: [
-        const Text("Edit image configuration (Imgur)"),
-        TextButton(
-          onPressed: () => launchUrl(
-            Uri.parse('https://api.imgur.com/oauth2/addclient'),
-          ),
-          child: Text('get imgur client id'),
-        ),
-        // TextFormField(
-        //   initialValue: edited.imgurClientId ?? "",
-        //   decoration: const InputDecoration(labelText: "Imgur Client ID"),
-        //   onChanged: (value) {
-        //     context.read<StoreCubit>().updateEditingState(
-        //         (model) => model.copyWith(imgurClientId: value));
-        //   },
-        // ),
-        // TextFormField(
-        //   initialValue: edited.imgurClientSecret ?? "",
-        //   decoration: const InputDecoration(labelText: "Imgur Client Secret"),
-        //   onChanged: (value) {
-        //     context.read<StoreCubit>().updateEditingState(
-        //         (model) => model.copyWith(imgurClientSecret: value));
-        //   },
-        // ),
-        ElevatedButton(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => context.read<StoreCubit>().submit(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Save"),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting
-              ? null
-              : () => context.read<StoreCubit>().cancelEditing(),
+          onPressed: state.isSubmitting ? null : () => cubit.cancelEditing(),
           child: state.isSubmitting
               ? const CircularProgressIndicator()
               : const Text("Cancel"),

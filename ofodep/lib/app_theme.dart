@@ -20,10 +20,12 @@ abstract final class AppTheme {
   // The FlexColorScheme defined light mode ThemeData.
   static ThemeData light = FlexThemeData.light(
     // Using FlexColorScheme built-in FlexScheme enum based colors
-    scheme: FlexScheme.blueM3,
+    scheme: FlexScheme.greyLaw,
     // Input color modifiers.
     usedColors: 3,
     swapLegacyOnMaterial3: true,
+    // Convenience direct styling properties.
+    tooltipsMatchBackground: true,
     // Component theme configurations for light mode.
     subThemesData: const FlexSubThemesData(
       interactionEffects: true,
@@ -33,7 +35,6 @@ abstract final class AppTheme {
       splashType: FlexSplashType.inkSplash,
       splashTypeAdaptive: FlexSplashType.inkSparkle,
       adaptiveRadius: FlexAdaptive.desktop(),
-      adaptiveInputDecoratorRadius: FlexAdaptive.iOSAndDesktop(),
       textButtonRadius: 10.0,
       textButtonSchemeColor: SchemeColor.primaryFixed,
       filledButtonRadius: 10.0,
@@ -43,7 +44,7 @@ abstract final class AppTheme {
       inputDecoratorIsFilled: true,
       inputDecoratorIsDense: true,
       inputDecoratorBorderType: FlexInputBorderType.outline,
-      inputDecoratorRadius: 6.0,
+      inputDecoratorRadius: 10.0,
       inputDecoratorUnfocusedBorderIsColored: true,
       listTileStyle: ListTileStyle.drawer,
       snackBarRadius: 10,
@@ -67,10 +68,13 @@ abstract final class AppTheme {
   // The FlexColorScheme defined dark mode ThemeData.
   static ThemeData dark = FlexThemeData.dark(
     // Using FlexColorScheme built-in FlexScheme enum based colors.
-    scheme: FlexScheme.blueM3,
+    scheme: FlexScheme.greyLaw,
     // Input color modifiers.
     usedColors: 3,
     swapLegacyOnMaterial3: true,
+    // Convenience direct styling properties.
+    appBarStyle: FlexAppBarStyle.scaffoldBackground,
+    tooltipsMatchBackground: true,
     // Component theme configurations for dark mode.
     subThemesData: const FlexSubThemesData(
       interactionEffects: true,
@@ -82,7 +86,6 @@ abstract final class AppTheme {
       splashTypeAdaptive: FlexSplashType.inkSparkle,
       adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
       adaptiveRadius: FlexAdaptive.desktop(),
-      adaptiveInputDecoratorRadius: FlexAdaptive.iOSAndDesktop(),
       textButtonRadius: 10.0,
       textButtonSchemeColor: SchemeColor.primaryFixed,
       filledButtonRadius: 10.0,
@@ -93,13 +96,11 @@ abstract final class AppTheme {
       inputDecoratorIsDense: true,
       inputDecoratorBackgroundAlpha: 28,
       inputDecoratorBorderType: FlexInputBorderType.outline,
-      inputDecoratorRadius: 6.0,
+      inputDecoratorRadius: 10.0,
       inputDecoratorUnfocusedBorderIsColored: true,
       listTileStyle: ListTileStyle.drawer,
       snackBarRadius: 10,
       snackBarElevation: 10,
-      appBarBackgroundSchemeColor: SchemeColor.onPrimary,
-      appBarForegroundSchemeColor: SchemeColor.primaryFixed,
       appBarCenterTitle: false,
       navigationBarSelectedIconSchemeColor: SchemeColor.primaryFixedDim,
       navigationBarIndicatorOpacity: 0.00,

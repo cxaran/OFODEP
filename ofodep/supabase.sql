@@ -1430,3 +1430,61 @@ AS $$
   )
   ORDER BY distance;
 $$ LANGUAGE sql STABLE;
+
+
+CREATE OR REPLACE FUNCTION product_is_open(p products)
+RETURNS boolean
+AS $$
+DECLARE
+  tz text;
+  local_timestamp timestamptz;
+  local_date date;
+  local_time time;
+  day_of_week integer;
+BEGIN
+  -- Obtener la zona horaria de la tienda
+  SELECT timezone INTO tz FROM stores WHERE id = p.store_id;
+
+  -- Convertir la hora actual del sistema a la hora local de la tienda
+  local_timestamp := CURRENT_TIMESTAMP AT TIME ZONE tz;
+  local_date := local_timestamp::date;
+  local_time := local_timestamp::time;
+  day_of_week := ((EXTRACT(DOW FROM local_date))::integer + 6) % 7 + 1;
+
+  -- Excepción: tienda cerrada hoy
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedule_exceptions
+    WHERE store_id = p.store_id
+      AND date = local_date
+      AND is_closed = true
+  ) THEN
+    RETURN false;
+  END IF;
+
+  -- Excepción: tienda abierta hoy en horario especial
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedule_exceptions
+    WHERE store_id = p.store_id
+      AND date = local_date
+      AND is_closed = false
+      AND local_time BETWEEN opening_time AND closing_time
+  ) THEN
+    RETURN true;
+  END IF;
+
+  -- Horario regular
+  IF EXISTS (
+    SELECT 1
+    FROM store_schedules
+    WHERE store_id = p.store_id
+      AND day_of_week = ANY(days)
+      AND local_time BETWEEN opening_time AND closing_time
+  ) THEN
+    RETURN true;
+  END IF;
+
+  RETURN false;
+END;
+$$ LANGUAGE plpgsql STABLE;

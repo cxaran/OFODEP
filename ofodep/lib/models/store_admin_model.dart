@@ -4,16 +4,12 @@ class StoreAdminModel extends ModelComponent {
   final String storeId;
   final String storeName;
   final String userId;
-  final String userName;
-  final String userEmail;
 
   StoreAdminModel({
     required super.id,
     required this.storeId,
     required this.storeName,
     required this.userId,
-    required this.userName,
-    required this.userEmail,
     super.createdAt,
     super.updatedAt,
   });
@@ -25,8 +21,6 @@ class StoreAdminModel extends ModelComponent {
       storeId: map['store_id'],
       storeName: map['stores']?['name'] ?? '',
       userId: map['user_id'],
-      userName: map['users']?['name'] ?? '',
-      userEmail: map['users']?['email'] ?? '',
       createdAt: DateTime.tryParse(map['created_at'] ?? ''),
       updatedAt: DateTime.tryParse(map['updated_at'] ?? ''),
     );
@@ -46,8 +40,6 @@ class StoreAdminModel extends ModelComponent {
       storeId: storeId,
       storeName: storeName,
       userId: userId,
-      userName: userName,
-      userEmail: userEmail,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

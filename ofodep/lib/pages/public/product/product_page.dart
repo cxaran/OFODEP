@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/product_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
-import 'package:ofodep/pages/error_page.dart';
+import 'package:ofodep/widgets/message_page.dart';
 import 'package:ofodep/pages/public/product/product_configuration_page.dart';
 import 'package:ofodep/widgets/preview_image.dart';
 
@@ -13,7 +13,7 @@ class ProductPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (productId == null) return const ErrorPage();
+    if (productId == null) return const MessagePage.error();
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
