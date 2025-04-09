@@ -21,6 +21,7 @@ class AdminStoreSchedulesPage extends StatelessWidget {
     return Scaffold(
       body: ListCubitStateHandler(
         createCubit: (context) => StoreSchedulesListCubit(storeId: storeId!),
+        showSearchBar: false,
         itemBuilder: (context, model, index) => ListTile(
           title: Text(model.days.map(dayName).join(', ')),
           subtitle: Text(

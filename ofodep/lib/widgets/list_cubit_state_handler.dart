@@ -148,38 +148,14 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
                         ? null
                         : PreferredSize(
                             preferredSize: const Size.fromHeight(48),
-                            child: SearchAnchor(
-                              suggestionsBuilder: (BuildContext context,
-                                  SearchController controller) {
-                                // return FutureBuilder(
-                                //   future:
-                                //       cubit.fetchSuggestions(controller.text),
-                                //   builder: (context, snapshot) {
-                                //     if (!snapshot.hasData ||
-                                //         snapshot.data!.isEmpty) {
-                                //       return const SizedBox();
-                                //     }
-                                //     return snapshot.data!
-                                //         .map((suggestion) => ListTile(
-                                //               title: Text(suggestion),
-                                //               onTap: () {
-                                //                 controller.text = suggestion;
-                                //                 cubit.updateSearch(suggestion);
-                                //               },
-                                //             ))
-                                //         .toList();
-                                //   },
-                                // );
-                                return [];
-                              },
-                              builder: (context, controller) {
-                                return SearchBar(
-                                  controller: controller,
-                                  onChanged: (value) {
-                                    cubit.updateSearch(value);
-                                  },
-                                );
-                              },
+                            child: ListTile(
+                              title: TextField(
+                                decoration: const InputDecoration(
+                                  icon: Icon(Icons.search),
+                                  labelText: 'Buscar',
+                                ),
+                                onChanged: (value) => cubit.updateSearch(value),
+                              ),
                             ),
                           ),
                   ),
