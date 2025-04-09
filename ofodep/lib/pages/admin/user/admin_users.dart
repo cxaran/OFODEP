@@ -191,7 +191,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                 ),
                 // Lista de usuarios con scroll infinito.
                 Expanded(
-                  child: BlocConsumer<UsersListCubit, BasicListFilterState>(
+                  child: BlocConsumer<UsersListCubit, ListState>(
                     listener: (context, state) {
                       if (state.errorMessage != null) {
                         ScaffoldMessenger.of(context).showSnackBar(

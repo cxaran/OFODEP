@@ -16,9 +16,14 @@ class AdminOrdersPage extends StatefulWidget {
 class _AdminOrdersPageState extends State<AdminOrdersPage> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'storeId: ${widget.storeId} userId: ${widget.userId}',
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Orders'),
+      ),
+      body: Center(
+        child: Text(
+          'storeId: ${widget.storeId} userId: ${widget.userId}',
+        ),
       ),
     );
   }

@@ -5,16 +5,16 @@ import 'package:ofodep/repositories/abstract_repository.dart';
 /// Estados genéricos para un cubit CRUD.
 abstract class CrudState<T extends ModelComponent> {}
 
-class CrudInitial<T extends ModelComponent> extends CrudState<T> {}
+class CrudInitial<T extends ModelComponent> implements CrudState<T> {}
 
-class CrudLoading<T extends ModelComponent> extends CrudState<T> {}
+class CrudLoading<T extends ModelComponent> implements CrudState<T> {}
 
-class CrudLoaded<T extends ModelComponent> extends CrudState<T> {
+class CrudLoaded<T extends ModelComponent> implements CrudState<T> {
   final T model;
   CrudLoaded(this.model);
 }
 
-class CrudEditing<T extends ModelComponent> extends CrudState<T> {
+class CrudEditing<T extends ModelComponent> implements CrudState<T> {
   final T model;
   final T editedModel;
   final bool editMode;
@@ -57,12 +57,12 @@ class CrudEditing<T extends ModelComponent> extends CrudState<T> {
       );
 }
 
-class CrudError<T extends ModelComponent> extends CrudState<T> {
+class CrudError<T extends ModelComponent> implements CrudState<T> {
   final String message;
   CrudError(this.message);
 }
 
-class CrudDeleted<T extends ModelComponent> extends CrudState<T> {
+class CrudDeleted<T extends ModelComponent> implements CrudState<T> {
   final String id;
   CrudDeleted(this.id);
 }

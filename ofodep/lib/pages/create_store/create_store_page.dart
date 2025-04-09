@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/create_store_cubit.dart';
-import 'package:ofodep/const.dart';
+import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/models/country_timezone.dart';
 import 'package:ofodep/models/create_store_model.dart';
 import 'package:ofodep/pages/create_store/terms_create_store.dart';
@@ -133,26 +133,18 @@ class _CreateStorePageState extends State<CreateStorePage> {
                     ) =>
                         CustomListView(
                       formKey: _formKey,
-                      actions: [
-                        ElevatedButton(
-                          onPressed: !state.editMode || state.isSubmitting
-                              ? null
-                              : () async {
-                                  if (_formKey.currentState?.validate() ??
-                                      false) {
-                                    final newId = await cubit.create();
-                                    if (newId != null && context.mounted) {
-                                      context.pushReplacement(
-                                        '/admin/store/$newId',
-                                      );
-                                    }
-                                  }
-                                }, // verificar el from primero
-                          child: state.isSubmitting
-                              ? const CircularProgressIndicator()
-                              : const Text("Guardar"),
-                        ),
-                      ],
+                      isLoading: state.isSubmitting,
+                      editMode: state.editMode,
+                      onSave: () async {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          final newId = await cubit.create();
+                          if (newId != null && context.mounted) {
+                            context.pushReplacement(
+                              '/admin/store/$newId',
+                            );
+                          }
+                        }
+                      },
                       children: [
                         Text(
                           'Solicita tu prueba gratuita',

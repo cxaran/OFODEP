@@ -3,8 +3,12 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
 import 'package:flutter_map_line_editor/flutter_map_line_editor.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ofodep/widgets/location_picker.dart';
 
 class ZonePolygon extends StatefulWidget {
+  final String title;
+  final void Function()? onBack;
+  final void Function()? onSave;
   final Map<String, dynamic>? geom;
   final Function(Map<String, dynamic>) onGeomChanged;
   final double centerLatitude;
@@ -12,6 +16,9 @@ class ZonePolygon extends StatefulWidget {
   final double maxDistance;
   const ZonePolygon({
     super.key,
+    required this.title,
+    this.onBack,
+    this.onSave,
     this.geom,
     required this.onGeomChanged,
     required this.centerLatitude,
@@ -69,68 +76,87 @@ class _ZonePolygonState extends State<ZonePolygon> {
       polygons.add(testPolygon);
     }
 
-    return FlutterMap(
-      options: MapOptions(
-        onTap: (_, tappedPoint) {
-          if (polygonGeometry.distance(tappedPoint) > widget.maxDistance) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('max distance:${widget.maxDistance}'),
-                duration: Duration(seconds: 1),
-              ),
-            );
-            return;
-          }
-          polyEditor.add(testPolygon.points, tappedPoint);
-        },
-        initialCenter: polygonGeometry.center,
-        initialZoom: polygonGeometry.zoom ?? 13,
-      ),
+    return Stack(
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.ofodep',
-        ),
-        PolygonLayer(polygons: polygons),
-        DragMarkers(
-          markers: polyEditor.edit().map((marker) {
-            return DragMarker(
-              size: marker.size,
-              point: marker.point,
-              builder: marker.builder,
-              onDragUpdate: (details, position) {
-                if (polygonGeometry.distance(position) <= widget.maxDistance) {
-                  marker.onDragUpdate?.call(details, position);
-                } else {
-                  setState(() {});
-                }
-              },
-              onDragStart: (details, position) => marker.onDragStart?.call(
-                details,
-                position,
-              ),
-              onDragEnd: (details, position) => marker.onDragEnd?.call(
-                details,
-                position,
-              ),
-              onLongPress: (details) => marker.onLongPress?.call(details),
-            );
-          }).toList(),
-        ),
-        MarkerLayer(
-          markers: [
-            Marker(
-              point: LatLng(widget.centerLatitude, widget.centerLongitude),
-              width: 20,
-              height: 20,
-              child: const Icon(
-                Icons.location_on,
-                color: Colors.red,
-                size: 30,
-              ),
+        FlutterMap(
+          options: MapOptions(
+            onTap: (_, tappedPoint) {
+              if (polygonGeometry.distance(tappedPoint) > widget.maxDistance) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('max distance:${widget.maxDistance}'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                return;
+              }
+              polyEditor.add(testPolygon.points, tappedPoint);
+            },
+            initialCenter: polygonGeometry.center,
+            initialZoom: polygonGeometry.zoom ?? 13,
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.ofodep',
+            ),
+            PolygonLayer(polygons: polygons),
+            DragMarkers(
+              markers: polyEditor.edit().map((marker) {
+                return DragMarker(
+                  size: marker.size,
+                  point: marker.point,
+                  builder: marker.builder,
+                  onDragUpdate: (details, position) {
+                    if (polygonGeometry.distance(position) <=
+                        widget.maxDistance) {
+                      marker.onDragUpdate?.call(details, position);
+                    } else {
+                      setState(() {});
+                    }
+                  },
+                  onDragStart: (details, position) => marker.onDragStart?.call(
+                    details,
+                    position,
+                  ),
+                  onDragEnd: (details, position) => marker.onDragEnd?.call(
+                    details,
+                    position,
+                  ),
+                  onLongPress: (details) => marker.onLongPress?.call(details),
+                );
+              }).toList(),
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: LatLng(widget.centerLatitude, widget.centerLongitude),
+                  width: 20,
+                  height: 20,
+                  child: const Icon(
+                    Icons.location_on,
+                    color: Colors.red,
+                    size: 30,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
+        FloatingMenuButton(
+          title: widget.title,
+          onBack: widget.onBack,
+        ),
+        Positioned(
+          bottom: FloatingMenuButton.size,
+          right: FloatingMenuButton.size,
+          left: FloatingMenuButton.size,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.check),
+            onPressed: widget.onSave,
+            label: Text('Guardar'),
+          ),
+        )
       ],
     );
   }

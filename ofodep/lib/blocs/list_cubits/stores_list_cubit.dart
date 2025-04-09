@@ -6,10 +6,10 @@ import 'package:ofodep/repositories/store_repository.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/repositories/store_subscription_repository.dart';
 
-class StoresListCubit extends ListCubit<StoreModel, BasicListFilterState> {
+class StoresListCubit extends ListCubit<StoreModel> {
   StoresListCubit({StoreRepository? storeRepository, super.limit})
       : super(
-          initialState: const BasicListFilterState(),
+          initialState: const FilterState(),
           repository: storeRepository ?? StoreRepository(),
         );
 

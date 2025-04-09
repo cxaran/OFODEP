@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:ofodep/const.dart';
+import 'package:ofodep/utils/constants.dart';
 
 class MessagePage extends StatelessWidget {
   final String message;
   final IconData icon;
   final Color? color;
+  final void Function()? onBack;
 
   const MessagePage({
     super.key,
     required this.message,
     required this.icon,
     this.color,
+    this.onBack,
   });
 
   const MessagePage.success(
@@ -18,13 +20,15 @@ class MessagePage extends StatelessWidget {
     super.key,
     this.icon = Icons.check_circle,
     this.color = Colors.green,
+    this.onBack,
   });
 
   const MessagePage.warning(
     this.message, {
     super.key,
-    this.icon = Icons.warning,
+    this.icon = Icons.warning_rounded,
     this.color = Colors.yellow,
+    this.onBack,
   });
 
   const MessagePage.error({
@@ -32,6 +36,7 @@ class MessagePage extends StatelessWidget {
     this.message = "¡Ups! Algo salió mal",
     this.icon = Icons.error,
     this.color = Colors.red,
+    this.onBack,
   });
 
   @override
@@ -58,6 +63,12 @@ class MessagePage extends StatelessWidget {
                   message,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
+                gap,
+                if (onBack != null)
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: onBack,
+                  )
               ],
             ),
           ),

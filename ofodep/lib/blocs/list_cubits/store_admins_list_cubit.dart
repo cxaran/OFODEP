@@ -3,8 +3,7 @@ import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/models/store_admin_model.dart';
 import 'package:ofodep/repositories/store_admin_repository.dart';
 
-class StoreAdminsListCubit
-    extends ListCubit<StoreAdminModel, BasicListFilterState> {
+class StoreAdminsListCubit extends ListCubit<StoreAdminModel> {
   String? storeId;
 
   StoreAdminsListCubit({
@@ -12,7 +11,7 @@ class StoreAdminsListCubit
     StoreAdminRepository? storeAdminRepository,
     super.limit,
   }) : super(
-          initialState: const BasicListFilterState(),
+          initialState: const FilterState(),
           repository: storeAdminRepository ?? StoreAdminRepository(),
         );
 

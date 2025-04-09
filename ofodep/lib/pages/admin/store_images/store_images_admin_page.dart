@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_images_cubit.dart';
 import 'package:ofodep/models/store_images_model.dart';
+import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/message_page.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
@@ -9,8 +10,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class StoreImagesAdminPage extends StatelessWidget {
   final String? storeId;
-
-  const StoreImagesAdminPage({
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  StoreImagesAdminPage({
     super.key,
     this.storeId,
   });
@@ -20,9 +21,6 @@ class StoreImagesAdminPage extends StatelessWidget {
     if (storeId == null) return const MessagePage.error();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Imgur'),
-      ),
       body: CrudStateHandler(
         createCubit: (context) => StoreImagesCubit(id: storeId!)..load(),
         loadedBuilder: loadedBuilder,
@@ -37,6 +35,14 @@ class StoreImagesAdminPage extends StatelessWidget {
     CrudLoaded<StoreImagesModel> state,
   ) {
     return CustomListView(
+      title: 'Imgur',
+      actions: [
+        ElevatedButton.icon(
+          onPressed: () => cubit.startEditing(),
+          icon: const Icon(Icons.edit),
+          label: const Text("Editar"),
+        ),
+      ],
       children: [
         ListTile(
           leading: const Icon(Icons.ads_click),
@@ -56,11 +62,6 @@ class StoreImagesAdminPage extends StatelessWidget {
           title: Text('Imgur Client Secret'),
           subtitle: Text(state.model.imgurClientSecret),
         ),
-        ElevatedButton.icon(
-          onPressed: () => cubit.startEditing(),
-          icon: const Icon(Icons.edit),
-          label: const Text("Editar"),
-        ),
       ],
     );
   }
@@ -70,7 +71,14 @@ class StoreImagesAdminPage extends StatelessWidget {
     CrudCubit<StoreImagesModel> cubit,
     CrudEditing<StoreImagesModel> state,
   ) {
+    final edited = state.editedModel;
     return CustomListView(
+      title: 'Imgur',
+      formKey: formKey,
+      isLoading: state.isSubmitting,
+      editMode: state.editMode,
+      onSave: () => submit(formKey, cubit),
+      onBack: cubit.cancelEditing,
       children: [
         ListTile(
           leading: const Icon(Icons.ads_click),
@@ -81,7 +89,7 @@ class StoreImagesAdminPage extends StatelessWidget {
         ),
         Divider(),
         TextFormField(
-          initialValue: state.editedModel.imgurClientId,
+          initialValue: edited.imgurClientId,
           decoration: const InputDecoration(
             icon: Icon(Icons.lock_open),
             labelText: 'Imgur Client ID',
@@ -91,7 +99,7 @@ class StoreImagesAdminPage extends StatelessWidget {
           ),
         ),
         TextFormField(
-          initialValue: state.editedModel.imgurClientSecret,
+          initialValue: edited.imgurClientSecret,
           decoration: const InputDecoration(
             icon: Icon(Icons.lock_outline),
             labelText: 'Imgur Client Secret',
@@ -99,22 +107,6 @@ class StoreImagesAdminPage extends StatelessWidget {
           onChanged: (value) => cubit.updateEditingState(
             (model) => model.copyWith(imgurClientSecret: value),
           ),
-        ),
-        ElevatedButton.icon(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => cubit.submit(),
-          icon: const Icon(Icons.check),
-          label: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Guardar"),
-        ),
-        ElevatedButton.icon(
-          onPressed: state.isSubmitting ? null : () => cubit.cancelEditing(),
-          icon: const Icon(Icons.arrow_back),
-          label: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancelar"),
         ),
       ],
     );

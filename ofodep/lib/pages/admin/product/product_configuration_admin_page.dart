@@ -67,8 +67,7 @@ class AdminProductConfigurationsPage extends StatelessWidget {
       ),
       child: Builder(
         builder: (context) => Expanded(
-          child: BlocConsumer<ProductConfigurationsListCubit,
-              BasicListFilterState>(
+          child: BlocConsumer<ProductConfigurationsListCubit, ListState>(
             listener: (context, state) {
               if (state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(

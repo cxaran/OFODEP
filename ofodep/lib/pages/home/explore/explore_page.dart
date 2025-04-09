@@ -46,7 +46,7 @@ class ExplorePage extends StatelessWidget {
           if (state is LocationLoaded) {
             return BlocProvider<ProductStoreListCubit>(
               create: (context) => ProductStoreListCubit(
-                initialState: BasicListFilterState(
+                initialState: FilterState(
                   orderBy: 'product_is_open',
                   ascending: false,
                   params: {
@@ -56,7 +56,7 @@ class ExplorePage extends StatelessWidget {
                   },
                 ),
               ),
-              child: BlocConsumer<ProductStoreListCubit, BasicListFilterState>(
+              child: BlocConsumer<ProductStoreListCubit, ListState>(
                 listener: (context, state) {
                   if (state.errorMessage != null) {
                     debugPrint(state.errorMessage);

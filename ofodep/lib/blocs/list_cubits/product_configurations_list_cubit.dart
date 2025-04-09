@@ -4,7 +4,7 @@ import 'package:ofodep/repositories/product_configuration_repository.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 
 class ProductConfigurationsListCubit
-    extends ListCubit<ProductConfigurationModel, BasicListFilterState> {
+    extends ListCubit<ProductConfigurationModel> {
   String productId;
 
   ProductConfigurationsListCubit({
@@ -12,7 +12,7 @@ class ProductConfigurationsListCubit
     ProductConfigurationRepository? productConfigurationRepository,
     super.limit,
   }) : super(
-          initialState: const BasicListFilterState(),
+          initialState: const FilterState<ProductConfigurationModel>(),
           repository: productConfigurationRepository ??
               ProductConfigurationRepository(),
         );

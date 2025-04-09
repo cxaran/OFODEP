@@ -4,15 +4,14 @@ import 'package:ofodep/models/abstract_model.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
-abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
-    extends Cubit<FS> {
+abstract class ListCubit<T extends ModelComponent> extends Cubit<ListState<T>> {
   final Repository<T> repository;
   late final PagingController<int, T> pagingController;
   final int limit;
   String? randomSeed;
 
   ListCubit({
-    required FS initialState,
+    required ListState<T> initialState,
     required this.repository,
     this.limit = 10,
     this.randomSeed,
@@ -39,7 +38,7 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
           }
           return newItems;
         } catch (e) {
-          emit(state.copyWith(errorMessage: e.toString()) as FS);
+          emit(state.copyWith(errorMessage: e.toString()));
           pagingController.value =
               pagingController.value.copyWith(hasNextPage: false);
           return <T>[];
@@ -94,19 +93,19 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
 
   /// Actualiza el término de búsqueda y refresca la paginación.
   void updateSearch(String? search) {
-    emit(state.copyWith(search: search) as FS);
+    emit(state.copyWith(search: search));
     refresh();
   }
 
   /// Actualiza los filtros y refresca la paginación.
   void updateFilter(Map<String, dynamic>? filter) {
-    emit(state.copyWith(filter: filter) as FS);
+    emit(state.copyWith(filter: filter));
     refresh();
   }
 
   /// Actualiza el ordenamiento y refresca la paginación.
   void updateOrdering({String? orderBy, bool? ascending}) {
-    emit(state.copyWith(orderBy: orderBy, ascending: ascending) as FS);
+    emit(state.copyWith(orderBy: orderBy, ascending: ascending));
     refresh();
   }
 
@@ -117,14 +116,14 @@ abstract class ListCubit<T extends ModelComponent, FS extends ListFilterState>
       final newId = await repository.create(element);
       if (newId != null) {
         // Actualiza el estado para reflejar el nuevo elemento (usando newElementId).
-        emit(state.copyWith(newElementId: newId) as FS);
+        emit(state.copyWith(newElementId: newId));
         // Refresca la paginación para que el nuevo elemento aparezca en la lista.
         refresh();
         return newId;
       }
     } catch (e) {
       // En caso de error, se actualiza el estado con el mensaje de error.
-      emit(state.copyWith(errorMessage: e.toString()) as FS);
+      emit(state.copyWith(errorMessage: e.toString()));
     }
     return null;
   }

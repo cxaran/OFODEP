@@ -3,16 +3,16 @@ import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/repositories/product_repository.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 
-class ProductsListCubit extends ListCubit<ProductModel, BasicListFilterState> {
+class ProductsListCubit extends ListCubit<ProductModel> {
   String? storeId;
 
   ProductsListCubit({
     this.storeId,
     ProductRepository? productRepository,
-    BasicListFilterState? initialState,
+    ListState<ProductModel>? initialState,
     super.limit,
   }) : super(
-          initialState: initialState ?? const BasicListFilterState(),
+          initialState: initialState ?? const FilterState<ProductModel>(),
           repository: productRepository ?? ProductRepository(),
         );
 

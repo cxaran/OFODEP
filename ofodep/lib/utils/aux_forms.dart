@@ -13,3 +13,14 @@ String? validate(String? value) {
   }
   return null;
 }
+
+String? validateNumber(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Este campo es obligatorio';
+  }
+  final num? numValue = num.tryParse(value);
+  if (numValue == null || numValue < 0) {
+    return 'El valor no es válido';
+  }
+  return null;
+}

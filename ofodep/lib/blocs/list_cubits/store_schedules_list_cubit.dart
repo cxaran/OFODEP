@@ -3,8 +3,7 @@ import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/models/store_schedule_model.dart';
 import 'package:ofodep/repositories/store_schedules_repository.dart';
 
-class StoreSchedulesListCubit
-    extends ListCubit<StoreScheduleModel, BasicListFilterState> {
+class StoreSchedulesListCubit extends ListCubit<StoreScheduleModel> {
   String storeId;
 
   StoreSchedulesListCubit({
@@ -12,7 +11,7 @@ class StoreSchedulesListCubit
     StoreScheduleRepository? storeScheduleRepository,
     super.limit,
   }) : super(
-          initialState: const BasicListFilterState(),
+          initialState: const FilterState(),
           repository: storeScheduleRepository ?? StoreScheduleRepository(),
         );
 

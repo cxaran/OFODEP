@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_cubit.dart';
-import 'package:ofodep/const.dart';
+import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/models/country_timezone.dart';
 import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
@@ -20,7 +20,13 @@ import 'package:ofodep/widgets/zone_polygon.dart';
 class StoreAdminPage extends StatelessWidget {
   final String? storeId;
 
-  const StoreAdminPage({super.key, required this.storeId});
+  StoreAdminPage({super.key, required this.storeId});
+
+  final formGeneralKey = GlobalKey<FormState>();
+
+  final formContactKey = GlobalKey<FormState>();
+
+  final formDeliveryKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +34,6 @@ class StoreAdminPage extends StatelessWidget {
       return const MessagePage.error();
     }
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Administrar comercio'),
-      // ),
       body: ContainerPage.zero(
         child: CrudStateHandler<StoreModel>(
           createCubit: (context) => StoreCubit(id: storeId!)..load(),
@@ -59,6 +62,12 @@ class StoreAdminPage extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.shopping_bag),
+            title: const Text('Pedidos'),
+            onTap: () => context.push('/admin/orders?store=${store.id}'),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.phone),
             title: Text('Datos de contacto'),
             subtitle: Text(
@@ -76,14 +85,24 @@ class StoreAdminPage extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.pin_drop),
+            leading: store.lat == null || store.lng == null
+                ? const Badge(
+                    label: Text('1'),
+                    child: Icon(Icons.pin_drop),
+                  )
+                : const Icon(Icons.pin_drop),
             title: Text('Ubicación'),
             onTap: () => cubit.startEditing(
               editSection: StoreEditSection.coordinates,
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.map),
+            leading: store.geom == null || store.geom!['coordinates'].isEmpty
+                ? const Badge(
+                    label: Text('1'),
+                    child: Icon(Icons.map),
+                  )
+                : const Icon(Icons.map),
             title: Text('Zona de cobertura'),
             onTap: () => cubit.startEditing(
               editSection: StoreEditSection.geom,
@@ -133,12 +152,6 @@ class StoreAdminPage extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.shopping_bag),
-            title: const Text('Pedidos'),
-            onTap: () => context.push('/admin/orders?store=${store.id}'),
-          ),
-          const Divider(),
-          ListTile(
             leading: FutureBuilder(
               future: StoreSubscriptionRepository().getById(store.id),
               builder: (context, snapshot) {
@@ -179,40 +192,33 @@ class StoreAdminPage extends StatelessWidget {
     if (state is StoreCrudEditing && cubit is StoreCubit) {
       switch (state.editSection) {
         case StoreEditSection.general:
-          return _buildGeneralSection(cubit, state);
+          return buildGeneralSection(cubit, state);
         case StoreEditSection.contact:
-          return _buildContactSection(cubit, state);
+          return buildContactSection(cubit, state);
         case StoreEditSection.coordinates:
-          return _buildCoordinatesSection(cubit, state);
+          return buildCoordinatesSection(cubit, state);
         case StoreEditSection.geom:
-          return _buildGeomSection(cubit, state);
+          return buildGeomSection(cubit, state);
         case StoreEditSection.delivery:
-          return _buildDeliverySection(cubit, state);
+          return buildDeliverySection(cubit, state);
       }
     }
     return Container();
   }
 
   /// Sección general: nombre y logo de la tienda.
-  Widget _buildGeneralSection(
+  Widget buildGeneralSection(
     StoreCubit cubit,
     StoreCrudEditing state,
   ) {
-    final formKey = GlobalKey<FormState>();
     final edited = state.editedModel;
     return CustomListView(
-      formKey: formKey,
+      formKey: formGeneralKey,
       title: 'Logotipo del comercio',
-      onBack: state.isSubmitting ? null : () => cubit.cancelEditing(),
-      actions: [
-        ElevatedButton.icon(
-          onPressed: state.editMode ? () => submit(formKey, cubit) : null,
-          icon: const Icon(Icons.check),
-          label: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Guardar"),
-        ),
-      ],
+      isLoading: state.isSubmitting,
+      editMode: state.editMode,
+      onSave: () => submit(formGeneralKey, cubit),
+      onBack: cubit.cancelEditing,
       children: [
         const Text(
           'Con este logotipo y nombre aparecerá en la página de tu tienda en el portal.',
@@ -232,7 +238,6 @@ class StoreAdminPage extends StatelessWidget {
           decoration: const InputDecoration(
             icon: Icon(Icons.storefront),
             labelText: "Nombre del comercio",
-            hintText: "Comercio",
           ),
           validator: validate,
           onChanged: (value) => cubit.updateEditingState(
@@ -246,22 +251,15 @@ class StoreAdminPage extends StatelessWidget {
   }
 
   /// Sección de contacto y dirección.
-  Widget _buildContactSection(StoreCubit cubit, StoreCrudEditing state) {
-    final formKey = GlobalKey<FormState>();
+  Widget buildContactSection(StoreCubit cubit, StoreCrudEditing state) {
     final edited = state.editedModel;
     return CustomListView(
-      formKey: formKey,
+      formKey: formContactKey,
       title: 'Datos de contacto',
-      onBack: state.isSubmitting ? null : () => cubit.cancelEditing(),
-      actions: [
-        ElevatedButton.icon(
-          onPressed: state.editMode ? () => submit(formKey, cubit) : null,
-          icon: const Icon(Icons.check),
-          label: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Guardar"),
-        ),
-      ],
+      isLoading: state.isSubmitting,
+      editMode: state.editMode,
+      onSave: () => submit(formContactKey, cubit),
+      onBack: cubit.cancelEditing,
       children: [
         const Text(
           "Tu dirección y contacto se mostrarán en tu tienda y se utilizarán para validar los horarios de entrega segun tu zona horaria.",
@@ -386,151 +384,133 @@ class StoreAdminPage extends StatelessWidget {
   }
 
   /// Sección de coordenadas geográficas.
-  Widget _buildCoordinatesSection(StoreCubit cubit, StoreCrudEditing state) {
+  Widget buildCoordinatesSection(StoreCubit cubit, StoreCrudEditing state) {
     final edited = state.editedModel;
-
-    if (edited.countryCode == null || edited.countryCode!.isEmpty) {
-      return const Center(
-        child: Text("country_code_null"),
+    if (edited.countryCode == null || edited.timezone == null) {
+      return MessagePage.warning(
+        "El pais y zona horaria no están definidos.",
+        onBack: cubit.cancelEditing,
       );
     }
-    return Column(
-      children: [
-        Expanded(
-          child: LocationPicker(
-            initialLatitude: edited.lat?.toDouble(),
-            initialLongitude: edited.lng?.toDouble(),
-            onLocationChanged: (p0) => cubit.updateEditingState(
-              (model) => model.copyWith(
-                lat: p0.latitude,
-                lng: p0.longitude,
-                geom: {
-                  'type': 'Polygon',
-                  'crs': {
-                    'type': 'name',
-                    'properties': {'name': 'EPSG:4326'},
-                  },
-                  'coordinates': [],
-                },
-              ),
-            ),
-          ),
+    return LocationPicker(
+      title: "Ubicación de tu comercio",
+      onBack: cubit.cancelEditing,
+      onSave: state.editMode ? () => cubit.submit() : null,
+      initialLatitude: edited.lat?.toDouble(),
+      initialLongitude: edited.lng?.toDouble(),
+      onLocationChanged: (p0) => cubit.updateEditingState(
+        (model) => model.copyWith(
+          lat: p0.latitude,
+          lng: p0.longitude,
+          geom: {
+            'type': 'Polygon',
+            'crs': {
+              'type': 'name',
+              'properties': {'name': 'EPSG:4326'},
+            },
+            'coordinates': [],
+          },
         ),
-        Text('Lat: ${edited.lat} Lng: ${edited.lng}'),
-        ElevatedButton(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => cubit.submit(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Save"),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting ? null : () => cubit.cancelEditing(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancel"),
-        ),
-      ],
+      ),
     );
   }
 
-  /// Sección de áreas de cobertura (zipcodes).
-  Widget _buildGeomSection(StoreCubit cubit, StoreCrudEditing state) {
-    if (state.editedModel.lat == null || state.editedModel.lng == null) {
-      return const Center(
-        child: Text("coordinates_null"),
+  /// Sección de áreas de cobertura
+  Widget buildGeomSection(StoreCubit cubit, StoreCrudEditing state) {
+    final edited = state.editedModel;
+    if (edited.lat == null || edited.lng == null) {
+      return MessagePage.warning(
+        "La ubicación no está definida.",
+        onBack: cubit.cancelEditing,
       );
     }
-
-    return Column(
-      children: [
-        Expanded(
-          child: ZonePolygon(
-            geom: state.editedModel.geom,
-            centerLatitude: state.editedModel.lat!.toDouble(),
-            centerLongitude: state.editedModel.lng!.toDouble(),
-            onGeomChanged: (geom) {
-              cubit.updateEditingState(
-                (model) => model.copyWith(geom: geom),
-              );
-            },
-          ),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => cubit.submit(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Save"),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting ? null : () => cubit.cancelEditing(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancel"),
-        ),
-      ],
+    return ZonePolygon(
+      title: "Área de cobertura del comercio",
+      onBack: cubit.cancelEditing,
+      onSave: state.editMode ? () => cubit.submit() : null,
+      geom: state.editedModel.geom,
+      centerLatitude: edited.lat!.toDouble(),
+      centerLongitude: edited.lng!.toDouble(),
+      onGeomChanged: (geom) {
+        cubit.updateEditingState(
+          (model) => model.copyWith(geom: geom),
+        );
+      },
     );
   }
 
   /// Sección de configuración de delivery.
-  Widget _buildDeliverySection(StoreCubit cubit, StoreCrudEditing state) {
+  Widget buildDeliverySection(StoreCubit cubit, StoreCrudEditing state) {
     final edited = state.editedModel;
-    return ListView(
+    return CustomListView(
+      formKey: formDeliveryKey,
+      title: 'Configuraciones de entregas',
+      isLoading: state.isSubmitting,
+      editMode: state.editMode,
+      onSave: () => submit(formDeliveryKey, cubit),
+      onBack: cubit.cancelEditing,
       children: [
-        const Text("Edit delivery settings"),
+        const Text(
+          "Configura las opciones de entrega de tu comercio. Define las configuraciones de entregas para tus productos y servicios.",
+        ),
+        Divider(),
+        SwitchListTile(
+          title: const Text("Entrega en tienda"),
+          subtitle: state.model.lat == null || state.model.lng == null
+              ? const Text("No se ha definido la ubicación")
+              : null,
+          secondary: state.model.lat == null || state.model.lng == null
+              ? const Icon(Icons.info)
+              : null,
+          value: edited.pickup,
+          onChanged: (value) {
+            cubit.updateEditingState(
+              (model) => model.copyWith(pickup: value),
+            );
+          },
+        ),
+        SwitchListTile(
+          title: const Text("Entrega a domicilio"),
+          subtitle: state.model.geom == null
+              ? const Text("No se ha definido la zona de cobertura")
+              : null,
+          secondary: state.model.geom == null ? const Icon(Icons.info) : null,
+          value: edited.delivery,
+          onChanged: (value) {
+            cubit.updateEditingState(
+              (model) => model.copyWith(delivery: value),
+            );
+          },
+        ),
         TextFormField(
           initialValue: edited.deliveryMinimumOrder?.toString() ?? "",
           decoration: const InputDecoration(
-            labelText: "Minimum order for delivery",
+            icon: Icon(Icons.monetization_on),
+            labelText: "Minimo de compra",
           ),
           keyboardType: TextInputType.number,
+          validator: validateNumber,
           onChanged: (value) {
             final num? minOrder = num.tryParse(value);
             cubit.updateEditingState(
-                (model) => model.copyWith(deliveryMinimumOrder: minOrder));
-          },
-        ),
-        SwitchListTile(
-          title: const Text("Pickup"),
-          value: edited.pickup,
-          onChanged: (value) {
-            cubit.updateEditingState((model) => model.copyWith(pickup: value));
-          },
-        ),
-        SwitchListTile(
-          title: const Text("Delivery"),
-          value: edited.delivery,
-          onChanged: (value) {
-            cubit
-                .updateEditingState((model) => model.copyWith(delivery: value));
+              (model) => model.copyWith(deliveryMinimumOrder: minOrder),
+            );
           },
         ),
         TextFormField(
           initialValue: edited.deliveryPrice?.toString() ?? "",
-          decoration: const InputDecoration(labelText: "Delivery price"),
+          decoration: const InputDecoration(
+            icon: Icon(Icons.delivery_dining),
+            labelText: "Precio de entrega",
+          ),
           keyboardType: TextInputType.number,
+          validator: validateNumber,
           onChanged: (value) {
             final num? price = num.tryParse(value);
             cubit.updateEditingState(
-                (model) => model.copyWith(deliveryPrice: price));
+              (model) => model.copyWith(deliveryPrice: price),
+            );
           },
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting || !state.editMode
-              ? null
-              : () => cubit.submit(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Save"),
-        ),
-        ElevatedButton(
-          onPressed: state.isSubmitting ? null : () => cubit.cancelEditing(),
-          child: state.isSubmitting
-              ? const CircularProgressIndicator()
-              : const Text("Cancel"),
         ),
       ],
     );

@@ -4,7 +4,7 @@ import 'package:ofodep/models/store_schedule_exception_model.dart';
 import 'package:ofodep/repositories/store_schedule_exception_repository.dart';
 
 class StoreScheduleExceptionsListCubit
-    extends ListCubit<StoreScheduleExceptionModel, BasicListFilterState> {
+    extends ListCubit<StoreScheduleExceptionModel> {
   String? storeId;
 
   StoreScheduleExceptionsListCubit({
@@ -12,7 +12,7 @@ class StoreScheduleExceptionsListCubit
     StoreScheduleExceptionRepository? storeScheduleExceptionRepository,
     super.limit,
   }) : super(
-          initialState: const BasicListFilterState(),
+          initialState: const FilterState(),
           repository: storeScheduleExceptionRepository ??
               StoreScheduleExceptionRepository(),
         );

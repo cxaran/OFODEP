@@ -184,8 +184,8 @@ class _AdminStoreScheduleExceptionsPageState
 
                 // Lista de usuarios con scroll infinito.
                 Expanded(
-                  child: BlocConsumer<StoreScheduleExceptionsListCubit,
-                      BasicListFilterState>(
+                  child:
+                      BlocConsumer<StoreScheduleExceptionsListCubit, ListState>(
                     listener: (context, state) {
                       if (state.errorMessage != null) {
                         ScaffoldMessenger.of(context).showSnackBar(

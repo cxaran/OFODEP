@@ -25,7 +25,7 @@ class ProductConfigurationsPage extends StatelessWidget {
       ),
       child: Builder(
         builder: (context) =>
-            BlocConsumer<ProductConfigurationsListCubit, BasicListFilterState>(
+            BlocConsumer<ProductConfigurationsListCubit, ListState>(
           listener: (context, state) {
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(context).showSnackBar(

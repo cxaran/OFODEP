@@ -1,4 +1,6 @@
-abstract class ListFilterState {
+import 'package:ofodep/models/abstract_model.dart';
+
+abstract class ListState<T extends ModelComponent> {
   final Map<String, dynamic>? filter;
   final String? search;
   final String? orderBy;
@@ -7,7 +9,7 @@ abstract class ListFilterState {
   final String? errorMessage;
   final Map<String, dynamic>? params;
 
-  const ListFilterState({
+  const ListState({
     this.filter,
     this.search,
     this.orderBy,
@@ -17,19 +19,19 @@ abstract class ListFilterState {
     this.params,
   });
 
-  /// Método que permite crear una copia modificada del estado.
-  ListFilterState copyWith({
+  ListState<T> copyWith({
     Map<String, dynamic>? filter,
     String? search,
     String? orderBy,
     bool? ascending,
     String? newElementId,
     String? errorMessage,
+    Map<String, dynamic>? params,
   });
 }
 
-/// Implementación genérica de ListFilterState que cubre los parámetros básicos
-class BasicListFilterState implements ListFilterState {
+/// Implementación genérica de ListState que cubre los parámetros básicos
+class FilterState<T extends ModelComponent> implements ListState<T> {
   @override
   final Map<String, dynamic>? filter;
   @override
@@ -45,7 +47,7 @@ class BasicListFilterState implements ListFilterState {
   @override
   final Map<String, dynamic>? params;
 
-  const BasicListFilterState({
+  const FilterState({
     this.filter,
     this.search,
     this.orderBy,
@@ -56,7 +58,7 @@ class BasicListFilterState implements ListFilterState {
   });
 
   @override
-  BasicListFilterState copyWith({
+  FilterState<T> copyWith({
     Map<String, dynamic>? filter,
     String? search,
     String? orderBy,
@@ -65,7 +67,7 @@ class BasicListFilterState implements ListFilterState {
     String? errorMessage,
     Map<String, dynamic>? params,
   }) =>
-      BasicListFilterState(
+      FilterState<T>(
         filter: filter ?? this.filter,
         search: search ?? this.search,
         orderBy: orderBy ?? this.orderBy,

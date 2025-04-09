@@ -135,10 +135,10 @@ CREATE TABLE stores (
     lng numeric,                                                -- Longitud geográfica
     geom geometry(Polygon, 4326),                               -- Polígono para delimitar la zona de delivery (SRID 4326)
     whatsapp text CHECK (whatsapp ~ '^\+?[0-9]{7,15}$'),
-    delivery_minimum_order numeric, 
+    delivery_minimum_order numeric DEFAULT 0, 
     pickup boolean DEFAULT false,
     delivery boolean DEFAULT false,
-    delivery_price numeric,
+    delivery_price numeric DEFAULT 0,
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
