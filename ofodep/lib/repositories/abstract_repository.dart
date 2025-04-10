@@ -5,12 +5,6 @@ abstract class Repository<T extends ModelComponent> {
   /// Nombre de la tabla en Supabase.
   String get tableName;
 
-  /// Lista de columnas para busqueda textual.
-  List<String> get searchColumns => ['name'];
-
-  /// Lista de columnas para busqueda textual en listas.
-  List<String> get arraySearchColumns => ['tags'];
-
   /// Select from supabase.
   String get select => '*';
 
@@ -197,17 +191,20 @@ abstract class Repository<T extends ModelComponent> {
 
       // Búsqueda textual flexible: se pueden especificar una o más columnas
       if (search != null && search.isNotEmpty) {
-        final textColumns = searchColumns ?? this.searchColumns;
-        final arrayColumns = arraySearchColumns ?? this.arraySearchColumns;
+        List<String> searchFilters = [];
 
-        final textFilter =
-            textColumns.map((col) => "$col.ilike.%$search%").join(',');
-        final arrayFilter =
-            arrayColumns.map((col) => "$col.cs.{$search}").join(',');
+        if (searchColumns != null) {
+          searchFilters.add(
+            searchColumns.map((col) => "$col.ilike.%$search%").join(','),
+          );
+        }
+        if (arraySearchColumns != null) {
+          searchFilters.add(
+            arraySearchColumns.map((col) => "$col.cs.{$search}").join(','),
+          );
+        }
 
-        // Combina ambas condiciones OR en una sola cadena.
-        final combinedFilter = '$textFilter,$arrayFilter';
-        query = query.or(combinedFilter);
+        query = query.or(searchFilters.join(','));
       }
 
       return query;

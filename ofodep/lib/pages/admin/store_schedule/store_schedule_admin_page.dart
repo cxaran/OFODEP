@@ -1,218 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_schedule_cubit.dart';
 import 'package:ofodep/models/store_schedule_model.dart';
 import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
+import 'package:ofodep/widgets/custom_form_validator.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/message_page.dart';
 
 class StoreScheduleAdminPage extends StatelessWidget {
   final String? scheduleId;
+  final StoreScheduleModel? createModel;
   StoreScheduleAdminPage({
     super.key,
     this.scheduleId,
+    this.createModel,
   });
 
-  final formKey = GlobalKey<FormState>();
+  final formEditingKey = GlobalKey<FormState>();
+  final formCreatingKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    if (scheduleId == null) return const MessagePage.error();
+    if (scheduleId == null) {
+      return MessagePage.error(
+        onBack: context.pop,
+      );
+    }
 
     return Scaffold(
-      // body: BlocProvider<StoreScheduleCubit>(
-      //   create: (context) => StoreScheduleCubit(id: scheduleId!)..load(),
-      //   child: Builder(
-      //     builder: (context) {
-      //       return BlocConsumer<StoreScheduleCubit,
-      //           CrudState<StoreScheduleModel>>(
-      //         listener: (context, state) {
-      //           if (state is CrudError<StoreScheduleModel>) {
-      //             ScaffoldMessenger.of(context).showSnackBar(
-      //               SnackBar(content: Text(state.message)),
-      //             );
-      //           }
-      //           if (state is CrudEditing<StoreScheduleModel> &&
-      //               state.errorMessage != null &&
-      //               state.errorMessage!.isNotEmpty) {
-      //             ScaffoldMessenger.of(context).showSnackBar(
-      //               SnackBar(content: Text(state.errorMessage!)),
-      //             );
-      //           }
-      //           if (state is CrudDeleted<StoreScheduleModel>) {
-      //             // Por ejemplo, se puede redirigir a otra pantalla al eliminar
-      //             Navigator.of(context).pop();
-      //           }
-      //         },
-      //         builder: (context, state) {
-      //           if (state is CrudInitial<StoreScheduleModel> ||
-      //               state is CrudLoading<StoreScheduleModel>) {
-      //             return const Center(child: CircularProgressIndicator());
-      //           } else if (state is CrudError<StoreScheduleModel>) {
-      //             return Center(child: Text(state.message));
-      //           } else if (state is CrudLoaded<StoreScheduleModel>) {
-      //             // Estado no editable: muestra los datos y un botón para editar
-      //             return Padding(
-      //               padding: const EdgeInsets.all(16.0),
-      //               child: Column(
-      //                 crossAxisAlignment: CrossAxisAlignment.start,
-      //                 children: [
-      //                   Text("Days: ${state.model.days}"),
-      //                   Text(
-      //                     'Opening Time: '
-      //                     '${state.model.openingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(state.model.openingTime!)}',
-      //                   ),
-      //                   Text(
-      //                     'Closing Time: '
-      //                     '${state.model.closingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(state.model.closingTime!)}',
-      //                   ),
-      //                   const SizedBox(height: 20),
-      //                   ElevatedButton(
-      //                     onPressed: () =>
-      //                         context.read<StoreScheduleCubit>().startEditing(),
-      //                     child: const Text("Editar"),
-      //                   ),
-      //                 ],
-      //               ),
-      //             );
-      //           } else if (state is CrudEditing<StoreScheduleModel>) {
-      //             // En modo edición, se usan TextFields que muestran los valores de editedModel.
-      //             return ListView(
-      //               children: [
-      //                 // Days
-      //                 for (var day in [1, 2, 3, 4, 5, 6, 7])
-      //                   CheckboxListTile(
-      //                     title: Builder(builder: (context) {
-      //                       String name = '';
-      //                       switch (day) {
-      //                         case DateTime.monday:
-      //                           name = 'monday';
-      //                           break;
-      //                         case DateTime.tuesday:
-      //                           name = 'tuesday';
-      //                           break;
-      //                         case DateTime.wednesday:
-      //                           name = 'wednesday';
-      //                           break;
-      //                         case DateTime.thursday:
-      //                           name = 'thursday';
-      //                           break;
-      //                         case DateTime.friday:
-      //                           name = 'friday';
-      //                           break;
-      //                         case DateTime.saturday:
-      //                           name = 'saturday';
-      //                           break;
-      //                         case DateTime.sunday:
-      //                           name = 'sunday';
-      //                           break;
-      //                         default:
-      //                       }
-      //                       return Text(name);
-      //                     }),
-      //                     value: state.editedModel.days.contains(day),
-      //                     onChanged: (bool? checked) => context
-      //                         .read<StoreScheduleCubit>()
-      //                         .updateEditingState(
-      //                           (model) => model.copyWith(
-      //                             days: state.editedModel.days.contains(day)
-      //                                 ? (List.from(model.days)..remove(day))
-      //                                 : (List.from(model.days)..add(day)),
-      //                           ),
-      //                         ),
-      //                   ),
-
-      //                 // Botón para seleccionar la hora de apertura
-      //                 ElevatedButton(
-      //                   onPressed: state.isSubmitting
-      //                       ? null
-      //                       : () async {
-      //                           StoreScheduleCubit cubit =
-      //                               context.read<StoreScheduleCubit>();
-      //                           final selectedTime = await showTimePicker(
-      //                             context: context,
-      //                             initialTime: state.editedModel.openingTime ??
-      //                                 TimeOfDay.now(),
-      //                           );
-      //                           if (selectedTime != null) {
-      //                             cubit.updateEditingState(
-      //                               (model) => model.copyWith(
-      //                                 openingTime: selectedTime,
-      //                               ),
-      //                             );
-      //                           }
-      //                         },
-      //                   child: Text(
-      //                     state.editedModel.openingTime != null
-      //                         ? MaterialLocalizations.of(context)
-      //                             .formatTimeOfDay(
-      //                                 state.editedModel.openingTime!)
-      //                         : "Seleccionar hora de apertura",
-      //                   ),
-      //                 ),
-
-      //                 // Botón para seleccionar la hora de cierre
-      //                 ElevatedButton(
-      //                   onPressed: state.isSubmitting
-      //                       ? null
-      //                       : () async {
-      //                           StoreScheduleCubit cubit =
-      //                               context.read<StoreScheduleCubit>();
-      //                           final selectedTime = await showTimePicker(
-      //                             context: context,
-      //                             initialTime: state.editedModel.closingTime ??
-      //                                 TimeOfDay.now(),
-      //                           );
-      //                           if (selectedTime != null) {
-      //                             cubit.updateEditingState(
-      //                               (model) => model.copyWith(
-      //                                 closingTime: selectedTime,
-      //                               ),
-      //                             );
-      //                           }
-      //                         },
-      //                   child: Text(
-      //                     state.editedModel.closingTime != null
-      //                         ? MaterialLocalizations.of(context)
-      //                             .formatTimeOfDay(
-      //                                 state.editedModel.closingTime!)
-      //                         : "Seleccionar hora de cierre",
-      //                   ),
-      //                 ),
-
-      //                 ElevatedButton(
-      //                   onPressed: state.isSubmitting || !state.editMode
-      //                       ? null
-      //                       : () => context.read<StoreScheduleCubit>().submit(),
-      //                   child: state.isSubmitting
-      //                       ? const CircularProgressIndicator()
-      //                       : const Text("Guardar"),
-      //                 ),
-      //                 ElevatedButton(
-      //                   onPressed: state.isSubmitting
-      //                       ? null
-      //                       : () => context
-      //                           .read<StoreScheduleCubit>()
-      //                           .cancelEditing(),
-      //                   child: state.isSubmitting
-      //                       ? const CircularProgressIndicator()
-      //                       : const Text("Cancelar"),
-      //                 ),
-      //               ],
-      //             );
-      //           }
-      //           return Container();
-      //         },
-      //       );
-      //     },
-      //   ),
-      // ),
-      body: CrudStateHandler<StoreScheduleModel>(
-        createCubit: (context) => StoreScheduleCubit(id: scheduleId!)..load(),
+      body: CrudStateHandler(
+        createCubit: (context) => StoreScheduleCubit(
+          id: scheduleId!,
+        )..load(createModel: createModel),
         loadedBuilder: loadedBuilder,
-        editingBuilder: editingBuilder,
+        editingBuilder: (context, cubit, state) => buildForm(
+          context,
+          formKey: formEditingKey,
+          cubit: cubit,
+          edited: state.editedModel,
+          editMode: state.editMode,
+          isLoading: state.isSubmitting,
+          onSave: () => submit(formEditingKey, cubit),
+          onBack: cubit.cancelEditing,
+        ),
+        creatingBuilder: (context, cubit, state) => buildForm(
+          context,
+          formKey: formCreatingKey,
+          cubit: cubit,
+          edited: state.editedModel,
+          isLoading: state.isSubmitting,
+          onSave: () => create(formCreatingKey, cubit),
+        ),
       ),
     );
   }
@@ -226,6 +67,34 @@ class StoreScheduleAdminPage extends StatelessWidget {
     return CustomListView(
       title: 'Horario',
       actions: [
+        ElevatedButton.icon(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('¿Eliminar horario?'),
+              content: const Text('Esta acción no se puede deshacer.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () => cubit.delete().then(
+                        (_) => context.mounted
+                            ? Navigator.of(context).pop()
+                            : null,
+                      ),
+                  child: const Text('Eliminar'),
+                ),
+              ],
+            ),
+          ),
+          icon: const Icon(Icons.delete),
+          label: const Text('Eliminar'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.onError,
+          ),
+        ),
         ElevatedButton.icon(
           onPressed: () => cubit.startEditing(),
           icon: const Icon(Icons.edit),
@@ -264,25 +133,29 @@ class StoreScheduleAdminPage extends StatelessWidget {
     );
   }
 
-  Widget editingBuilder(
-    BuildContext context,
-    CrudCubit<StoreScheduleModel> cubit,
-    CrudEditing<StoreScheduleModel> state,
-  ) {
-    final edited = state.editedModel;
+  Widget buildForm(
+    BuildContext context, {
+    required GlobalKey<FormState> formKey,
+    required CrudCubit<StoreScheduleModel> cubit,
+    required StoreScheduleModel edited,
+    required bool isLoading,
+    bool editMode = true,
+    required VoidCallback onSave,
+    VoidCallback? onBack,
+  }) {
     return CustomListView(
       title: 'Horario',
       formKey: formKey,
-      isLoading: state.isSubmitting,
-      editMode: state.editMode,
-      onSave: () => submit(formKey, cubit),
-      onBack: cubit.cancelEditing,
+      isLoading: isLoading,
+      editMode: editMode,
+      onSave: onSave,
+      onBack: onBack,
       children: [
         OutlinedButton.icon(
           onPressed: () => showTimePicker(
             context: context,
             initialTime: edited.openingTime ?? TimeOfDay.now(),
-          ).then((time) => cubit.updateEditingState(
+          ).then((time) => cubit.updateEditedModel(
                 (model) => model.copyWith(openingTime: time),
               )),
           label: Text(
@@ -290,11 +163,16 @@ class StoreScheduleAdminPage extends StatelessWidget {
           ),
           icon: const Icon(Icons.schedule),
         ),
+        CustomFormValidator(
+          initialValue: edited.openingTime,
+          validator: (value) =>
+              value == null ? 'Selecciona un horario de apertura' : null,
+        ),
         OutlinedButton.icon(
           onPressed: () => showTimePicker(
             context: context,
             initialTime: edited.closingTime ?? TimeOfDay.now(),
-          ).then((time) => cubit.updateEditingState(
+          ).then((time) => cubit.updateEditedModel(
                 (model) => model.copyWith(closingTime: time),
               )),
           label: Text(
@@ -302,13 +180,33 @@ class StoreScheduleAdminPage extends StatelessWidget {
           ),
           icon: const Icon(Icons.schedule),
         ),
+        CustomFormValidator(
+          initialValue: edited.closingTime,
+          validator: (value) {
+            if (value == null) return 'Selecciona un horario de cierre';
+            if (edited.openingTime != null) {
+              final int openingMinutes =
+                  edited.openingTime!.hour * 60 + edited.openingTime!.minute;
+              final int closingMinutes = value.hour * 60 + value.minute;
+              if (closingMinutes <= openingMinutes) {
+                return 'El horario de cierre debe ser posterior al de apertura';
+              }
+            }
+            return null;
+          },
+        ),
         Divider(),
         const Text('Días de la semana'),
+        CustomFormValidator(
+          initialValue: edited.days,
+          validator: (value) =>
+              value!.isEmpty ? 'Selecciona al menos un día' : null,
+        ),
         for (var day in [1, 2, 3, 4, 5, 6, 7])
           CheckboxListTile(
             title: Text(dayName(day) ?? ''),
             value: edited.days.contains(day),
-            onChanged: (value) => cubit.updateEditingState(
+            onChanged: (value) => cubit.updateEditedModel(
               (model) => model.copyWith(
                 days: edited.days.contains(day)
                     ? (List.from(model.days)..remove(day))

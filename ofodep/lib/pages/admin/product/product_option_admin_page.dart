@@ -162,7 +162,7 @@ class ProductOptionAdminPage extends StatelessWidget {
                         border: OutlineInputBorder(),
                       ),
                       onChanged: (value) =>
-                          context.read<ProductOptionCubit>().updateEditingState(
+                          context.read<ProductOptionCubit>().updateEditedModel(
                                 (model) => model.copyWith(
                                   name: value,
                                 ),
@@ -192,7 +192,7 @@ class ProductOptionAdminPage extends StatelessWidget {
                         ),
                       ],
                       onChanged: (value) =>
-                          context.read<ProductOptionCubit>().updateEditingState(
+                          context.read<ProductOptionCubit>().updateEditedModel(
                                 (model) => model.copyWith(
                                   optionMin: int.tryParse(value) ?? 0,
                                 ),
@@ -222,7 +222,7 @@ class ProductOptionAdminPage extends StatelessWidget {
                         ),
                       ],
                       onChanged: (value) =>
-                          context.read<ProductOptionCubit>().updateEditingState(
+                          context.read<ProductOptionCubit>().updateEditedModel(
                                 (model) => model.copyWith(
                                   optionMax: int.tryParse(value) ?? 0,
                                 ),

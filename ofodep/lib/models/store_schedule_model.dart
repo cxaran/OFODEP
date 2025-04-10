@@ -55,12 +55,13 @@ class StoreScheduleModel extends ModelComponent {
 
   @override
   StoreScheduleModel copyWith({
+    String? id,
     List<int>? days,
     TimeOfDay? openingTime,
     TimeOfDay? closingTime,
   }) {
     return StoreScheduleModel(
-      id: id,
+      id: id ?? this.id,
       storeId: storeId,
       days: days ?? this.days,
       openingTime: openingTime ?? this.openingTime,

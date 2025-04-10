@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/product_cubit.dart';
 import 'package:ofodep/pages/admin/product/product_configuration_admin_page.dart';
@@ -16,7 +17,11 @@ class ProductAdminPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (productId == null) return const MessagePage.error();
+    if (productId == null) {
+      return MessagePage.error(
+        onBack: context.pop,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -89,7 +94,7 @@ class ProductAdminPage extends StatelessWidget {
                             clientId: snapshot.data,
                             imageUrl: state.editedModel.imageUrl,
                             onImageUploaded: (url) =>
-                                context.read<ProductCubit>().updateEditingState(
+                                context.read<ProductCubit>().updateEditedModel(
                                       (model) => model.copyWith(
                                         imageUrl: url,
                                       ),
@@ -110,7 +115,7 @@ class ProductAdminPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                           onChanged: (value) =>
-                              context.read<ProductCubit>().updateEditingState(
+                              context.read<ProductCubit>().updateEditedModel(
                                     (model) => model.copyWith(
                                       name: value,
                                     ),
@@ -132,7 +137,7 @@ class ProductAdminPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                           onChanged: (value) =>
-                              context.read<ProductCubit>().updateEditingState(
+                              context.read<ProductCubit>().updateEditedModel(
                                     (model) => model.copyWith(
                                       description: value,
                                     ),
@@ -154,7 +159,7 @@ class ProductAdminPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                           onChanged: (value) =>
-                              context.read<ProductCubit>().updateEditingState(
+                              context.read<ProductCubit>().updateEditedModel(
                                     (model) => model.copyWith(
                                       price: num.tryParse(value),
                                     ),
@@ -175,7 +180,7 @@ class ProductAdminPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                           onChanged: (value) =>
-                              context.read<ProductCubit>().updateEditingState(
+                              context.read<ProductCubit>().updateEditedModel(
                                     (model) => model.copyWith(
                                       category: value,
                                     ),
@@ -198,7 +203,7 @@ class ProductAdminPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                           onChanged: (value) =>
-                              context.read<ProductCubit>().updateEditingState(
+                              context.read<ProductCubit>().updateEditedModel(
                                     (model) =>
                                         model.copyWith(tags: value.split(',')),
                                   ),

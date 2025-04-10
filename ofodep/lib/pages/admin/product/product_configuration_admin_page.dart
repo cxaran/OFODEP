@@ -217,7 +217,7 @@ class ProductConfigurationAdminPage extends StatelessWidget {
                     ),
                     onChanged: (value) => context
                         .read<ProductConfigurationCubit>()
-                        .updateEditingState(
+                        .updateEditedModel(
                           (model) => model.copyWith(
                             name: value,
                           ),
@@ -246,7 +246,7 @@ class ProductConfigurationAdminPage extends StatelessWidget {
                     ],
                     onChanged: (value) => context
                         .read<ProductConfigurationCubit>()
-                        .updateEditingState(
+                        .updateEditedModel(
                           (model) => model.copyWith(
                             rangeMin: int.tryParse(value) ?? 0,
                           ),
@@ -276,7 +276,7 @@ class ProductConfigurationAdminPage extends StatelessWidget {
                     ],
                     onChanged: (value) => context
                         .read<ProductConfigurationCubit>()
-                        .updateEditingState(
+                        .updateEditedModel(
                           (model) => model.copyWith(
                             rangeMax: int.tryParse(value) ?? 0,
                           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/product_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
@@ -13,7 +14,11 @@ class ProductPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (productId == null) return const MessagePage.error();
+    if (productId == null) {
+      return MessagePage.error(
+        onBack: context.pop,
+      );
+    }
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {

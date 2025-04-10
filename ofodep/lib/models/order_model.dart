@@ -119,6 +119,7 @@ class OrderModel extends ModelComponent {
 
   @override
   OrderModel copyWith({
+    String? id,
     String? customerName,
     String? customerEmail,
     String? customerPhone,
@@ -128,7 +129,7 @@ class OrderModel extends ModelComponent {
     List<OrderProductModel>? products,
   }) {
     return OrderModel(
-      id: id,
+      id: id ?? this.id,
       storeId: storeId,
       storeName: storeName,
       userId: userId,

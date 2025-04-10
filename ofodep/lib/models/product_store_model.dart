@@ -133,6 +133,7 @@ class ProductStoreModel extends ModelComponent {
 
   @override
   ProductStoreModel copyWith({
+    String? id,
     String? storeId,
     String? storeName,
     String? storeLogoUrl,
@@ -154,7 +155,7 @@ class ProductStoreModel extends ModelComponent {
     List<String>? tags,
   }) {
     return ProductStoreModel(
-      id: id,
+      id: id ?? this.id,
       storeId: storeId ?? this.storeId,
       storeName: storeName ?? this.storeName,
       storeLogoUrl: storeLogoUrl ?? this.storeLogoUrl,

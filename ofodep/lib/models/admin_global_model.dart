@@ -31,10 +31,11 @@ class AdminGlobalModel extends ModelComponent {
 
   @override
   AdminGlobalModel copyWith({
+    String? id,
     String? authId,
   }) {
     return AdminGlobalModel(
-      id: id,
+      id: id ?? this.id,
       authId: authId ?? this.authId,
       createdAt: createdAt,
       updatedAt: updatedAt,

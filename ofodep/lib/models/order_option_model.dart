@@ -40,11 +40,12 @@ class OrderOptionModel extends ModelComponent {
 
   @override
   OrderOptionModel copyWith({
+    String? id,
     int? quantity,
     num? extraPrice,
   }) {
     return OrderOptionModel(
-      id: id,
+      id: id ?? this.id,
       orderItemConfigurationId: orderItemConfigurationId,
       optionId: optionId,
       quantity: quantity ?? this.quantity,

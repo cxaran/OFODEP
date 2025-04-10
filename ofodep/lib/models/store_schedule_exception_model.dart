@@ -59,13 +59,14 @@ class StoreScheduleExceptionModel extends ModelComponent {
 
   @override
   StoreScheduleExceptionModel copyWith({
+    String? id,
     DateTime? date,
     bool? isClosed,
     TimeOfDay? openingTime,
     TimeOfDay? closingTime,
   }) {
     return StoreScheduleExceptionModel(
-      id: id,
+      id: id ?? this.id,
       storeId: storeId,
       date: date ?? this.date,
       isClosed: isClosed ?? this.isClosed,

@@ -36,11 +36,12 @@ class OrderReviewModel extends ModelComponent {
 
   @override
   OrderReviewModel copyWith({
+    String? id,
     num? rating,
     String? review,
   }) {
     return OrderReviewModel(
-      id: id,
+      id: id ?? this.id,
       orderId: orderId,
       rating: rating ?? this.rating,
       review: review ?? this.review,

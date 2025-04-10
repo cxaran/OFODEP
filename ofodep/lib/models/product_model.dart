@@ -58,6 +58,7 @@ class ProductModel extends ModelComponent {
 
   @override
   ProductModel copyWith({
+    String? id,
     String? name,
     String? description,
     String? imageUrl,
@@ -68,7 +69,7 @@ class ProductModel extends ModelComponent {
     List<String>? zipcodes,
   }) {
     return ProductModel(
-      id: id,
+      id: id ?? this.id,
       storeId: storeId,
       storeName: storeName,
       name: name ?? this.name,

@@ -6,18 +6,6 @@ class StoreRepository extends Repository<StoreModel> {
   String get tableName => 'stores';
 
   @override
-  List<String> searchColumns = [
-    'name',
-    'address_street',
-    'address_state',
-    'address_city',
-    'address_colony',
-    'address_number',
-    'address_zipcode',
-    'whatsapp',
-  ];
-
-  @override
   String get select => '*, store_is_open';
 
   @override

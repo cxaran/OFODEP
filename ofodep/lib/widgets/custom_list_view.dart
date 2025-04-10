@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:ofodep/widgets/container_page.dart';
+import 'package:ofodep/widgets/custom_form_validator.dart';
 
 class CustomListView extends StatelessWidget {
   final GlobalKey<FormState>? formKey;
   final String? title;
   final void Function()? onBack;
   final void Function()? onSave;
-  final bool? editMode;
-  final bool? isLoading;
+  final bool editMode;
+  final bool isLoading;
 
   final List<Widget> actions;
   final List<Widget> children;
@@ -18,8 +19,8 @@ class CustomListView extends StatelessWidget {
     this.title,
     this.onBack,
     this.onSave,
-    this.editMode,
-    this.isLoading,
+    this.editMode = true,
+    this.isLoading = false,
     this.actions = const [],
     required this.children,
   });
@@ -30,10 +31,9 @@ class CustomListView extends StatelessWidget {
     if (onSave != null) {
       actions_.add(
         ElevatedButton.icon(
-          onPressed:
-              !(editMode ?? false) || (isLoading ?? false) ? null : onSave,
+          onPressed: !editMode || isLoading ? null : onSave,
           icon: const Icon(Icons.check),
-          label: isLoading ?? false
+          label: isLoading
               ? const CircularProgressIndicator()
               : const Text("Guardar"),
         ),
@@ -49,7 +49,8 @@ class CustomListView extends StatelessWidget {
                 if (child is ListTile ||
                     child is Divider ||
                     child is SwitchListTile ||
-                    child is CheckboxListTile) {
+                    child is CheckboxListTile ||
+                    child is CustomFormValidator) {
                   return child;
                 }
                 return ListTile(title: child);
@@ -62,7 +63,8 @@ class CustomListView extends StatelessWidget {
               if (child is ListTile ||
                   child is Divider ||
                   child is SwitchListTile ||
-                  child is CheckboxListTile) {
+                  child is CheckboxListTile ||
+                  child is CustomFormValidator) {
                 return child;
               }
               return ListTile(title: child);

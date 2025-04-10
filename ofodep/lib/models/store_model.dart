@@ -113,6 +113,7 @@ class StoreModel extends ModelComponent {
 
   @override
   StoreModel copyWith({
+    String? id,
     String? name,
     String? logoUrl,
     String? addressStreet,
@@ -136,7 +137,7 @@ class StoreModel extends ModelComponent {
     String? imgurClientSecret,
   }) {
     return StoreModel(
-      id: id,
+      id: id ?? this.id,
       name: name ?? this.name,
       logoUrl: logoUrl ?? this.logoUrl,
       addressStreet: addressStreet ?? this.addressStreet,

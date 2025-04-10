@@ -6,9 +6,6 @@ class ProductRepository extends Repository<ProductModel> {
   String get tableName => 'products';
 
   @override
-  List<String> searchColumns = ['name', 'description', 'tags'];
-
-  @override
   String get select => '*, stores(name)';
 
   @override

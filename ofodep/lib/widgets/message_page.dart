@@ -6,6 +6,7 @@ class MessagePage extends StatelessWidget {
   final IconData icon;
   final Color? color;
   final void Function()? onBack;
+  final void Function()? onRetry;
 
   const MessagePage({
     super.key,
@@ -13,6 +14,7 @@ class MessagePage extends StatelessWidget {
     required this.icon,
     this.color,
     this.onBack,
+    this.onRetry,
   });
 
   const MessagePage.success(
@@ -21,6 +23,7 @@ class MessagePage extends StatelessWidget {
     this.icon = Icons.check_circle,
     this.color = Colors.green,
     this.onBack,
+    this.onRetry,
   });
 
   const MessagePage.warning(
@@ -29,6 +32,7 @@ class MessagePage extends StatelessWidget {
     this.icon = Icons.warning_rounded,
     this.color = Colors.yellow,
     this.onBack,
+    this.onRetry,
   });
 
   const MessagePage.error({
@@ -37,6 +41,7 @@ class MessagePage extends StatelessWidget {
     this.icon = Icons.error,
     this.color = Colors.red,
     this.onBack,
+    this.onRetry,
   });
 
   @override
@@ -68,7 +73,12 @@ class MessagePage extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: onBack,
-                  )
+                  ),
+                if (onRetry != null)
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: onRetry,
+                  ),
               ],
             ),
           ),

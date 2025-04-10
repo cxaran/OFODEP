@@ -5,9 +5,6 @@ class ProductStoreRepository extends Repository<ProductStoreModel> {
   @override
   String get tableName => 'products';
 
-  @override
-  List<String> searchColumns = ['name', 'description', 'tags'];
-
   /// La cláusula SELECT se define para:
   /// - Incluir todos los campos de productos.
   /// - Realizar un INNER JOIN con "stores" (alias "store") para traer los datos de la tienda.

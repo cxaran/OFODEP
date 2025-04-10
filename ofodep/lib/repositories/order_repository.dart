@@ -6,9 +6,6 @@ class OrderRepository extends Repository<OrderModel> {
   String get tableName => 'orders';
 
   @override
-  List<String> searchColumns = ['customer_name'];
-
-  @override
   String get select => '*, stores(name)';
 
   @override

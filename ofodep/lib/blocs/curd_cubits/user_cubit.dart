@@ -10,22 +10,22 @@ class UserCubit extends CrudCubit<UserModel> {
 
   /// Actualiza el campo 'name' en el modelo en edición.
   void nameChanged(String name) {
-    updateEditingState((user) => user.copyWith(name: name));
+    updateEditedModel((user) => user.copyWith(name: name));
   }
 
   /// Actualiza el campo 'phone' en el modelo en edición.
   void phoneChanged(String phone) {
-    updateEditingState((user) => user.copyWith(phone: phone));
+    updateEditedModel((user) => user.copyWith(phone: phone));
   }
 
   /// Actualiza el flag 'admin' en el modelo en edición.
   void adminChanged(bool admin) {
-    updateEditingState((user) => user.copyWith(admin: admin));
+    updateEditedModel((user) => user.copyWith(admin: admin));
   }
 
   /// Sobrescribe el submit para agregar validaciones específicas antes de enviar.
   @override
-  Future<void> submit() async {
+  Future<void> submit({String? successMessage}) async {
     final current = state;
     if (current is CrudEditing<UserModel>) {
       // Validación: nombre y teléfono obligatorios.
@@ -40,6 +40,6 @@ class UserCubit extends CrudCubit<UserModel> {
         return;
       }
     }
-    await super.submit();
+    await super.submit(successMessage: successMessage);
   }
 }

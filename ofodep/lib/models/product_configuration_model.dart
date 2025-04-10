@@ -43,12 +43,13 @@ class ProductConfigurationModel extends ModelComponent {
 
   @override
   ProductConfigurationModel copyWith({
+    String? id,
     String? name,
     int? rangeMin,
     int? rangeMax,
   }) {
     return ProductConfigurationModel(
-      id: id,
+      id: id ?? this.id,
       productId: productId,
       name: name ?? this.name,
       rangeMin: rangeMin ?? this.rangeMin,

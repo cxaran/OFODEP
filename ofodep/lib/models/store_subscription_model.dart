@@ -40,11 +40,12 @@ class StoreSubscriptionModel extends ModelComponent {
 
   @override
   StoreSubscriptionModel copyWith({
+    String? id,
     SubscriptionType? subscriptionType,
     DateTime? expirationDate,
   }) {
     return StoreSubscriptionModel(
-      id: id,
+      id: id ?? this.id,
       storeId: storeId,
       storeName: storeName,
       subscriptionType: subscriptionType ?? this.subscriptionType,

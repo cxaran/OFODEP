@@ -11,7 +11,10 @@ class StoreImagesCubit extends CrudCubit<StoreImagesModel> {
         );
 
   @override
-  Future<void> load() async {
+  Future<void> load({
+    StoreImagesModel? model,
+    StoreImagesModel? createModel,
+  }) async {
     emit(CrudLoading<StoreImagesModel>());
     try {
       final model = await repository.getById(id);
@@ -19,9 +22,9 @@ class StoreImagesCubit extends CrudCubit<StoreImagesModel> {
         emit(CrudLoaded<StoreImagesModel>(model));
       } else {
         emit(
-          CrudLoaded(
-            StoreImagesModel(
-              id: 'new',
+          CrudCreate(
+            editedModel: StoreImagesModel(
+              id: '_',
               storeId: id,
               imgurClientId: '',
               imgurClientSecret: '',

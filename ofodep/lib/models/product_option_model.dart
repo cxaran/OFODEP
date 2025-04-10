@@ -47,13 +47,14 @@ class ProductOptionModel extends ModelComponent {
 
   @override
   ProductOptionModel copyWith({
+    String? id,
     String? name,
     int? optionMin,
     int? optionMax,
     num? extraPrice,
   }) {
     return ProductOptionModel(
-      id: id,
+      id: id ?? this.id,
       configurationId: configurationId,
       name: name ?? this.name,
       optionMin: optionMin ?? this.optionMin,

@@ -47,12 +47,13 @@ class OrderProductModel extends ModelComponent {
 
   @override
   OrderProductModel copyWith({
+    String? id,
     int? quantity,
     num? price,
     List<OrderConfigurationModel>? configurations,
   }) {
     return OrderProductModel(
-      id: id,
+      id: id ?? this.id,
       orderId: orderId,
       productId: productId,
       quantity: quantity ?? this.quantity,

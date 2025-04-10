@@ -57,6 +57,7 @@ class CreateStoreModel extends ModelComponent {
 
   @override
   CreateStoreModel copyWith({
+    String? id,
     String? storeName,
     String? countryCode,
     String? timezone,
@@ -66,7 +67,7 @@ class CreateStoreModel extends ModelComponent {
     bool? isPrimaryContact,
   }) {
     return CreateStoreModel(
-      id: id,
+      id: id ?? this.id,
       storeName: storeName ?? this.storeName,
       countryCode: countryCode ?? this.countryCode,
       timezone: timezone ?? this.timezone,

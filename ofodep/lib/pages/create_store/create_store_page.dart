@@ -119,7 +119,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
                     }
                   }
 
-                  return CrudStateHandler<CreateStoreModel>(
+                  return CrudStateHandler(
                     createCubit: (context) => CreateStoreCubit(
                       initialState: CrudEditing<CreateStoreModel>.fromModel(
                         CreateStoreModel.empty(),
@@ -159,7 +159,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
                           ),
                           validator: validate,
                           onChanged: (value) {
-                            cubit.updateEditingState(
+                            cubit.updateEditedModel(
                               (model) => model.copyWith(
                                 storeName: value,
                               ),
@@ -188,7 +188,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
                               )
                               .toList(),
                           onChanged: (tz) {
-                            cubit.updateEditingState(
+                            cubit.updateEditedModel(
                               (model) => model.copyWith(
                                 countryCode: tz?.country,
                                 timezone: tz?.timezone,
@@ -220,7 +220,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
                             return null;
                           },
                           onChanged: (value) {
-                            cubit.updateEditingState(
+                            cubit.updateEditedModel(
                               (model) => model.copyWith(contactName: value),
                             );
                           },
@@ -239,7 +239,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
                             return null;
                           },
                           onChanged: (value) {
-                            cubit.updateEditingState(
+                            cubit.updateEditedModel(
                               (model) => model.copyWith(contactEmail: value),
                             );
                           },
@@ -258,38 +258,61 @@ class _CreateStorePageState extends State<CreateStorePage> {
                             return null;
                           },
                           onChanged: (value) {
-                            cubit.updateEditingState(
+                            cubit.updateEditedModel(
                               (model) => model.copyWith(contactPhone: value),
                             );
                           },
                         ),
-                        FormField<bool>(
-                          initialValue: false,
-                          validator: (value) {
-                            if (value != true) {
-                              return 'Debes aceptar los Términos y Condiciones';
-                            }
-                            return null;
-                          },
-                          builder: (state) => Row(
-                            children: [
-                              Checkbox(
-                                value: state.value,
-                                onChanged: (value) => state.didChange(value),
-                                isError: state.hasError,
-                              ),
-                              InkWell(
-                                onTap: () => showDialog(
-                                  context: context,
-                                  builder: (context) => TermsCreateStore(),
-                                ),
-                                child: const Text(
-                                  'Acepto los Términos y Condiciones',
-                                ),
-                              ),
-                            ],
+                        Divider(),
+                        CheckboxListTile(
+                          secondary: IconButton(
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (context) => TermsCreateStore(),
+                            ),
+                            icon: const Icon(Icons.info),
                           ),
+                          title: Text('Acepto los Términos y Condiciones'),
+                          value: false,
+                          onChanged: (value) {},
                         ),
+                        // CheckboxListTile(value: value, onChanged: onChanged)
+                        //   titleWidget: Text(
+                        //     'Acepto los Términos y Condiciones',
+                        //   ),
+                        //   value: false,
+                        //   onChanged: (value) {},
+                        //   validator: (value) => value != true
+                        //       ? 'Debes aceptar los Términos y Condiciones'
+                        //       : null,
+                        // ),
+                        // FormField<bool>(
+                        //   initialValue: false,
+                        //   validator: (value) {
+                        //     if (value != true) {
+                        //       return 'Debes aceptar los Términos y Condiciones';
+                        //     }
+                        //     return null;
+                        //   },
+                        //   builder: (state) => Row(
+                        //     children: [
+                        //       Checkbox(
+                        //         value: state.value,
+                        //         onChanged: (value) => state.didChange(value),
+                        //         isError: state.hasError,
+                        //       ),
+                        //       InkWell(
+                        //         onTap: () => showDialog(
+                        //           context: context,
+                        //           builder: (context) => TermsCreateStore(),
+                        //         ),
+                        //         child: const Text(
+                        //           'Acepto los Términos y Condiciones',
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     ),
                   );

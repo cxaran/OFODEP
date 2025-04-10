@@ -42,13 +42,14 @@ class UserModel extends ModelComponent {
 
   @override
   UserModel copyWith({
+    String? id,
     String? name,
     String? email,
     String? phone,
     bool? admin,
   }) {
     return UserModel(
-      id: id,
+      id: id ?? this.id,
       authId: authId,
       email: email ?? this.email,
       name: name ?? this.name,

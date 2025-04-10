@@ -6,9 +6,6 @@ class CreateStoreRepository extends Repository<CreateStoreModel> {
   String get tableName => 'create_store';
 
   @override
-  List<String> searchColumns = [];
-
-  @override
   String get fieldId => 'auth_id';
 
   @override

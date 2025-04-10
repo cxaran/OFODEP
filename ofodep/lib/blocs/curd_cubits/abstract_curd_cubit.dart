@@ -11,7 +11,42 @@ class CrudLoading<T extends ModelComponent> implements CrudState<T> {}
 
 class CrudLoaded<T extends ModelComponent> implements CrudState<T> {
   final T model;
-  CrudLoaded(this.model);
+  final String? message;
+  CrudLoaded(this.model, {this.message});
+}
+
+class CrudCreate<T extends ModelComponent> implements CrudState<T> {
+  final T editedModel;
+
+  final bool isSubmitting;
+  final String? errorMessage;
+
+  /// Crea un estado de edición a partir de un modelo y una copia modificada del mismo.
+
+  /// [editedModel] modelo modificado
+  /// [editMode] indica si se ha modificado algún campo (habilita el botón de guardar)
+  /// [isSubmitting] indica si se está enviando la actualización
+  /// [errorMessage] mensaje de error en caso de fallo al actualizar
+  CrudCreate({
+    required this.editedModel,
+    this.isSubmitting = false,
+    this.errorMessage,
+  });
+
+  CrudCreate.fromModel(this.editedModel)
+      : isSubmitting = false,
+        errorMessage = null;
+
+  CrudCreate<T> copyWith({
+    T? editedModel,
+    bool? isSubmitting,
+    String? errorMessage,
+  }) =>
+      CrudCreate<T>(
+        editedModel: editedModel ?? this.editedModel,
+        isSubmitting: isSubmitting ?? this.isSubmitting,
+        errorMessage: errorMessage,
+      );
 }
 
 class CrudEditing<T extends ModelComponent> implements CrudState<T> {
@@ -81,8 +116,20 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
 
   /// Carga el modelo a partir de su ID.
   /// [id] ID del modelo a cargar.
-  Future<void> load() async {
+  Future<void> load({
+    T? model,
+    T? createModel,
+  }) async {
     emit(CrudLoading<T>());
+    if (model != null) {
+      emit(CrudLoaded<T>(model));
+      return;
+    }
+    if (createModel != null) {
+      emit(CrudCreate<T>(editedModel: createModel));
+      return;
+    }
+
     try {
       final model = await repository.getById(id);
       if (model != null) {
@@ -111,9 +158,9 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
     }
   }
 
-  /// Actualiza el estado de edición modificando únicamente el modelo de edición.
+  /// Actualiza el estado modificando únicamente el modelo de edición.
   /// [updater] es una función que recibe el modelo actual en edición y retorna el modelo actualizado.
-  void updateEditingState(T Function(T current) updater) {
+  void updateEditedModel(T Function(T current) updater) {
     final current = state;
     if (current is CrudEditing<T>) {
       final updatedEditedModel = updater(current.editedModel);
@@ -124,17 +171,24 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
         ),
       );
     }
+    if (current is CrudCreate<T>) {
+      final updatedEditedModel = updater(current.editedModel);
+      emit(current.copyWith(editedModel: updatedEditedModel));
+    }
   }
 
   /// Envía los cambios realizados en el modelo editado.
-  Future<void> submit() async {
+  Future<void> submit({String? successMessage}) async {
     final current = state;
     if (current is CrudEditing<T>) {
       emit(current.copyWith(isSubmitting: true, errorMessage: null));
       try {
         final success = await repository.update(current.editedModel);
         if (success) {
-          emit(CrudLoaded<T>(current.editedModel));
+          emit(CrudLoaded<T>(
+            current.editedModel,
+            message: successMessage ?? '$T has been updated',
+          ));
         } else {
           emit(current.copyWith(
               isSubmitting: false, errorMessage: 'error(submit)'));
@@ -145,14 +199,17 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
     }
   }
 
-  Future<String?> create() async {
+  Future<String?> create({String? successMessage}) async {
     final current = state;
-    if (current is CrudEditing<T>) {
+    if (current is CrudCreate<T>) {
       emit(current.copyWith(isSubmitting: true, errorMessage: null));
       try {
         final createdId = await repository.create(current.editedModel);
         if (createdId != null) {
-          emit(CrudLoaded<T>(current.editedModel));
+          emit(CrudLoaded<T>(
+            current.editedModel.copyWith(id: createdId) as T,
+            message: successMessage ?? '$T has been created',
+          ));
           return createdId;
         } else {
           emit(
@@ -171,16 +228,19 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
 
   /// Elimina el modelo a partir de su ID.
   Future<void> delete() async {
-    emit(CrudLoading<T>());
-    try {
-      final success = await repository.delete(id);
-      if (success) {
-        emit(CrudDeleted<T>(id));
-      } else {
-        emit(CrudError<T>('error(delete)'));
+    final current = state;
+    if (current is CrudLoaded<T>) {
+      emit(CrudLoading<T>());
+      try {
+        final success = await repository.delete(current.model.id);
+        if (success) {
+          emit(CrudDeleted<T>(current.model.id));
+        } else {
+          emit(CrudError<T>('error(delete)'));
+        }
+      } catch (e) {
+        emit(CrudError<T>(e.toString()));
       }
-    } catch (e) {
-      emit(CrudError<T>(e.toString()));
     }
   }
 }

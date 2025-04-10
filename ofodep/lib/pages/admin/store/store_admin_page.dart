@@ -31,11 +31,13 @@ class StoreAdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (storeId == null) {
-      return const MessagePage.error();
+      return MessagePage.error(
+        onBack: context.pop,
+      );
     }
     return Scaffold(
       body: ContainerPage.zero(
-        child: CrudStateHandler<StoreModel>(
+        child: CrudStateHandler(
           createCubit: (context) => StoreCubit(id: storeId!)..load(),
           loadedBuilder: loadedBuilder,
           editingBuilder: editingBuilder,
@@ -228,7 +230,7 @@ class StoreAdminPage extends StatelessWidget {
           clientId: null,
           imageUrl: edited.logoUrl,
           onImageUploaded: (url) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(logoUrl: url),
             );
           },
@@ -240,7 +242,7 @@ class StoreAdminPage extends StatelessWidget {
             labelText: "Nombre del comercio",
           ),
           validator: validate,
-          onChanged: (value) => cubit.updateEditingState(
+          onChanged: (value) => cubit.updateEditedModel(
             (model) => model.copyWith(
               name: value,
             ),
@@ -272,7 +274,7 @@ class StoreAdminPage extends StatelessWidget {
           ),
           validator: validate,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(addressStreet: value),
             );
           },
@@ -284,7 +286,7 @@ class StoreAdminPage extends StatelessWidget {
           ),
           validator: validate,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(addressNumber: value),
             );
           },
@@ -296,7 +298,7 @@ class StoreAdminPage extends StatelessWidget {
           ),
           validator: validate,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(addressColony: value),
             );
           },
@@ -308,7 +310,7 @@ class StoreAdminPage extends StatelessWidget {
           ),
           validator: validate,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(addressZipcode: value),
             );
           },
@@ -320,7 +322,7 @@ class StoreAdminPage extends StatelessWidget {
           ),
           validator: validate,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(addressCity: value),
             );
           },
@@ -332,7 +334,7 @@ class StoreAdminPage extends StatelessWidget {
           ),
           validator: validate,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(addressState: value),
             );
           },
@@ -355,7 +357,7 @@ class StoreAdminPage extends StatelessWidget {
                   ))
               .toList(),
           onChanged: (tz) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(
                 countryCode: tz?.country,
                 timezone: tz?.timezone,
@@ -374,7 +376,7 @@ class StoreAdminPage extends StatelessWidget {
           decoration: const InputDecoration(labelText: "WhatsApp"),
           validator: validate,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(whatsapp: value),
             );
           },
@@ -398,7 +400,7 @@ class StoreAdminPage extends StatelessWidget {
       onSave: state.editMode ? () => cubit.submit() : null,
       initialLatitude: edited.lat?.toDouble(),
       initialLongitude: edited.lng?.toDouble(),
-      onLocationChanged: (p0) => cubit.updateEditingState(
+      onLocationChanged: (p0) => cubit.updateEditedModel(
         (model) => model.copyWith(
           lat: p0.latitude,
           lng: p0.longitude,
@@ -432,7 +434,7 @@ class StoreAdminPage extends StatelessWidget {
       centerLatitude: edited.lat!.toDouble(),
       centerLongitude: edited.lng!.toDouble(),
       onGeomChanged: (geom) {
-        cubit.updateEditingState(
+        cubit.updateEditedModel(
           (model) => model.copyWith(geom: geom),
         );
       },
@@ -464,7 +466,7 @@ class StoreAdminPage extends StatelessWidget {
               : null,
           value: edited.pickup,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(pickup: value),
             );
           },
@@ -477,7 +479,7 @@ class StoreAdminPage extends StatelessWidget {
           secondary: state.model.geom == null ? const Icon(Icons.info) : null,
           value: edited.delivery,
           onChanged: (value) {
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(delivery: value),
             );
           },
@@ -492,7 +494,7 @@ class StoreAdminPage extends StatelessWidget {
           validator: validateNumber,
           onChanged: (value) {
             final num? minOrder = num.tryParse(value);
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(deliveryMinimumOrder: minOrder),
             );
           },
@@ -507,7 +509,7 @@ class StoreAdminPage extends StatelessWidget {
           validator: validateNumber,
           onChanged: (value) {
             final num? price = num.tryParse(value);
-            cubit.updateEditingState(
+            cubit.updateEditedModel(
               (model) => model.copyWith(deliveryPrice: price),
             );
           },

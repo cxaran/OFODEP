@@ -36,17 +36,7 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
     BuildContext context,
     ListCubit<T> cubit,
     ListState<T> state,
-  )? filterSectionBuilder;
-
-  /// Builder opcional opciones extra en la sección de filtros por defecto. Se agregan despues de los filtros por defecto.
-  final Widget Function(
-    BuildContext context,
-    ListCubit<T> cubit,
-    ListState<T> state,
-  )? filterActionsBuilder;
-
-  /// Bandera para indicar si se debe de mostrar el botón de agregar.
-  final bool showAddButton;
+  ) filterSectionBuilder;
 
   /// Funión opcional al agregar un elemento.
   final void Function(
@@ -63,53 +53,49 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
     required this.itemBuilder,
     this.showSearchBar = true,
     this.showFilterButton = true,
-    this.showAddButton = true,
     this.onAdd,
-    this.filterSectionBuilder,
-    this.filterActionsBuilder,
+    this.filterSectionBuilder = defaultFilterSectionBuilder,
   });
 
   /// Sección por defecto para filtros y búsqueda.
-  Widget defaultFilterSectionBuilder(
-      BuildContext context, ListCubit<T> cubit, ListState<T> _) {
-    return BlocBuilder<ListCubit<T>, ListState<T>>(
-      bloc: cubit,
-      builder: (context, state) {
-        return CustomListView(
-          children: [
-            Text('Ordenar por: '),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'name', label: Text('Nombre')),
-                ButtonSegment(value: 'created_at', label: Text('Creación')),
-              ],
-              selected: {state.orderBy ?? 'created_at'},
-              onSelectionChanged: (newSelection) {
-                cubit.updateOrdering(orderBy: newSelection.first);
-              },
+  static Widget defaultFilterSectionBuilder(
+    BuildContext context,
+    ListCubit cubit,
+    ListState state,
+  ) {
+    return CustomListView(
+      children: [
+        Text('Ordenar por: '),
+        SegmentedButton<String?>(
+          segments: const [
+            ButtonSegment(
+              value: 'updated_at',
+              label: Text('Actualización'),
             ),
-            SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(value: true, label: Text('Ascendente')),
-                ButtonSegment(value: false, label: Text('Descendente')),
-              ],
-              selected: {state.ascending},
-              onSelectionChanged: (newSelection) {
-                cubit.updateOrdering(ascending: newSelection.first);
-              },
+            ButtonSegment(
+              value: 'created_at',
+              label: Text('Creación'),
             ),
-            Divider(),
-            // Se agregan acciones adicionales si se definen.
-            if (filterActionsBuilder != null)
-              filterActionsBuilder!(context, cubit, state),
           ],
-        );
-      },
+          selected: {state.orderBy},
+          onSelectionChanged: (orderBy) {
+            cubit.updateOrdering(orderBy: orderBy.first);
+          },
+        ),
+        SegmentedButton<bool>(
+          segments: const [
+            ButtonSegment(value: true, label: Text('Ascendente')),
+            ButtonSegment(value: false, label: Text('Descendente')),
+          ],
+          selected: {state.ascending},
+          onSelectionChanged: (ascending) => cubit.updateOrdering(
+            ascending: ascending.first,
+          ),
+        ),
+        Divider(),
+      ],
     );
   }
-
-  /// Funcion default para agregar un elemento. Se invoca el callback de onAdd si se ha definido.
-  void defaultOnAdd(BuildContext context, ListCubit<T> cubit) {}
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +113,11 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
                     floating: true,
                     snap: true,
                     actions: [
+                      if (onAdd != null)
+                        IconButton.filledTonal(
+                          onPressed: () => onAdd!(context, cubit),
+                          icon: const Icon(Icons.add),
+                        ),
                       if (showFilterButton)
                         IconButton(
                           onPressed: () => showBottomSheet(
@@ -134,10 +125,15 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
                               maxHeight: 300,
                             ),
                             context: context,
-                            builder: (context) => defaultFilterSectionBuilder(
-                              context,
-                              cubit,
-                              cubit.state,
+                            builder: (context) =>
+                                BlocBuilder<ListCubit<T>, ListState<T>>(
+                              bloc: cubit,
+                              builder: (context, cubitState) =>
+                                  filterSectionBuilder(
+                                context,
+                                cubit,
+                                cubitState,
+                              ),
                             ),
                           ),
                           icon: const Icon(Icons.tune),
@@ -173,10 +169,14 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
                       itemBuilder: (context, item, index) =>
                           itemBuilder(context, item, index),
                       firstPageErrorIndicatorBuilder: (context) =>
-                          MessagePage.error(onBack: cubit.refresh),
+                          MessagePage.error(
+                        onBack: cubit.refresh,
+                      ),
                       noItemsFoundIndicatorBuilder: (context) =>
-                          MessagePage.warning('No se encontraron elementos'),
-                      // noMoreItemsIndicatorBuilder: (context) => Divider(),
+                          MessagePage.warning(
+                        'No se encontraron elementos',
+                        onRetry: cubit.refresh,
+                      ),
                     ),
                   );
                 },

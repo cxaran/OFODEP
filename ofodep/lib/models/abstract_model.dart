@@ -20,7 +20,7 @@ abstract class ModelComponent {
   Map<String, dynamic> toMap({bool includeId = true});
 
   /// Crear una copia del objeto con modificaciones
-  ModelComponent copyWith();
+  ModelComponent copyWith({String? id});
 
   @override
   bool operator ==(Object other) =>

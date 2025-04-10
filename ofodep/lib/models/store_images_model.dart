@@ -44,11 +44,12 @@ class StoreImagesModel extends ModelComponent {
 
   @override
   StoreImagesModel copyWith({
+    String? id,
     String? imgurClientId,
     String? imgurClientSecret,
   }) {
     return StoreImagesModel(
-      id: id,
+      id: id ?? this.id,
       storeId: storeId,
       imgurClientId: imgurClientId ?? this.imgurClientId,
       imgurClientSecret: imgurClientSecret ?? this.imgurClientSecret,

@@ -41,7 +41,9 @@ class AdminDashboardPage extends StatelessWidget {
               ],
             );
           } else {
-            return const MessagePage.error();
+            return MessagePage.error(
+              onBack: context.pop,
+            );
           }
         },
       ),

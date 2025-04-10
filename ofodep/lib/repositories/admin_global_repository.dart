@@ -6,9 +6,6 @@ class AdminGlobalRepository extends Repository<AdminGlobalModel> {
   String get tableName => 'admin_global';
 
   @override
-  List<String> searchColumns = [];
-
-  @override
   String get fieldId => 'auth_id';
 
   @override

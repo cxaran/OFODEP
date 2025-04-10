@@ -10,9 +10,6 @@ class UserRepository extends Repository<UserModel> {
   String get tableName => 'users';
 
   @override
-  List<String> searchColumns = ['name', 'email', 'phone'];
-
-  @override
   String get fieldId => 'auth_id';
 
   @override
