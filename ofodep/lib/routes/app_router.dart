@@ -2,9 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
+import 'package:ofodep/models/products_category_model.dart';
 import 'package:ofodep/models/store_admin_model.dart';
 import 'package:ofodep/models/store_schedule_exception_model.dart';
 import 'package:ofodep/models/store_schedule_model.dart';
+import 'package:ofodep/pages/admin/products_categories/admin_products_categories.dart';
+import 'package:ofodep/pages/admin/products_categories/products_category_admin_page.dart';
 import 'package:ofodep/pages/admin/store_admin/admin_store_admins.dart';
 import 'package:ofodep/pages/admin/store_admin/store_admin_page.dart';
 import 'package:ofodep/pages/admin/order/order_page.dart';
@@ -176,6 +179,19 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         path: '/admin/store_images/:storeId',
         builder: (context, state) => StoreImagesAdminPage(
           storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/products_categories/:storeId',
+        builder: (context, state) => AdminProductsCategoriesPage(
+          storeId: state.pathParameters['storeId'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/products_category/:productCategoryId',
+        builder: (context, state) => ProductsCategoryAdminPage(
+          productCategoryId: state.pathParameters['productCategoryId'],
+          createModel: state.extra as ProductsCategoryModel?,
         ),
       ),
       GoRoute(

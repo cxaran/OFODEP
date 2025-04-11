@@ -567,3 +567,375 @@ USING (
   public.is_store_admin(store_images.store_id)
   OR public.is_global_admin()
 );
+
+---------------------------------------------------------------------
+-- 5: PRODUCTOS 
+---------------------------------------------------------------------
+
+-- 5.1: Tablas
+
+-- category
+-- Registra las categorías de productos.
+CREATE TABLE products_categories (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
+    name text NOT NULL CHECK (TRIM(name) <> ''),
+    description text,
+    position int DEFAULT 0,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE products_categories ENABLE ROW LEVEL SECURITY;
+
+-- productos
+-- Registra los productos de la tienda.
+CREATE TABLE products (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
+    category_id uuid REFERENCES products_categories(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text,
+    image_url text,
+    regular_price numeric NOT NULL CHECK (regular_price >= 0),
+    sale_price numeric CHECK (sale_price >= 0 AND sale_price < regular_price),
+    sale_start timestamptz,
+    sale_end timestamptz,
+    currency text DEFAULT 'MXN',
+    tags text[],
+    active boolean DEFAULT true,
+    position int DEFAULT 0,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+
+-- product_configurations
+-- Registra las configuraciones disponibles para un producto.
+CREATE TABLE product_configurations (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
+    product_id uuid REFERENCES products(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text,
+    range_min int,
+    range_max int,
+    position int DEFAULT 0,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    CHECK (range_min >= 0 AND range_max >= range_min)
+);
+
+ALTER TABLE product_configurations ENABLE ROW LEVEL SECURITY;
+
+-- product_options
+-- Registra las opciones disponibles para cada configuración, incluyendo costos extras.
+CREATE TABLE product_options (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
+    product_configuration_id uuid REFERENCES product_configurations(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    range_min int,
+    range_max int,
+    extra_price numeric DEFAULT 0,
+    position int DEFAULT 0,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    CHECK (range_min >= 0 AND range_max >= range_min)
+);
+
+ALTER TABLE product_options ENABLE ROW LEVEL SECURITY;
+
+-- 5.2: Politicas de seguridad
+
+-- Table: product_categories
+---------------------------------------------------------------------
+--              | ALL | SELECT | INSERT | UPDATE | DELETE |
+-- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- public       |  X  |    ✓*   |    X   |    X   |    X   |
+-- * Se permite el acceso público solo si la store tiene su subscripción activa.
+-- store_admin  se refiere al registro de su propia tienda.
+---------------------------------------------------------------------
+
+CREATE POLICY admin_products_categories_access ON products_categories
+FOR ALL
+USING (
+  public.is_store_admin(products_categories.store_id)
+  OR public.is_global_admin()
+);
+
+CREATE POLICY public_products_categories_access ON products_categories
+FOR SELECT
+USING (
+  public.is_store_subscription_active(products_categories.store_id)
+);
+
+
+-- Table: products
+---------------------------------------------------------------------
+--              | ALL | SELECT | INSERT | UPDATE | DELETE |
+-- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- public       |  X  |    ✓*   |    X   |    X   |    X   |
+-- * Se permite el acceso público solo si la store tiene su subscripción activa.
+-- store_admin  se refiere al registro de su propia tienda.
+---------------------------------------------------------------------
+
+CREATE POLICY admin_products_access ON products
+FOR ALL
+USING (
+  public.is_store_admin(products.store_id)
+  OR public.is_global_admin()
+);
+
+CREATE POLICY public_products_access ON products
+FOR SELECT
+USING (
+  public.is_store_subscription_active(products.store_id)
+);
+
+
+-- Table: product_configurations
+---------------------------------------------------------------------
+--              | ALL | SELECT | INSERT | UPDATE | DELETE |
+-- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- public       |  X  |    ✓*   |    X   |    X   |    X   |
+-- * Se permite el acceso público solo si la store tiene su subscripción activa.
+-- store_admin  se refiere al registro de su propia tienda.
+---------------------------------------------------------------------
+
+CREATE POLICY admin_products_configurations_access ON product_configurations
+FOR ALL
+USING (
+  public.is_store_admin(product_configurations.store_id)
+  OR public.is_global_admin()
+);
+
+CREATE POLICY public_products_configurations_access ON product_configurations
+FOR SELECT
+USING (
+  public.is_store_subscription_active(product_configurations.store_id)
+);
+
+-- Table: product_options
+---------------------------------------------------------------------
+--              | ALL | SELECT | INSERT | UPDATE | DELETE |
+-- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
+-- public       |  X  |    ✓*   |    X   |    X   |    X   |
+-- * Se permite el acceso público solo si la store tiene su subscripción activa.
+-- store_admin  se refiere al registro de su propia tienda.
+---------------------------------------------------------------------
+
+CREATE POLICY admin_products_options_access ON product_options
+FOR ALL
+USING (
+  public.is_store_admin(product_options.store_id)
+  OR public.is_global_admin()
+);
+
+CREATE POLICY public_products_options_access ON product_options
+FOR SELECT
+USING (
+  public.is_store_subscription_active(product_options.store_id)
+);
+
+
+-- 5.3: Funciones auxiliares
+
+-- Funciones de posicionamiento de categorías
+
+-- Función: products_categories_move_afer
+-- Recibe el ID de la categoría a mover y el ID de la categoría de destino.
+-- Devuelve TRUE si la operación fue exitosa y FALSE en caso de error.
+CREATE OR REPLACE FUNCTION products_categories_move_afer(
+    p_moving_category_id uuid,
+    p_target_category_id uuid
+) RETURNS boolean AS $$
+DECLARE
+    v_store uuid;
+    v_target_store uuid;
+    arr_ids uuid[];
+    new_order uuid[] := ARRAY[]::uuid[];
+    target_index int := 0;
+    i int;
+BEGIN
+    -- Obtener el store de ambas categorías
+    SELECT store_id INTO v_store 
+      FROM products_categories 
+     WHERE id = p_moving_category_id;
+    IF v_store IS NULL THEN
+        RAISE EXCEPTION 'La categoría a mover no existe';
+    END IF;
+    
+    SELECT store_id INTO v_target_store 
+      FROM products_categories 
+     WHERE id = p_target_category_id;
+    IF v_target_store IS NULL THEN
+        RAISE EXCEPTION 'La categoría de destino no existe';
+    END IF;
+    
+    IF v_store <> v_target_store THEN
+        RAISE EXCEPTION 'Las categorías no pertenecen al mismo store';
+    END IF;
+    
+    -- Obtener arreglo de IDs del store ordenado por position
+    SELECT array_agg(id ORDER BY position ASC) INTO arr_ids
+      FROM products_categories 
+     WHERE store_id = v_store;
+    
+    -- Construir nuevo arreglo excluyendo la categoría a mover
+    FOR i IN 1 .. array_length(arr_ids, 1) LOOP
+        IF arr_ids[i] <> p_moving_category_id THEN
+            new_order := new_order || arr_ids[i];
+        END IF;
+    END LOOP;
+    
+    -- Buscar la posición de la categoría destino en el arreglo
+    FOR i IN 1 .. array_length(new_order, 1) LOOP
+        IF new_order[i] = p_target_category_id THEN
+            target_index := i;
+            EXIT;
+        END IF;
+    END LOOP;
+    
+    IF target_index = 0 THEN
+        RAISE EXCEPTION 'Categoría de destino no encontrada en el orden actual';
+    END IF;
+    
+    -- Insertar la categoría a mover inmediatamente después de la de destino
+    new_order := new_order[1:target_index] || ARRAY[p_moving_category_id] ||
+                 new_order[target_index + 1: array_length(new_order, 1)];
+    
+    -- Actualizar el campo position secuencialmente según el nuevo orden
+    FOR i IN 1 .. array_length(new_order, 1) LOOP
+         UPDATE products_categories
+            SET position = i,
+                updated_at = now()
+          WHERE id = new_order[i];
+    END LOOP;
+    
+    RETURN true;
+EXCEPTION
+    WHEN OTHERS THEN
+         RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Función: products_categories_move_up
+-- Recibe el ID de la categoría y la mueve intercambiándola con la categoría inmediatamente superior.
+-- Retorna TRUE si se realizó el cambio; de lo contrario FALSE.
+CREATE OR REPLACE FUNCTION products_categories_move_up(
+    p_category_id uuid
+) RETURNS boolean AS $$
+DECLARE
+    v_store uuid;
+    v_position int;
+    v_prev_id uuid;
+    v_prev_position int;
+BEGIN
+    -- Obtener el store y posición actual
+    SELECT store_id, position INTO v_store, v_position
+      FROM products_categories
+     WHERE id = p_category_id;
+    IF v_store IS NULL THEN
+         RAISE EXCEPTION 'La categoría no existe';
+    END IF;
+    
+    -- Buscar la categoría inmediatamente superior en el mismo store
+    SELECT id, position INTO v_prev_id, v_prev_position
+      FROM products_categories
+     WHERE store_id = v_store AND position < v_position
+     ORDER BY position DESC
+     LIMIT 1;
+     
+    IF v_prev_id IS NULL THEN
+        RETURN false;  -- Ya se encuentra en la primera posición
+    END IF;
+    
+    -- Intercambiar posiciones
+    UPDATE products_categories
+       SET position = v_prev_position, updated_at = now()
+     WHERE id = p_category_id;
+     
+    UPDATE products_categories
+       SET position = v_position, updated_at = now()
+     WHERE id = v_prev_id;
+     
+    RETURN true;
+EXCEPTION
+    WHEN OTHERS THEN
+         RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Función: products_categories_move_down
+-- Recibe el ID de la categoría y la mueve intercambiándola con la categoría inmediatamente inferior.
+-- Retorna TRUE si se realizó el cambio; de lo contrario FALSE.
+CREATE OR REPLACE FUNCTION products_categories_move_down(
+    p_category_id uuid
+) RETURNS boolean AS $$
+DECLARE
+    v_store uuid;
+    v_position int;
+    v_next_id uuid;
+    v_next_position int;
+BEGIN
+    -- Obtener el store y posición actual
+    SELECT store_id, position INTO v_store, v_position
+      FROM products_categories
+     WHERE id = p_category_id;
+    IF v_store IS NULL THEN
+         RAISE EXCEPTION 'La categoría no existe';
+    END IF;
+    
+    -- Buscar la categoría inmediatamente inferior en el mismo store
+    SELECT id, position INTO v_next_id, v_next_position
+      FROM products_categories
+     WHERE store_id = v_store AND position > v_position
+     ORDER BY position ASC
+     LIMIT 1;
+     
+    IF v_next_id IS NULL THEN
+        RETURN false;  -- Ya se encuentra en la última posición
+    END IF;
+    
+    -- Intercambiar posiciones
+    UPDATE products_categories
+       SET position = v_next_position, updated_at = now()
+     WHERE id = p_category_id;
+     
+    UPDATE products_categories
+       SET position = v_position, updated_at = now()
+     WHERE id = v_next_id;
+     
+    RETURN true;
+EXCEPTION
+    WHEN OTHERS THEN
+         RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Función: products_categories_last
+-- Recibe el ID del store y retorna el número máximo de posición en ese store.
+CREATE OR REPLACE FUNCTION products_categories_last(
+    p_store_id uuid
+) RETURNS integer AS $$
+DECLARE
+    v_last int;
+BEGIN
+    SELECT COALESCE(MAX(position), 0) INTO v_last
+      FROM products_categories
+     WHERE store_id = p_store_id;
+    RETURN v_last;
+EXCEPTION
+    WHEN OTHERS THEN
+         RETURN 0;
+END;
+$$ LANGUAGE plpgsql;

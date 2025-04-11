@@ -29,7 +29,7 @@ class AdminStoreScheduleExceptionsPage extends StatelessWidget {
         createCubit: (context) => StoreScheduleExceptionsListCubit(
           storeId: storeId!,
         ),
-        itemBuilder: (context, model, index) => ListTile(
+        itemBuilder: (context, cubit, model, index) => ListTile(
           title: Text(
             MaterialLocalizations.of(context).formatCompactDate(
               model.date,

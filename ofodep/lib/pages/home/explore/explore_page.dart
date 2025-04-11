@@ -82,7 +82,7 @@ class ExplorePage extends StatelessWidget {
       //                     scrollController: PrimaryScrollController.of(context),
       //                     builderDelegate:
       //                         PagedChildBuilderDelegate<ProductStoreModel>(
-      //                       itemBuilder: (context, product, index) => ListTile(
+      //                       itemBuilder: (context, cubit,product, index) => ListTile(
       //                         title: Text(product.name),
       //                         subtitle: Text(
       //                           'open:${product.isOpen ?? ''}\n'

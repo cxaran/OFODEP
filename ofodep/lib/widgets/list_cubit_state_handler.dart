@@ -25,7 +25,12 @@ class ListCubitStateHandler<T extends ModelComponent,
   final C Function(BuildContext context) createCubit;
 
   /// Función que define cómo se renderiza cada item de la lista.
-  final Widget Function(BuildContext context, T item, int index) itemBuilder;
+  final Widget Function(
+    BuildContext context,
+    C cubit,
+    T item,
+    int index,
+  ) itemBuilder;
 
   /// Bandera para indicar si se debe de mostrar la barra de busqueda.
   final bool showSearchBar;
@@ -191,7 +196,7 @@ class ListCubitStateHandler<T extends ModelComponent,
                     fetchNextPage: fetchNextPage,
                     builderDelegate: PagedChildBuilderDelegate<T>(
                       itemBuilder: (context, item, index) =>
-                          itemBuilder(context, item, index),
+                          itemBuilder(context, cubit, item, index),
                       firstPageErrorIndicatorBuilder: (context) =>
                           MessagePage.error(
                         onBack: cubit.refresh,

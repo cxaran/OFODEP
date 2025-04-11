@@ -129,12 +129,23 @@ abstract class Repository<T extends ModelComponent> {
     dynamic value, {
     String? select,
     Map<String, dynamic>? params,
+    String? orderBy,
+    bool ascending = false,
   }) async {
     try {
-      final response = await selectTable(
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query = selectTable(
         select: select,
         params: params,
       ).eq(field, value);
+
+      List<Map<String, dynamic>> response;
+
+      if (orderBy != null && orderBy.isNotEmpty) {
+        response = await query.order(orderBy, ascending: ascending);
+      } else {
+        response = await query;
+      }
+
       return response.map((data) => fromMap(data)).toList();
     } catch (e) {
       throw Exception('error(getByFieldValue): $e');

@@ -18,7 +18,7 @@ class AdminStoreAdminsPage extends StatelessWidget {
       body: ListCubitStateHandler<StoreAdminModel, StoreAdminsListCubit>(
         title: 'Administradores de comercio',
         createCubit: (context) => StoreAdminsListCubit(storeId: storeId),
-        itemBuilder: (context, model, index) => ListTile(
+        itemBuilder: (context, cubit, model, index) => ListTile(
           title: Text(model.contactName),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -189,7 +189,7 @@ class StoreAdminAdminPage extends StatelessWidget {
           onTap: () => showBottomSheet(
             context: context,
             builder: (context) => UserSearch(
-              cubit: cubit,
+              cubitStoreAdmin: cubit,
             ),
           ),
         ),
@@ -241,8 +241,8 @@ class StoreAdminAdminPage extends StatelessWidget {
 }
 
 class UserSearch extends StatelessWidget {
-  final StoreAdminCubit cubit;
-  const UserSearch({super.key, required this.cubit});
+  final StoreAdminCubit cubitStoreAdmin;
+  const UserSearch({super.key, required this.cubitStoreAdmin});
 
   @override
   Widget build(BuildContext context) {
@@ -254,11 +254,11 @@ class UserSearch extends StatelessWidget {
         createCubit: (context) =>
             UsersPublicListCubit()..updateFilter({'name': ''}),
         onSearch: (cubit, search) => cubit.updateFilter({'name': search}),
-        itemBuilder: (context, user, state) => ListTile(
+        itemBuilder: (context, cubit, user, state) => ListTile(
           title: Text(user.name),
           subtitle: Text(user.id),
           onTap: () {
-            cubit.updateEditedModel(
+            cubitStoreAdmin.updateEditedModel(
               (model) => model.copyWith(
                 userName: user.name,
                 userId: user.id,

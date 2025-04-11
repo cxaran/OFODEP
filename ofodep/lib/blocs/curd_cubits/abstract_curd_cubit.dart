@@ -225,7 +225,6 @@ abstract class CrudCubit<T extends ModelComponent, R extends Repository<T>>
     if (current is CrudCreate<T>) {
       emit(current.copyWith(isSubmitting: true, errorMessage: null));
       try {
-        print(current.editedModel.toMap(includeId: false));
         final createdId = await repository.create(current.editedModel);
         if (createdId != null) {
           emit(CrudLoaded<T>(

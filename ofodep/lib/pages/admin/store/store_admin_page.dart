@@ -146,6 +146,12 @@ class StoreAdminPage extends StatelessWidget {
           title: const Text('Horarios especiales'),
           onTap: () => context.push('/admin/schedule_exceptions/${store.id}'),
         ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.category),
+          title: const Text('Categorías de productos'),
+          onTap: () => context.push('/admin/products_categories/${store.id}'),
+        ),
         ListTile(
           leading: const Icon(Icons.shopping_cart),
           title: const Text('Productos'),

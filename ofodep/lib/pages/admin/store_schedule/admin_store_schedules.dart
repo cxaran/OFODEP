@@ -27,7 +27,7 @@ class AdminStoreSchedulesPage extends StatelessWidget {
         title: 'Horarios',
         createCubit: (context) => StoreSchedulesListCubit(storeId: storeId!),
         showSearchBar: false,
-        itemBuilder: (context, model, index) => ListTile(
+        itemBuilder: (context, cubit, model, index) => ListTile(
           title: Text(model.days.map(dayName).join(', ')),
           subtitle: Text(
             '${model.openingTime == null ? 'Hora de apertura no definida' : MaterialLocalizations.of(context).formatTimeOfDay(model.openingTime!)}'
