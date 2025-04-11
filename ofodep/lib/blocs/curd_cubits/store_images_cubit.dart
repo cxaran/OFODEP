@@ -2,19 +2,24 @@ import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/models/store_images_model.dart';
 import 'package:ofodep/repositories/store_images_repository.dart';
 
-class StoreImagesCubit extends CrudCubit<StoreImagesModel> {
+class StoreImagesCubit
+    extends CrudCubit<StoreImagesModel, StoreImagesRepository> {
   StoreImagesCubit({
-    required super.id,
-    StoreImagesRepository? storeImagesRepository,
-  }) : super(
-          repository: storeImagesRepository ?? StoreImagesRepository(),
-        );
+    super.repository = const StoreImagesRepository(),
+    super.initialState,
+  });
 
   @override
-  Future<void> load({
+  Future<void> load(
+    String? id, {
     StoreImagesModel? model,
     StoreImagesModel? createModel,
   }) async {
+    if (id == null) {
+      emit(CrudError<StoreImagesModel>('id is null'));
+      return;
+    }
+
     emit(CrudLoading<StoreImagesModel>());
     try {
       final model = await repository.getById(id);

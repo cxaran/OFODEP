@@ -31,10 +31,12 @@ class StoreScheduleAdminPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: CrudStateHandler(
-        createCubit: (context) => StoreScheduleCubit(
-          id: scheduleId!,
-        )..load(createModel: createModel),
+      body: CrudStateHandler<StoreScheduleModel, StoreScheduleCubit>(
+        createCubit: (context) => StoreScheduleCubit()
+          ..load(
+            scheduleId!,
+            createModel: createModel,
+          ),
         loadedBuilder: loadedBuilder,
         editingBuilder: (context, cubit, state) => buildForm(
           context,
@@ -60,7 +62,7 @@ class StoreScheduleAdminPage extends StatelessWidget {
 
   Widget loadedBuilder(
     BuildContext context,
-    CrudCubit<StoreScheduleModel> cubit,
+    StoreScheduleCubit cubit,
     CrudLoaded<StoreScheduleModel> state,
   ) {
     final model = state.model;
@@ -136,7 +138,7 @@ class StoreScheduleAdminPage extends StatelessWidget {
   Widget buildForm(
     BuildContext context, {
     required GlobalKey<FormState> formKey,
-    required CrudCubit<StoreScheduleModel> cubit,
+    required StoreScheduleCubit cubit,
     required StoreScheduleModel edited,
     required bool isLoading,
     bool editMode = true,

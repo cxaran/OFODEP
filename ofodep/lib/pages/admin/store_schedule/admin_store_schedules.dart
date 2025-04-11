@@ -23,7 +23,7 @@ class AdminStoreSchedulesPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: ListCubitStateHandler(
+      body: ListCubitStateHandler<StoreScheduleModel, StoreSchedulesListCubit>(
         title: 'Horarios',
         createCubit: (context) => StoreSchedulesListCubit(storeId: storeId!),
         showSearchBar: false,

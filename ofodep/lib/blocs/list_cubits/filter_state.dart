@@ -5,18 +5,20 @@ abstract class ListState<T extends ModelComponent> {
   final String? search;
   final String? orderBy;
   final bool ascending;
-  final String? newElementId;
   final String? errorMessage;
-  final Map<String, dynamic>? params;
+  final Map<String, dynamic>? rpcParams;
+  final int limit;
+  final String? randomSeed;
 
   const ListState({
     this.filter,
     this.search,
     this.orderBy,
     this.ascending = false,
-    this.newElementId,
     this.errorMessage,
-    this.params,
+    this.rpcParams,
+    this.limit = 10,
+    this.randomSeed,
   });
 
   ListState<T> copyWith({
@@ -24,37 +26,24 @@ abstract class ListState<T extends ModelComponent> {
     String? search,
     String? orderBy,
     bool? ascending,
-    String? newElementId,
     String? errorMessage,
-    Map<String, dynamic>? params,
+    Map<String, dynamic>? rpcParams,
+    int? limit,
+    String? randomSeed,
   });
 }
 
 /// Implementación genérica de ListState que cubre los parámetros básicos
-class FilterState<T extends ModelComponent> implements ListState<T> {
-  @override
-  final Map<String, dynamic>? filter;
-  @override
-  final String? search;
-  @override
-  final String? orderBy;
-  @override
-  final bool ascending;
-  @override
-  final String? newElementId;
-  @override
-  final String? errorMessage;
-  @override
-  final Map<String, dynamic>? params;
-
+class FilterState<T extends ModelComponent> extends ListState<T> {
   const FilterState({
-    this.filter,
-    this.search,
-    this.orderBy,
-    this.ascending = false,
-    this.newElementId,
-    this.errorMessage,
-    this.params,
+    super.filter,
+    super.search,
+    super.orderBy,
+    super.ascending = false,
+    super.errorMessage,
+    super.rpcParams,
+    super.limit = 10,
+    super.randomSeed,
   });
 
   @override
@@ -63,17 +52,19 @@ class FilterState<T extends ModelComponent> implements ListState<T> {
     String? search,
     String? orderBy,
     bool? ascending,
-    String? newElementId,
     String? errorMessage,
-    Map<String, dynamic>? params,
+    Map<String, dynamic>? rpcParams,
+    int? limit,
+    String? randomSeed,
   }) =>
       FilterState<T>(
         filter: filter ?? this.filter,
         search: search ?? this.search,
         orderBy: orderBy ?? this.orderBy,
         ascending: ascending ?? this.ascending,
-        newElementId: newElementId ?? this.newElementId,
         errorMessage: errorMessage ?? this.errorMessage,
-        params: params ?? this.params,
+        rpcParams: rpcParams ?? this.rpcParams,
+        limit: limit ?? this.limit,
+        randomSeed: randomSeed ?? this.randomSeed,
       );
 }

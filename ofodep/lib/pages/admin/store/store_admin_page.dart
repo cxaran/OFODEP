@@ -37,8 +37,8 @@ class StoreAdminPage extends StatelessWidget {
     }
     return Scaffold(
       body: ContainerPage.zero(
-        child: CrudStateHandler(
-          createCubit: (context) => StoreCubit(id: storeId!)..load(),
+        child: CrudStateHandler<StoreModel, StoreCubit>(
+          createCubit: (context) => StoreCubit()..load(storeId!),
           loadedBuilder: loadedBuilder,
           editingBuilder: editingBuilder,
         ),
@@ -48,139 +48,136 @@ class StoreAdminPage extends StatelessWidget {
 
   Widget loadedBuilder(
     BuildContext context,
-    CrudCubit<StoreModel> cubit,
+    StoreCubit cubit,
     CrudLoaded<StoreModel> state,
   ) {
-    if (cubit is StoreCubit) {
-      StoreModel store = state.model;
-      return CustomListView(
-        title: 'Configura tu comercio',
-        children: [
-          ListTile(
-            leading: PreviewImage.mini(imageUrl: store.logoUrl),
-            title: Text(store.name),
-            onTap: () =>
-                cubit.startEditing(editSection: StoreEditSection.general),
+    StoreModel store = state.model;
+    return CustomListView(
+      title: 'Configura tu comercio',
+      children: [
+        ListTile(
+          leading: PreviewImage.mini(imageUrl: store.logoUrl),
+          title: Text(store.name),
+          onTap: () =>
+              cubit.startEditing(editSection: StoreEditSection.general),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.shopping_bag),
+          title: const Text('Pedidos'),
+          onTap: () => context.push('/admin/orders?store=${store.id}'),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.phone),
+          title: Text('Datos de contacto'),
+          subtitle: Text(
+            [
+              store.addressStreet,
+              store.addressNumber,
+              store.addressColony,
+              store.addressZipcode,
+              store.addressCity,
+              store.addressState
+            ].where((e) => e != null && e.isNotEmpty).join(', '),
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.shopping_bag),
-            title: const Text('Pedidos'),
-            onTap: () => context.push('/admin/orders?store=${store.id}'),
+          onTap: () => cubit.startEditing(
+            editSection: StoreEditSection.contact,
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.phone),
-            title: Text('Datos de contacto'),
-            subtitle: Text(
-              [
-                store.addressStreet,
-                store.addressNumber,
-                store.addressColony,
-                store.addressZipcode,
-                store.addressCity,
-                store.addressState
-              ].where((e) => e != null && e.isNotEmpty).join(', '),
-            ),
-            onTap: () => cubit.startEditing(
-              editSection: StoreEditSection.contact,
-            ),
+        ),
+        ListTile(
+          leading: store.lat == null || store.lng == null
+              ? const Badge(
+                  label: Text('1'),
+                  child: Icon(Icons.pin_drop),
+                )
+              : const Icon(Icons.pin_drop),
+          title: Text('Ubicación'),
+          onTap: () => cubit.startEditing(
+            editSection: StoreEditSection.coordinates,
           ),
-          ListTile(
-            leading: store.lat == null || store.lng == null
-                ? const Badge(
+        ),
+        ListTile(
+          leading: store.geom == null || store.geom!['coordinates'].isEmpty
+              ? const Badge(
+                  label: Text('1'),
+                  child: Icon(Icons.map),
+                )
+              : const Icon(Icons.map),
+          title: Text('Zona de cobertura'),
+          onTap: () => cubit.startEditing(
+            editSection: StoreEditSection.geom,
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.delivery_dining),
+          title: Text('Configuración de entregas'),
+          onTap: () => cubit.startEditing(
+            editSection: StoreEditSection.delivery,
+          ),
+        ),
+        const Divider(),
+        ListTile(
+          leading: FutureBuilder(
+            future: StoreImagesRepository().getById(store.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (!snapshot.hasData) {
+                  return const Badge(
                     label: Text('1'),
-                    child: Icon(Icons.pin_drop),
-                  )
-                : const Icon(Icons.pin_drop),
-            title: Text('Ubicación'),
-            onTap: () => cubit.startEditing(
-              editSection: StoreEditSection.coordinates,
-            ),
+                    child: Icon(Icons.image),
+                  );
+                }
+              }
+              return const Icon(Icons.image);
+            },
           ),
-          ListTile(
-            leading: store.geom == null || store.geom!['coordinates'].isEmpty
-                ? const Badge(
+          title: Text('Configuración de imagenes'),
+          onTap: () => context.push('/admin/store_images/${store.id}'),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.schedule),
+          title: const Text('Horarios'),
+          onTap: () => context.push('/admin/schedules/${store.id}'),
+        ),
+        ListTile(
+          leading: const Icon(Icons.calendar_today),
+          title: const Text('Horarios especiales'),
+          onTap: () => context.push('/admin/schedule_exceptions/${store.id}'),
+        ),
+        ListTile(
+          leading: const Icon(Icons.shopping_cart),
+          title: const Text('Productos'),
+          onTap: () => context.push('/admin/products/${store.id}'),
+        ),
+        const Divider(),
+        ListTile(
+          leading: FutureBuilder(
+            future: StoreSubscriptionRepository().getById(store.id),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (snapshot.data?.expirationDate.isBefore(DateTime.now()) ??
+                    false) {
+                  return const Badge(
                     label: Text('1'),
-                    child: Icon(Icons.map),
-                  )
-                : const Icon(Icons.map),
-            title: Text('Zona de cobertura'),
-            onTap: () => cubit.startEditing(
-              editSection: StoreEditSection.geom,
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.delivery_dining),
-            title: Text('Configuración de entregas'),
-            onTap: () => cubit.startEditing(
-              editSection: StoreEditSection.delivery,
-            ),
-          ),
-          const Divider(),
-          ListTile(
-            leading: FutureBuilder(
-              future: StoreImagesRepository().getById(store.id),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  if (!snapshot.hasData) {
-                    return const Badge(
-                      label: Text('1'),
-                      child: Icon(Icons.image),
-                    );
-                  }
+                    child: Icon(Icons.sell),
+                  );
                 }
-                return const Icon(Icons.image);
-              },
-            ),
-            title: Text('Configuración de imagenes'),
-            onTap: () => context.push('/admin/store_images/${store.id}'),
+              }
+              return const Icon(Icons.sell);
+            },
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.schedule),
-            title: const Text('Horarios'),
-            onTap: () => context.push('/admin/schedules/${store.id}'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.calendar_today),
-            title: const Text('Horarios especiales'),
-            onTap: () => context.push('/admin/schedule_exceptions/${store.id}'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.shopping_cart),
-            title: const Text('Productos'),
-            onTap: () => context.push('/admin/products/${store.id}'),
-          ),
-          const Divider(),
-          ListTile(
-            leading: FutureBuilder(
-              future: StoreSubscriptionRepository().getById(store.id),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  if (snapshot.data?.expirationDate.isBefore(DateTime.now()) ??
-                      false) {
-                    return const Badge(
-                      label: Text('1'),
-                      child: Icon(Icons.sell),
-                    );
-                  }
-                }
-                return const Icon(Icons.sell);
-              },
-            ),
-            title: const Text('Suscripción'),
-            onTap: () => context.push('/admin/subscription/${store.id}'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.contacts),
-            title: const Text('Administradores del comercio'),
-            onTap: () => context.push('/admin/store_admins/${store.id}'),
-          ),
-        ],
-      );
-    }
-    return SizedBox.shrink();
+          title: const Text('Suscripción'),
+          onTap: () => context.push('/admin/subscription/${store.id}'),
+        ),
+        ListTile(
+          leading: const Icon(Icons.contacts),
+          title: const Text('Administradores del comercio'),
+          onTap: () => context.push('/admin/store_admins/${store.id}'),
+        ),
+      ],
+    );
   }
 
   /// Renderiza la página de la tienda.
@@ -188,10 +185,10 @@ class StoreAdminPage extends StatelessWidget {
   /// de lo contrario muestra un menú de secciones.
   Widget editingBuilder(
     BuildContext context,
-    CrudCubit<StoreModel> cubit,
+    StoreCubit cubit,
     CrudEditing<StoreModel> state,
   ) {
-    if (state is StoreCrudEditing && cubit is StoreCubit) {
+    if (state is StoreCrudEditing) {
       switch (state.editSection) {
         case StoreEditSection.general:
           return buildGeneralSection(cubit, state);

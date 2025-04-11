@@ -6,6 +6,7 @@ import 'package:ofodep/repositories/abstract_repository.dart';
 /// para buscar por `auth_id` y se sobreescribe getPaginated para aplicar la búsqueda
 /// en las columnas name, email y phone.
 class UserRepository extends Repository<UserModel> {
+  const UserRepository();
   @override
   String get tableName => 'users';
 

@@ -172,11 +172,6 @@ class _AdminStoresPageState extends State<AdminStoresPage> {
                           SnackBar(content: Text(state.errorMessage!)),
                         );
                       }
-                      if (state.newElementId != null) {
-                        if (mounted) {
-                          context.push('/admin/store/${state.newElementId}');
-                        }
-                      }
                     },
                     builder: (context, state) {
                       final cubit = context.read<StoresListCubit>();
@@ -221,44 +216,6 @@ class _AdminStoresPageState extends State<AdminStoresPage> {
                   ),
                 ),
               ],
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () => showDialog<String>(
-                context: context,
-                builder: (dialogContext) {
-                  String newName = '';
-                  return AlertDialog(
-                    title: const Text('Add Store'),
-                    content: TextField(
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Store name',
-                      ),
-                      onChanged: (value) => newName = value,
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(dialogContext).pop(null);
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (newName.isNotEmpty) {
-                            context.read<StoresListCubit>().addStore(
-                                  name: newName,
-                                );
-                            Navigator.of(dialogContext).pop();
-                          }
-                        },
-                        child: const Text('Add'),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              child: const Icon(Icons.add),
             ),
           ),
         ),

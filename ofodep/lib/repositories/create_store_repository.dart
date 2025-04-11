@@ -1,7 +1,10 @@
 import 'package:ofodep/models/create_store_model.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CreateStoreRepository extends Repository<CreateStoreModel> {
+  const CreateStoreRepository();
+
   @override
   String get tableName => 'create_store';
 
@@ -18,7 +21,7 @@ class CreateStoreRepository extends Repository<CreateStoreModel> {
   @override
   Future<String?> create(CreateStoreModel model) async {
     try {
-      final response = await client.rpc(
+      final response = await Supabase.instance.client.rpc(
         rpc!,
         params: model.toMap(),
       );

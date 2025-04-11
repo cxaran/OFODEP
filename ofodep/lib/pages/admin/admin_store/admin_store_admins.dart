@@ -15,7 +15,7 @@ class AdminStoreAdminsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListCubitStateHandler(
+      body: ListCubitStateHandler<StoreAdminModel, StoreAdminsListCubit>(
         title: 'Administradores de comercio',
         createCubit: (context) => StoreAdminsListCubit(storeId: storeId),
         itemBuilder: (context, model, index) => ListTile(

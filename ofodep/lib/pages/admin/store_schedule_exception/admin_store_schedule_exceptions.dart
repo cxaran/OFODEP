@@ -22,7 +22,8 @@ class AdminStoreScheduleExceptionsPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: ListCubitStateHandler(
+      body: ListCubitStateHandler<StoreScheduleExceptionModel,
+          StoreScheduleExceptionsListCubit>(
         title: 'Horarios especiales',
         showSearchBar: false,
         createCubit: (context) => StoreScheduleExceptionsListCubit(

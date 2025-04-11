@@ -92,7 +92,6 @@ class ProductOptionAdminPage extends StatelessWidget {
     if (option!.id.isEmpty) return const MessagePage.error();
     return BlocProvider<ProductOptionCubit>(
       create: (context) => ProductOptionCubit(
-        id: option!.id,
         initialState: CrudLoaded<ProductOptionModel>(
           option!,
         ),

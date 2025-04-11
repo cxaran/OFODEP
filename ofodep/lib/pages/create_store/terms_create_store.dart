@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TermsCreateStore extends StatelessWidget {
-  const TermsCreateStore({Key? key}) : super(key: key);
+  const TermsCreateStore({super.key});
 
   final String _termsText = '''
 TÉRMINOS Y CONDICIONES PARA LA SOLICITUD DEL PERÍODO DE PRUEBA Y ACUERDO COMERCIAL INTEGRAL

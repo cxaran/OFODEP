@@ -3,6 +3,7 @@ import 'package:ofodep/repositories/abstract_repository.dart';
 
 class ProductConfigurationRepository
     extends Repository<ProductConfigurationModel> {
+  const ProductConfigurationRepository();
   @override
   String get tableName => 'product_configurations';
 

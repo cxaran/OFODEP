@@ -4,28 +4,28 @@ import 'package:ofodep/models/abstract_model.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
-abstract class ListCubit<T extends ModelComponent> extends Cubit<ListState<T>> {
-  final Repository<T> repository;
+abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
+    extends Cubit<ListState<T>> {
+  /// El repositorio de la lista.
+  final R repository;
+
+  /// El controlador de paginación.
   late final PagingController<int, T> pagingController;
-  final int limit;
-  String? randomSeed;
 
   ListCubit({
-    required ListState<T> initialState,
     required this.repository,
-    this.limit = 10,
-    this.randomSeed,
-  }) : super(initialState) {
+    ListState<T>? initialState,
+  }) : super(initialState ?? FilterState<T>()) {
     pagingController = PagingController<int, T>(
-      getNextPageKey: (state) {
-        final currentPage = state.keys?.last ?? 0;
+      getNextPageKey: (statePagination) {
+        final currentPage = statePagination.keys?.last ?? 0;
         return currentPage + 1;
       },
       fetchPage: (int pageKey) async {
         try {
           final newItems = await getPaginated(
             page: pageKey,
-            limit: limit,
+            limit: state.limit,
             filter: state.filter,
             search: state.search,
             orderBy: state.orderBy,
@@ -47,48 +47,9 @@ abstract class ListCubit<T extends ModelComponent> extends Cubit<ListState<T>> {
     );
   }
 
-  /// Actualiza la semilla aleatoria y refresca la paginación.
-  void updateRandomSeed(String? seed) {
-    randomSeed = seed;
-    refresh();
-  }
-
   /// Refresca la paginación.
   void refresh() {
     pagingController.refresh();
-  }
-
-  /// Actualiza el estado de la lista.
-  Future<List<T>> getPaginated({
-    int page = 1,
-    int limit = 20,
-    Map<String, dynamic>? filter,
-    String? search,
-    String? orderBy,
-    bool ascending = false,
-  }) {
-    if (randomSeed != null) {
-      return repository.getRandom(
-        page: page,
-        limit: limit,
-        filter: filter,
-        search: search,
-        orderBy: orderBy,
-        ascending: ascending,
-        randomSeed: randomSeed,
-        params: state.params,
-      );
-    } else {
-      return repository.getPaginated(
-        page: page,
-        limit: limit,
-        filter: filter,
-        search: search,
-        orderBy: orderBy,
-        ascending: ascending,
-        params: state.params,
-      );
-    }
   }
 
   /// Actualiza el término de búsqueda y refresca la paginación.
@@ -109,23 +70,48 @@ abstract class ListCubit<T extends ModelComponent> extends Cubit<ListState<T>> {
     refresh();
   }
 
-  /// Agrega un elemento a la lista.
-  Future<String?> add(T element) async {
-    try {
-      // Se invoca el método create del repositorio para insertar el elemento.
-      final newId = await repository.create(element);
-      if (newId != null) {
-        // Actualiza el estado para reflejar el nuevo elemento (usando newElementId).
-        emit(state.copyWith(newElementId: newId));
-        // Refresca la paginación para que el nuevo elemento aparezca en la lista.
-        refresh();
-        return newId;
-      }
-    } catch (e) {
-      // En caso de error, se actualiza el estado con el mensaje de error.
-      emit(state.copyWith(errorMessage: e.toString()));
+  /// Actualiza la semilla aleatoria y refresca la paginación.
+  void updateRandomSeed(String? seed) {
+    emit(state.copyWith(randomSeed: seed));
+    refresh();
+  }
+
+  /// Obtener el filtro con parámetros persobalizados si aplica.
+  Map<String, dynamic>? getFilter(Map<String, dynamic>? filter) {
+    return filter;
+  }
+
+  /// Actualiza el estado de la lista.
+  Future<List<T>> getPaginated({
+    int page = 1,
+    int limit = 10,
+    Map<String, dynamic>? filter,
+    String? search,
+    String? orderBy,
+    bool ascending = false,
+  }) {
+    if (state.randomSeed != null) {
+      return repository.getRandom(
+        page: page,
+        limit: limit,
+        filter: getFilter(filter),
+        search: search,
+        orderBy: orderBy,
+        ascending: ascending,
+        randomSeed: state.randomSeed,
+        params: state.rpcParams,
+      );
+    } else {
+      return repository.getPaginated(
+        page: page,
+        limit: limit,
+        filter: getFilter(filter),
+        search: search,
+        orderBy: orderBy,
+        ascending: ascending,
+        params: state.rpcParams,
+      );
     }
-    return null;
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/list_cubits/store_subscriptions_list_cubit.dart';
+import 'package:ofodep/models/store_subscription_model.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/list_cubit_state_handler.dart';
 
@@ -17,7 +18,8 @@ class _AdminStoreSubscriptionsAdminPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListCubitStateHandler(
+      body: ListCubitStateHandler<StoreSubscriptionModel,
+          StoreSubscriptionsListCubit>(
         title: 'Suscripciones',
         createCubit: (context) => StoreSubscriptionsListCubit(),
         itemBuilder: (context, model, index) => ListTile(

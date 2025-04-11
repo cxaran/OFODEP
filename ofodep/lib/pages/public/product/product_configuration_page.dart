@@ -95,7 +95,6 @@ class ProductConfigurationPage extends StatelessWidget {
     if (configuration!.id.isEmpty) return const MessagePage.error();
     return BlocProvider<ProductConfigurationCubit>(
       create: (context) => ProductConfigurationCubit(
-        id: configuration!.id,
         initialState: CrudLoaded<ProductConfigurationModel>(
           configuration!,
         ),

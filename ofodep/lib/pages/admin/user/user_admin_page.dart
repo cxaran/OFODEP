@@ -27,7 +27,7 @@ class UserAdminPage extends StatelessWidget {
         title: const Text(''),
       ),
       body: BlocProvider<UserCubit>(
-        create: (context) => UserCubit(id: userId!)..load(),
+        create: (context) => UserCubit()..load(userId!),
         child: Builder(
           builder: (context) {
             return BlocConsumer<UserCubit, CrudState<UserModel>>(
@@ -80,53 +80,53 @@ class UserAdminPage extends StatelessWidget {
                   return SingleChildScrollView(
                     child: Column(
                       children: [
-                        TextField(
-                          key: const ValueKey('email_user'),
-                          controller: TextEditingController.fromValue(
-                            TextEditingValue(
-                              text: state.editedModel.email,
-                              selection: TextSelection.collapsed(
-                                  offset: state.editedModel.email.length),
-                            ),
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(),
-                          ),
-                          enabled: false,
-                        ),
-                        TextField(
-                          key: const ValueKey('name_user'),
-                          controller: TextEditingController.fromValue(
-                            TextEditingValue(
-                              text: state.editedModel.name,
-                              selection: TextSelection.collapsed(
-                                  offset: state.editedModel.name.length),
-                            ),
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'Nombre',
-                            border: OutlineInputBorder(),
-                          ),
-                          onChanged: (value) =>
-                              context.read<UserCubit>().nameChanged(value),
-                        ),
-                        TextField(
-                          key: const ValueKey('phone_user'),
-                          controller: TextEditingController.fromValue(
-                            TextEditingValue(
-                              text: state.editedModel.phone ?? '',
-                              selection: TextSelection.collapsed(
-                                  offset: state.editedModel.phone?.length ?? 0),
-                            ),
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'Teléfono',
-                            border: OutlineInputBorder(),
-                          ),
-                          onChanged: (value) =>
-                              context.read<UserCubit>().phoneChanged(value),
-                        ),
+                        // TextField(
+                        //   key: const ValueKey('email_user'),
+                        //   controller: TextEditingController.fromValue(
+                        //     TextEditingValue(
+                        //       text: state.editedModel.email,
+                        //       selection: TextSelection.collapsed(
+                        //           offset: state.editedModel.email.length),
+                        //     ),
+                        //   ),
+                        //   decoration: const InputDecoration(
+                        //     labelText: 'Email',
+                        //     border: OutlineInputBorder(),
+                        //   ),
+                        //   enabled: false,
+                        // ),
+                        // TextField(
+                        //   key: const ValueKey('name_user'),
+                        //   controller: TextEditingController.fromValue(
+                        //     TextEditingValue(
+                        //       text: state.editedModel.name,
+                        //       selection: TextSelection.collapsed(
+                        //           offset: state.editedModel.name.length),
+                        //     ),
+                        //   ),
+                        //   decoration: const InputDecoration(
+                        //     labelText: 'Nombre',
+                        //     border: OutlineInputBorder(),
+                        //   ),
+                        //   onChanged: (value) =>
+                        //       context.read<UserCubit>().nameChanged(value),
+                        // ),
+                        // TextField(
+                        //   key: const ValueKey('phone_user'),
+                        //   controller: TextEditingController.fromValue(
+                        //     TextEditingValue(
+                        //       text: state.editedModel.phone ?? '',
+                        //       selection: TextSelection.collapsed(
+                        //           offset: state.editedModel.phone?.length ?? 0),
+                        //     ),
+                        //   ),
+                        //   decoration: const InputDecoration(
+                        //     labelText: 'Teléfono',
+                        //     border: OutlineInputBorder(),
+                        //   ),
+                        //   onChanged: (value) =>
+                        //       context.read<UserCubit>().phoneChanged(value),
+                        // ),
                         // BlocBuilder<SessionCubit, SessionState>(
                         //   builder: (context, sessionState) {
                         //     if (sessionState is SessionAuthenticated &&

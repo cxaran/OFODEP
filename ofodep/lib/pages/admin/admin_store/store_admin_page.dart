@@ -30,9 +30,10 @@ class StoreAdminAdminPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: CrudStateHandler(
-        createCubit: (context) => StoreAdminCubit(id: adminStoreId!)
+      body: CrudStateHandler<StoreAdminModel, StoreAdminCubit>(
+        createCubit: (context) => StoreAdminCubit()
           ..load(
+            adminStoreId!,
             createModel: createModel,
           ),
         loadedBuilder: loadedBuilder,
@@ -60,7 +61,7 @@ class StoreAdminAdminPage extends StatelessWidget {
 
   Widget loadedBuilder(
     BuildContext context,
-    CrudCubit<StoreAdminModel> cubit,
+    StoreAdminCubit cubit,
     CrudLoaded<StoreAdminModel> state,
   ) {
     final model = state.model;
@@ -119,6 +120,7 @@ class StoreAdminAdminPage extends StatelessWidget {
           subtitle: Text(model.contactName),
         ),
         ListTile(
+          leading: const Icon(Icons.email),
           title: Text('Correo de contacto'),
           subtitle: Text(model.contactEmail),
         ),
@@ -139,7 +141,7 @@ class StoreAdminAdminPage extends StatelessWidget {
   Widget buildForm(
     BuildContext context, {
     required GlobalKey<FormState> formKey,
-    required CrudCubit<StoreAdminModel> cubit,
+    required StoreAdminCubit cubit,
     required StoreAdminModel edited,
     required bool isLoading,
     bool editMode = true,

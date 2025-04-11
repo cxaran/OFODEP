@@ -39,7 +39,7 @@ class ProductPage extends StatelessWidget {
           ];
         },
         body: BlocProvider<ProductCubit>(
-          create: (context) => ProductCubit(id: productId!)..load(),
+          create: (context) => ProductCubit()..load(productId!),
           child: Builder(
             builder: (context) {
               return BlocConsumer<ProductCubit, CrudState<ProductModel>>(

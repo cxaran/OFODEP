@@ -2,6 +2,7 @@ import 'package:ofodep/models/store_model.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
 class StoreRepository extends Repository<StoreModel> {
+  const StoreRepository();
   @override
   String get tableName => 'stores';
 

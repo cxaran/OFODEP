@@ -68,7 +68,6 @@ class _CreateStorePageState extends State<CreateStorePage> {
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.sizeOf(context).height / 2;
-
     String? authId = Supabase.instance.client.auth.currentSession?.user.id;
 
     return Scaffold(
@@ -118,23 +117,22 @@ class _CreateStorePageState extends State<CreateStorePage> {
                       );
                     }
                   }
-
-                  return CrudStateHandler(
-                    createCubit: (context) => CreateStoreCubit(
-                      initialState: CrudEditing<CreateStoreModel>.fromModel(
-                        CreateStoreModel.empty(),
+                  return CrudStateHandler<CreateStoreModel, CreateStoreCubit>(
+                    createCubit: (context) => CreateStoreCubit()
+                      ..load(
+                        null,
+                        createModel: CreateStoreModel.empty(),
                       ),
-                    ),
                     loadedBuilder: (_, __, ___) => SizedBox.shrink(),
-                    editingBuilder: (
+                    editingBuilder: (_, __, ___) => SizedBox.shrink(),
+                    creatingBuilder: (
                       context,
-                      cubit,
-                      state,
+                      CreateStoreCubit cubit,
+                      CrudCreate<CreateStoreModel> state,
                     ) =>
                         CustomListView(
                       formKey: _formKey,
                       isLoading: state.isSubmitting,
-                      editMode: state.editMode,
                       onSave: () async {
                         if (_formKey.currentState?.validate() ?? false) {
                           final newId = await cubit.create();
@@ -264,55 +262,33 @@ class _CreateStorePageState extends State<CreateStorePage> {
                           },
                         ),
                         Divider(),
-                        CheckboxListTile(
-                          secondary: IconButton(
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (context) => TermsCreateStore(),
-                            ),
-                            icon: const Icon(Icons.info),
+                        FormField<bool>(
+                          initialValue: false,
+                          validator: (value) {
+                            if (value != true) {
+                              return 'Debes aceptar los Términos y Condiciones';
+                            }
+                            return null;
+                          },
+                          builder: (state) => Row(
+                            children: [
+                              Checkbox(
+                                value: state.value,
+                                onChanged: (value) => state.didChange(value),
+                                isError: state.hasError,
+                              ),
+                              InkWell(
+                                onTap: () => showDialog(
+                                  context: context,
+                                  builder: (context) => TermsCreateStore(),
+                                ),
+                                child: const Text(
+                                  'Acepto los Términos y Condiciones',
+                                ),
+                              ),
+                            ],
                           ),
-                          title: Text('Acepto los Términos y Condiciones'),
-                          value: false,
-                          onChanged: (value) {},
                         ),
-                        // CheckboxListTile(value: value, onChanged: onChanged)
-                        //   titleWidget: Text(
-                        //     'Acepto los Términos y Condiciones',
-                        //   ),
-                        //   value: false,
-                        //   onChanged: (value) {},
-                        //   validator: (value) => value != true
-                        //       ? 'Debes aceptar los Términos y Condiciones'
-                        //       : null,
-                        // ),
-                        // FormField<bool>(
-                        //   initialValue: false,
-                        //   validator: (value) {
-                        //     if (value != true) {
-                        //       return 'Debes aceptar los Términos y Condiciones';
-                        //     }
-                        //     return null;
-                        //   },
-                        //   builder: (state) => Row(
-                        //     children: [
-                        //       Checkbox(
-                        //         value: state.value,
-                        //         onChanged: (value) => state.didChange(value),
-                        //         isError: state.hasError,
-                        //       ),
-                        //       InkWell(
-                        //         onTap: () => showDialog(
-                        //           context: context,
-                        //           builder: (context) => TermsCreateStore(),
-                        //         ),
-                        //         child: const Text(
-                        //           'Acepto los Términos y Condiciones',
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
                       ],
                     ),
                   );

@@ -3,25 +3,35 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/models/abstract_model.dart';
+import 'package:ofodep/repositories/abstract_repository.dart';
+
 import 'package:ofodep/widgets/message_page.dart';
 
 /// Widget genérico que se encarga de crear el BlocProvider y administrar los estados CRUD.
 /// Recibe una función que construye el cubit y builders para cada uno de los estados.
-class CrudStateHandler<T extends ModelComponent> extends StatelessWidget {
+class CrudStateHandler<T extends ModelComponent,
+    C extends CrudCubit<T, Repository<T>>> extends StatelessWidget {
   /// Función que crea la instancia del cubit.
-  final CrudCubit<T> Function(BuildContext context) createCubit;
+  final C Function(
+    BuildContext context,
+  ) createCubit;
 
   /// Builder para mostrar la vista en estado de carga.
-  final Widget Function(BuildContext context) loadingBuilder;
+  final Widget Function(
+    BuildContext context,
+  ) loadingBuilder;
 
   /// Builder para mostrar la vista en caso de error.
-  final Widget Function(BuildContext context, CrudCubit<T> cubit, String error)
-      errorBuilder;
+  final Widget Function(
+    BuildContext context,
+    C cubit,
+    String error,
+  ) errorBuilder;
 
   /// Builder para mostrar la vista en estado cargado (no editable).
   final Widget Function(
     BuildContext context,
-    CrudCubit<T> cubit,
+    C cubit,
     CrudLoaded<T> state,
   ) loadedBuilder;
 
@@ -29,22 +39,28 @@ class CrudStateHandler<T extends ModelComponent> extends StatelessWidget {
   /// Se reciben el modelo original, la copia editable, el flag de edición, el flag de envío y un posible mensaje de error.
   final Widget Function(
     BuildContext context,
-    CrudCubit<T> cubit,
+    C cubit,
     CrudEditing<T> state,
   ) editingBuilder;
 
   /// Builder opcional para mostrar la vista en estado de creación de un nuevo elemento.
   final Widget Function(
     BuildContext context,
-    CrudCubit<T> cubit,
+    C cubit,
     CrudCreate<T> state,
   ) creatingBuilder;
 
   /// Builder opcional para mostrar la vista en caso de eliminación.
-  final Widget Function(BuildContext context, String id)? deletedBuilder;
+  final Widget Function(
+    BuildContext context,
+    String id,
+  )? deletedBuilder;
 
   /// Listener opcional para realizar acciones adicionales según el estado.
-  final void Function(BuildContext context, CrudState<T> state)? stateListener;
+  final void Function(
+    BuildContext context,
+    CrudState<T> state,
+  )? stateListener;
 
   const CrudStateHandler({
     super.key,
@@ -65,31 +81,30 @@ class CrudStateHandler<T extends ModelComponent> extends StatelessWidget {
   ) =>
       MessagePage.error(
         onBack: context.pop,
-        onRetry: cubit.load,
+        onRetry: cubit.onRetry,
       );
 
-  static Widget defaultLoadingBuilder(BuildContext context) {
-    return const Center(child: CircularProgressIndicator());
-  }
+  static Widget defaultLoadingBuilder(BuildContext context) => const Center(
+        child: CircularProgressIndicator(),
+      );
 
   static Widget defaultErrorBuilder(
     BuildContext context,
     CrudCubit cubit,
     String error,
-  ) {
-    return MessagePage.error(
-      message: error,
-      onBack: context.pop,
-      onRetry: cubit.load,
-    );
-  }
+  ) =>
+      MessagePage.error(
+        message: error,
+        onBack: context.pop,
+        onRetry: cubit.onRetry,
+      );
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<CrudCubit<T>>(
+    return BlocProvider<C>(
       create: createCubit,
       child: Builder(
-        builder: (context) => BlocConsumer<CrudCubit<T>, CrudState<T>>(
+        builder: (context) => BlocConsumer<C, CrudState<T>>(
           listener: (context, state) {
             if (stateListener != null) {
               stateListener!(context, state);
@@ -127,25 +142,25 @@ class CrudStateHandler<T extends ModelComponent> extends StatelessWidget {
             } else if (state is CrudError<T>) {
               return errorBuilder(
                 context,
-                context.read<CrudCubit<T>>(),
+                context.read<C>(),
                 state.message,
               );
             } else if (state is CrudLoaded<T>) {
               return loadedBuilder(
                 context,
-                context.read<CrudCubit<T>>(),
+                context.read<C>(),
                 state,
               );
             } else if (state is CrudEditing<T>) {
               return editingBuilder(
                 context,
-                context.read<CrudCubit<T>>(),
+                context.read<C>(),
                 state,
               );
             } else if (state is CrudCreate<T>) {
               return creatingBuilder(
                 context,
-                context.read<CrudCubit<T>>(),
+                context.read<C>(),
                 state,
               );
             } else if (state is CrudDeleted<T>) {

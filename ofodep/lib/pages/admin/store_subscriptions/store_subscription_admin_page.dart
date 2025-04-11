@@ -27,8 +27,8 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: CrudStateHandler(
-        createCubit: (context) => StoreSubscriptionCubit(id: storeId!)..load(),
+      body: CrudStateHandler<StoreSubscriptionModel, StoreSubscriptionCubit>(
+        createCubit: (context) => StoreSubscriptionCubit()..load(storeId!),
         loadedBuilder: loadedBuilder,
         // editingBuilder: editingBuilder,
       ),
@@ -37,7 +37,7 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
 
   Widget loadedBuilder(
     BuildContext context,
-    CrudCubit<StoreSubscriptionModel> cubit,
+    StoreSubscriptionCubit cubit,
     CrudLoaded<StoreSubscriptionModel> state,
   ) {
     final model = state.model;
@@ -110,7 +110,7 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
 
   Widget editingBuilder(
     BuildContext context,
-    CrudCubit<StoreSubscriptionModel> cubit,
+    StoreSubscriptionCubit cubit,
     CrudEditing<StoreSubscriptionModel> state,
   ) {
     final edited = state.editedModel;

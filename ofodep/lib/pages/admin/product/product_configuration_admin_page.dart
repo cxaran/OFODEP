@@ -17,46 +17,46 @@ class AdminProductConfigurationsPage extends StatelessWidget {
     this.productId,
   });
 
-  void add(BuildContext context) async {
-    final cubit = context.read<ProductConfigurationsListCubit>();
-    String? configurationName = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        final controller = TextEditingController();
-        return AlertDialog(
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Name',
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Ok'),
-            ),
-          ],
-        );
-      },
-    );
-    if (configurationName != null && configurationName.isNotEmpty) {
-      cubit.add(
-        ProductConfigurationModel(
-          id: '',
-          productId: productId!,
-          name: configurationName,
-          rangeMin: 0,
-          rangeMax: 0,
-        ),
-      );
-    }
-  }
+  // void add(BuildContext context) async {
+  //   final cubit = context.read<ProductConfigurationsListCubit>();
+  //   String? configurationName = await showDialog<String>(
+  //     context: context,
+  //     builder: (context) {
+  //       final controller = TextEditingController();
+  //       return AlertDialog(
+  //         content: TextField(
+  //           controller: controller,
+  //           decoration: const InputDecoration(
+  //             labelText: 'Name',
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: const Text('Cancel'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(controller.text),
+  //             child: const Text('Ok'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // if (configurationName != null && configurationName.isNotEmpty) {
+  //   cubit.add(
+  //     ProductConfigurationModel(
+  //       id: '',
+  //       productId: productId!,
+  //       name: configurationName,
+  //       rangeMin: 0,
+  //       rangeMax: 0,
+  //     ),
+  //   );
+  // }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -107,18 +107,18 @@ class AdminProductConfigurationsPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      noItemsFoundIndicatorBuilder: (context) => Center(
-                        child: IconButton(
-                          onPressed: () => add(context),
-                          icon: Icon(Icons.add),
-                        ),
-                      ),
-                      noMoreItemsIndicatorBuilder: (context) => Center(
-                        child: IconButton(
-                          onPressed: () => add(context),
-                          icon: Icon(Icons.add),
-                        ),
-                      ),
+                      // noItemsFoundIndicatorBuilder: (context) => Center(
+                      //   child: IconButton(
+                      //     onPressed: () => add(context),
+                      //     icon: Icon(Icons.add),
+                      //   ),
+                      // ),
+                      // noMoreItemsIndicatorBuilder: (context) => Center(
+                      //   child: IconButton(
+                      //     onPressed: () => add(context),
+                      //     icon: Icon(Icons.add),
+                      //   ),
+                      // ),
                     ),
                   ),
                 ),
@@ -144,7 +144,6 @@ class ProductConfigurationAdminPage extends StatelessWidget {
     if (configuration!.id.isEmpty) return const MessagePage.error();
     return BlocProvider<ProductConfigurationCubit>(
       create: (context) => ProductConfigurationCubit(
-        id: configuration!.id,
         initialState: CrudLoaded<ProductConfigurationModel>(
           configuration!,
         ),

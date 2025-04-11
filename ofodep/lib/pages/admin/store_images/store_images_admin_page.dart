@@ -27,8 +27,8 @@ class StoreImagesAdminPage extends StatelessWidget {
     }
 
     return Scaffold(
-      body: CrudStateHandler(
-        createCubit: (context) => StoreImagesCubit(id: storeId!)..load(),
+      body: CrudStateHandler<StoreImagesModel, StoreImagesCubit>(
+        createCubit: (context) => StoreImagesCubit()..load(storeId!),
         loadedBuilder: loadedBuilder,
         editingBuilder: (context, cubit, state) => buildForm(
           context,
@@ -54,7 +54,7 @@ class StoreImagesAdminPage extends StatelessWidget {
 
   Widget loadedBuilder(
     BuildContext context,
-    CrudCubit<StoreImagesModel> cubit,
+    StoreImagesCubit cubit,
     CrudLoaded<StoreImagesModel> state,
   ) {
     return CustomListView(
@@ -92,7 +92,7 @@ class StoreImagesAdminPage extends StatelessWidget {
   Widget buildForm(
     BuildContext context, {
     required GlobalKey<FormState> formKey,
-    required CrudCubit<StoreImagesModel> cubit,
+    required StoreImagesCubit cubit,
     required StoreImagesModel edited,
     required bool isLoading,
     bool editMode = true,

@@ -4,12 +4,14 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/blocs/list_cubits/abstract_list_cubit.dart';
 import 'package:ofodep/models/abstract_model.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
+import 'package:ofodep/repositories/abstract_repository.dart';
 import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/message_page.dart';
 
 /// Widget genérico para manejar páginas basadas en ListCubit con paginación, filtrado y búsqueda.
-class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
+class ListCubitStateHandler<T extends ModelComponent,
+    C extends ListCubit<T, Repository<T>>> extends StatelessWidget {
   /// Título que se muestra en el AppBar.
   final String? title;
 
@@ -20,7 +22,7 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
   final bool showAppBar;
 
   /// Función que crea la instancia del cubit.
-  final ListCubit<T> Function(BuildContext context) createCubit;
+  final C Function(BuildContext context) createCubit;
 
   /// Función que define cómo se renderiza cada item de la lista.
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
@@ -34,14 +36,14 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
   /// Builder opcional para construir la sección de filtros y búsqueda.
   final Widget Function(
     BuildContext context,
-    ListCubit<T> cubit,
+    C cubit,
     ListState<T> state,
   ) filterSectionBuilder;
 
   /// Funión opcional al agregar un elemento.
   final void Function(
     BuildContext context,
-    ListCubit<T> cubit,
+    C cubit,
   )? onAdd;
 
   const ListCubitStateHandler({
@@ -99,11 +101,11 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ListCubit<T>>(
+    return BlocProvider<C>(
       create: createCubit,
       child: Builder(
         builder: (context) {
-          final cubit = context.read<ListCubit<T>>();
+          final cubit = context.read<C>();
           return NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
@@ -125,8 +127,7 @@ class ListCubitStateHandler<T extends ModelComponent> extends StatelessWidget {
                               maxHeight: 300,
                             ),
                             context: context,
-                            builder: (context) =>
-                                BlocBuilder<ListCubit<T>, ListState<T>>(
+                            builder: (context) => BlocBuilder<C, ListState<T>>(
                               bloc: cubit,
                               builder: (context, cubitState) =>
                                   filterSectionBuilder(

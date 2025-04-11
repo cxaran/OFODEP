@@ -2,6 +2,8 @@ import 'package:ofodep/models/abstract_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class Repository<T extends ModelComponent> {
+  const Repository();
+
   /// Nombre de la tabla en Supabase.
   String get tableName;
 
@@ -17,17 +19,16 @@ abstract class Repository<T extends ModelComponent> {
   /// Función que convierte un Map en una instancia de [T].
   T fromMap(Map<String, dynamic> map);
 
-  /// Cliente de Supabase (se usa la instancia global, aunque podría inyectarse).
-  final SupabaseClient client = Supabase.instance.client;
-
   PostgrestFilterBuilder<List<Map<String, dynamic>>> selectTable({
     String? select,
     Map<String, dynamic>? params,
   }) {
     if (rpc != null && select == null) {
-      return client.rpc(rpc!, params: params);
+      return Supabase.instance.client.rpc(rpc!, params: params);
     }
-    return client.from(tableName).select(select ?? this.select);
+    return Supabase.instance.client
+        .from(tableName)
+        .select(select ?? this.select);
   }
 
   /// Obtiene una instancia del modelo por su ID único.
@@ -86,7 +87,7 @@ abstract class Repository<T extends ModelComponent> {
   Future<String?> create(T model) async {
     if (rpc != null) return null;
     try {
-      final response = await client
+      final response = await Supabase.instance.client
           .from(tableName)
           .insert(model.toMap(includeId: false))
           .select('id')
@@ -94,8 +95,9 @@ abstract class Repository<T extends ModelComponent> {
 
       if (response != null && response.containsKey('id')) {
         return response['id'] as String;
+      } else {
+        throw Exception('error(create)');
       }
-      return null;
     } catch (e) {
       throw Exception('error(create): $e');
     }
@@ -107,7 +109,7 @@ abstract class Repository<T extends ModelComponent> {
   Future<bool> update(T model) async {
     if (rpc != null) return false;
     try {
-      final response = await client
+      final response = await Supabase.instance.client
           .from(tableName)
           .update(model.toMap())
           .eq('id', model.id)
@@ -145,8 +147,11 @@ abstract class Repository<T extends ModelComponent> {
   Future<bool> delete(String id) async {
     if (rpc != null) return false;
     try {
-      final response =
-          await client.from(tableName).delete().eq('id', id).select('id');
+      final response = await Supabase.instance.client
+          .from(tableName)
+          .delete()
+          .eq('id', id)
+          .select('id');
 
       if (response.isNotEmpty) {
         return true;

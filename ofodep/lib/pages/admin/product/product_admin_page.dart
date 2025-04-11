@@ -28,7 +28,7 @@ class ProductAdminPage extends StatelessWidget {
         title: const Text('product'),
       ),
       body: BlocProvider<ProductCubit>(
-        create: (context) => ProductCubit(id: productId!)..load(),
+        create: (context) => ProductCubit()..load(productId!),
         child: Builder(
           builder: (context) {
             return BlocConsumer<ProductCubit, CrudState<ProductModel>>(

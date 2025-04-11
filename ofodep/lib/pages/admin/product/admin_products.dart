@@ -246,32 +246,32 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                 ),
               ],
             ),
-            floatingActionButton: widget.storeId == null
-                ? null
-                : FloatingActionButton(
-                    child: const Icon(Icons.add),
-                    onPressed: () async {
-                      final cubit = context.read<ProductsListCubit>();
+            // floatingActionButton: widget.storeId == null
+            //     ? null
+            //     : FloatingActionButton(
+            //         child: const Icon(Icons.add),
+            //         onPressed: () async {
+            //           final cubit = context.read<ProductsListCubit>();
 
-                      ProductModel? product = await showDialog(
-                        context: context,
-                        builder: (context) {
-                          return ProductsAdd(
-                            storeId: widget.storeId!,
-                          );
-                        },
-                      );
+            //           ProductModel? product = await showDialog(
+            //             context: context,
+            //             builder: (context) {
+            //               return ProductsAdd(
+            //                 storeId: widget.storeId!,
+            //               );
+            //             },
+            //           );
 
-                      if (product != null) {
-                        cubit.addProduct(
-                          name: product.name,
-                          description: product.description,
-                          price: product.price,
-                          storeId: product.storeId,
-                        );
-                      }
-                    },
-                  ),
+            //           if (product != null) {
+            //             cubit.addProduct(
+            //               name: product.name,
+            //               description: product.description,
+            //               price: product.price,
+            //               storeId: product.storeId,
+            //             );
+            //           }
+            //         },
+            //       ),
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:ofodep/models/store_schedule_model.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
 class StoreScheduleRepository extends Repository<StoreScheduleModel> {
+  const StoreScheduleRepository();
   @override
   String get tableName => 'store_schedules';
 

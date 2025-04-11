@@ -3,6 +3,7 @@ import 'package:ofodep/repositories/abstract_repository.dart';
 
 class StoreScheduleExceptionRepository
     extends Repository<StoreScheduleExceptionModel> {
+  const StoreScheduleExceptionRepository();
   @override
   String get tableName => 'store_schedule_exceptions';
 

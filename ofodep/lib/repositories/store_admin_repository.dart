@@ -2,6 +2,7 @@ import 'package:ofodep/models/store_admin_model.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
 class StoreAdminRepository extends Repository<StoreAdminModel> {
+  const StoreAdminRepository();
   @override
   String get tableName => 'store_admins';
 

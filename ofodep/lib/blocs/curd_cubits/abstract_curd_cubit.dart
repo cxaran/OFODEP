@@ -93,8 +93,9 @@ class CrudEditing<T extends ModelComponent> implements CrudState<T> {
 }
 
 class CrudError<T extends ModelComponent> implements CrudState<T> {
+  final String? id;
   final String message;
-  CrudError(this.message);
+  CrudError(this.message, {this.id});
 }
 
 class CrudDeleted<T extends ModelComponent> implements CrudState<T> {
@@ -104,19 +105,21 @@ class CrudDeleted<T extends ModelComponent> implements CrudState<T> {
 
 /// Cubit abstracto para operaciones CRUD genéricas.
 /// Se utiliza el repositorio para realizar las operaciones y se centralizan los estados.
-abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
-  final String id;
-  final Repository<T> repository;
+abstract class CrudCubit<T extends ModelComponent, R extends Repository<T>>
+    extends Cubit<CrudState<T>> {
+  final R repository;
 
   CrudCubit({
-    required this.id,
     required this.repository,
     CrudState<T>? initialState,
   }) : super(initialState ?? CrudInitial<T>());
 
   /// Carga el modelo a partir de su ID.
   /// [id] ID del modelo a cargar.
-  Future<void> load({
+  /// [model] modelo a cargar si existe.
+  /// [createModel] modelo a crear si no existe.
+  Future<void> load(
+    String? id, {
     T? model,
     T? createModel,
   }) async {
@@ -130,15 +133,27 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
       return;
     }
 
+    if (id == null) {
+      emit(CrudError<T>('id is null', id: id));
+      return;
+    }
+
     try {
       final model = await repository.getById(id);
       if (model != null) {
         emit(CrudLoaded<T>(model));
       } else {
-        emit(CrudError<T>('not_found: $id'));
+        emit(CrudError<T>('not_found: $id', id: id));
       }
     } catch (e) {
-      emit(CrudError<T>(e.toString()));
+      emit(CrudError<T>(e.toString(), id: id));
+    }
+  }
+
+  void onRetry() {
+    final current = state;
+    if (current is CrudError<T>) {
+      load(current.id);
     }
   }
 
@@ -197,6 +212,9 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
         emit(current.copyWith(isSubmitting: false, errorMessage: e.toString()));
       }
     }
+    if (current is CrudCreate<T>) {
+      emit(current.copyWith(errorMessage: 'error(CrudCreate)'));
+    }
   }
 
   Future<String?> create({String? successMessage}) async {
@@ -222,6 +240,9 @@ abstract class CrudCubit<T extends ModelComponent> extends Cubit<CrudState<T>> {
       } catch (e) {
         emit(current.copyWith(isSubmitting: false, errorMessage: e.toString()));
       }
+    }
+    if (current is CrudEditing<T>) {
+      emit(current.copyWith(errorMessage: 'error(CrudEditing)'));
     }
     return null;
   }
