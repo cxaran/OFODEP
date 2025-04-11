@@ -121,6 +121,7 @@ class StoreImagesAdminPage extends StatelessWidget {
             icon: Icon(Icons.lock_open),
             labelText: 'Imgur Client ID',
           ),
+          validator: validate,
           onChanged: (value) => cubit.updateEditedModel(
             (model) => model.copyWith(imgurClientId: value),
           ),
@@ -131,6 +132,7 @@ class StoreImagesAdminPage extends StatelessWidget {
             icon: Icon(Icons.lock_outline),
             labelText: 'Imgur Client Secret',
           ),
+          validator: validate,
           onChanged: (value) => cubit.updateEditedModel(
             (model) => model.copyWith(imgurClientSecret: value),
           ),

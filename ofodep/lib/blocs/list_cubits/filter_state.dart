@@ -2,6 +2,8 @@ import 'package:ofodep/models/abstract_model.dart';
 
 abstract class ListState<T extends ModelComponent> {
   final Map<String, dynamic>? filter;
+  final List<String>? searchFields;
+  final List<String>? arraySearchFields;
   final String? search;
   final String? orderBy;
   final bool ascending;
@@ -12,6 +14,8 @@ abstract class ListState<T extends ModelComponent> {
 
   const ListState({
     this.filter,
+    this.searchFields,
+    this.arraySearchFields,
     this.search,
     this.orderBy,
     this.ascending = false,
@@ -23,6 +27,8 @@ abstract class ListState<T extends ModelComponent> {
 
   ListState<T> copyWith({
     Map<String, dynamic>? filter,
+    List<String>? searchFields,
+    List<String>? arraySearchFields,
     String? search,
     String? orderBy,
     bool? ascending,
@@ -37,6 +43,8 @@ abstract class ListState<T extends ModelComponent> {
 class FilterState<T extends ModelComponent> extends ListState<T> {
   const FilterState({
     super.filter,
+    super.searchFields,
+    super.arraySearchFields,
     super.search,
     super.orderBy,
     super.ascending = false,
@@ -49,6 +57,8 @@ class FilterState<T extends ModelComponent> extends ListState<T> {
   @override
   FilterState<T> copyWith({
     Map<String, dynamic>? filter,
+    List<String>? searchFields,
+    List<String>? arraySearchFields,
     String? search,
     String? orderBy,
     bool? ascending,
@@ -59,6 +69,8 @@ class FilterState<T extends ModelComponent> extends ListState<T> {
   }) =>
       FilterState<T>(
         filter: filter ?? this.filter,
+        searchFields: searchFields ?? this.searchFields,
+        arraySearchFields: arraySearchFields ?? this.arraySearchFields,
         search: search ?? this.search,
         orderBy: orderBy ?? this.orderBy,
         ascending: ascending ?? this.ascending,

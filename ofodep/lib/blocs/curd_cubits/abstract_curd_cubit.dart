@@ -193,6 +193,7 @@ abstract class CrudCubit<T extends ModelComponent, R extends Repository<T>>
   }
 
   /// Envía los cambios realizados en el modelo editado.
+  /// [successMessage] mensaje de éxito a mostrar en caso de éxito.
   Future<void> submit({String? successMessage}) async {
     final current = state;
     if (current is CrudEditing<T>) {
@@ -217,11 +218,14 @@ abstract class CrudCubit<T extends ModelComponent, R extends Repository<T>>
     }
   }
 
+  /// Crea el modelo.
+  /// [successMessage] mensaje de éxito a mostrar en caso de éxito.
   Future<String?> create({String? successMessage}) async {
     final current = state;
     if (current is CrudCreate<T>) {
       emit(current.copyWith(isSubmitting: true, errorMessage: null));
       try {
+        print(current.editedModel.toMap(includeId: false));
         final createdId = await repository.create(current.editedModel);
         if (createdId != null) {
           emit(CrudLoaded<T>(

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/create_store_cubit.dart';
+import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
+import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/models/country_timezone.dart';
 import 'package:ofodep/models/create_store_model.dart';
@@ -13,7 +16,6 @@ import 'package:ofodep/widgets/crud_state_handler.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/hero_layout_card.dart';
 import 'package:ofodep/widgets/message_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 const List<InfoImage> images = [
   InfoImage(
@@ -68,7 +70,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.sizeOf(context).height / 2;
-    String? authId = Supabase.instance.client.auth.currentSession?.user.id;
+    UserModel? user = context.read<SessionCubit>().user;
 
     return Scaffold(
       body: NestedScrollView(
@@ -102,11 +104,11 @@ class _CreateStorePageState extends State<CreateStorePage> {
             ),
           ];
         },
-        body: authId == null
+        body: user == null
             ? MessagePage.warning('Inicia sesión para registrar tu comercio.')
             : FutureBuilder(
                 future: StoreAdminRepository().getById(
-                  authId,
+                  user.id,
                   field: 'user_id',
                 ),
                 builder: (context, snapshot) {

@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_subscription_cubit.dart';
+import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/models/enums.dart';
 import 'package:ofodep/models/store_subscription_model.dart';
+import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/repositories/admin_global_repository.dart';
 import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
 import 'package:ofodep/widgets/custom_form_validator.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/message_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StoreSubscriptionAdminPage extends StatelessWidget {
   final String? storeId;
@@ -41,16 +43,16 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
     CrudLoaded<StoreSubscriptionModel> state,
   ) {
     final model = state.model;
-    String? authId = Supabase.instance.client.auth.currentSession?.user.id;
+    UserModel? user = context.read<SessionCubit>().user;
 
-    if (authId == null) {
+    if (user == null) {
       return MessagePage.error(
         onBack: context.pop,
       );
     }
 
     return FutureBuilder(
-      future: AdminGlobalRepository().getById(authId),
+      future: AdminGlobalRepository().getById(user.authId),
       builder: (context, snapshot) {
         return CustomListView(
           title: 'Suscripcion',

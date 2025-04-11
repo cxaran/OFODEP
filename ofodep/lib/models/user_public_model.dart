@@ -1,30 +1,21 @@
 import 'package:ofodep/models/abstract_model.dart';
 
-class UserModel extends ModelComponent {
-  final String authId;
-  String email;
+class UserPublicModel extends ModelComponent {
   String name;
-  String? phone;
   String? picture;
 
-  UserModel({
+  UserPublicModel({
     required super.id,
-    required this.authId,
-    required this.email,
     required this.name,
-    this.phone,
     this.picture,
     super.createdAt,
     super.updatedAt,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
+  factory UserPublicModel.fromMap(Map<String, dynamic> map) {
+    return UserPublicModel(
       id: map['id'] as String,
-      authId: map['auth_id'],
-      email: map['email'],
       name: map['name'],
-      phone: map['phone'],
       picture: map['picture'],
       createdAt: DateTime.tryParse(map['created_at'] ?? ''),
       updatedAt: DateTime.tryParse(map['updated_at'] ?? ''),
@@ -37,27 +28,19 @@ class UserModel extends ModelComponent {
   }) =>
       {
         if (includeId) 'id': id,
-        'auth_id': authId,
-        'email': email,
         'name': name,
-        'phone': phone,
         'picture': picture,
       };
 
   @override
-  UserModel copyWith({
+  UserPublicModel copyWith({
     String? id,
     String? name,
-    String? email,
-    String? phone,
     String? picture,
   }) {
-    return UserModel(
+    return UserPublicModel(
       id: id ?? this.id,
-      authId: authId,
-      email: email ?? this.email,
       name: name ?? this.name,
-      phone: phone ?? this.phone,
       picture: picture ?? this.picture,
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -65,11 +48,9 @@ class UserModel extends ModelComponent {
   }
 
   @override
-  String toString() => 'UserModel('
+  String toString() => 'UserPublicModel('
       'id: $id, '
-      'authId: $authId, '
       'name: $name, '
-      'phone: $phone, '
       'picture: $picture, '
       'createdAt: $createdAt, '
       'updatedAt: $updatedAt'

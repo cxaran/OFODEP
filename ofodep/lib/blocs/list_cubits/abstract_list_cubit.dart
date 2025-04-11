@@ -52,6 +52,18 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
     pagingController.refresh();
   }
 
+  /// Actualizar los campos de búsqueda y refresca la paginación.
+  void updateSearchFields(List<String>? searchFields) {
+    emit(state.copyWith(searchFields: searchFields));
+    refresh();
+  }
+
+  /// Actualizar los campos de búsqueda y refresca la paginación.
+  void updateArraySearchFields(List<String>? arraySearchFields) {
+    emit(state.copyWith(arraySearchFields: arraySearchFields));
+    refresh();
+  }
+
   /// Actualiza el término de búsqueda y refresca la paginación.
   void updateSearch(String? search) {
     emit(state.copyWith(search: search));

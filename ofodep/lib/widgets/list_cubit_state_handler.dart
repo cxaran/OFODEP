@@ -46,6 +46,9 @@ class ListCubitStateHandler<T extends ModelComponent,
     C cubit,
   )? onAdd;
 
+  /// Función opcional al buscar.
+  final void Function(C cubit, String search)? onSearch;
+
   const ListCubitStateHandler({
     super.key,
     this.title,
@@ -57,6 +60,7 @@ class ListCubitStateHandler<T extends ModelComponent,
     this.showFilterButton = true,
     this.onAdd,
     this.filterSectionBuilder = defaultFilterSectionBuilder,
+    this.onSearch,
   });
 
   /// Sección por defecto para filtros y búsqueda.
@@ -151,10 +155,29 @@ class ListCubitStateHandler<T extends ModelComponent,
                                   icon: Icon(Icons.search),
                                   labelText: 'Buscar',
                                 ),
-                                onChanged: (value) => cubit.updateSearch(value),
+                                onChanged: (value) => onSearch != null
+                                    ? onSearch!(cubit, value)
+                                    : cubit.updateSearch(value),
                               ),
                             ),
                           ),
+                  )
+                else if (showSearchBar)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: ListTile(
+                        title: TextField(
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.search),
+                            labelText: 'Buscar',
+                          ),
+                          onChanged: (value) => onSearch != null
+                              ? onSearch!(cubit, value)
+                              : cubit.updateSearch(value),
+                        ),
+                      ),
+                    ),
                   ),
               ];
             },

@@ -14,14 +14,14 @@ void submit(GlobalKey<FormState> formKey, CrudCubit cubit) {
 }
 
 String? validate(String? value) {
-  if (value == null || value.isEmpty) {
+  if (value == null || value.trim().isEmpty) {
     return 'Este campo es obligatorio';
   }
   return null;
 }
 
 String? validateNumber(String? value) {
-  if (value == null || value.isEmpty) {
+  if (value == null || value.trim().isEmpty) {
     return 'Este campo es obligatorio';
   }
   final num? numValue = num.tryParse(value);

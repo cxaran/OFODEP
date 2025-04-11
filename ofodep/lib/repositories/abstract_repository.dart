@@ -165,8 +165,8 @@ abstract class Repository<T extends ModelComponent> {
   PostgrestFilterBuilder<List<Map<String, dynamic>>> getSearch({
     Map<String, dynamic>? filter,
     String? search,
-    List<String>? searchColumns,
-    List<String>? arraySearchColumns,
+    List<String>? searchFields,
+    List<String>? arraySearchFields,
     String? orderBy,
     bool ascending = false,
     String? select,
@@ -198,14 +198,14 @@ abstract class Repository<T extends ModelComponent> {
       if (search != null && search.isNotEmpty) {
         List<String> searchFilters = [];
 
-        if (searchColumns != null) {
+        if (searchFields != null) {
           searchFilters.add(
-            searchColumns.map((col) => "$col.ilike.%$search%").join(','),
+            searchFields.map((col) => "$col.ilike.%$search%").join(','),
           );
         }
-        if (arraySearchColumns != null) {
+        if (arraySearchFields != null) {
           searchFilters.add(
-            arraySearchColumns.map((col) => "$col.cs.{$search}").join(','),
+            arraySearchFields.map((col) => "$col.cs.{$search}").join(','),
           );
         }
 
@@ -223,8 +223,8 @@ abstract class Repository<T extends ModelComponent> {
   /// [limit] cantidad de registros por página.
   /// [filter] mapa de filtros aplicables (como fechas o flags).
   /// [search] texto a buscar en los campos.
-  /// [searchColumns] lista de columnas a buscar en el texto.
-  /// [arraySearchColumns] lista de columnas de tipo array a buscar en el texto.
+  /// [searchFields] lista de columnas a buscar en el texto.
+  /// [arraySearchFields] lista de columnas de tipo array a buscar en el texto.
   /// [orderBy] campo por el cual se ordena (ej: 'created_at').
   /// [ascending] orden ascendente si es true, descendente si es false.
   Future<List<T>> getPaginated({
@@ -232,8 +232,8 @@ abstract class Repository<T extends ModelComponent> {
     int limit = 20,
     Map<String, dynamic>? filter,
     String? search,
-    List<String>? searchColumns,
-    List<String>? arraySearchColumns,
+    List<String>? searchFields,
+    List<String>? arraySearchFields,
     String? orderBy,
     bool ascending = false,
     String? select,
@@ -244,8 +244,8 @@ abstract class Repository<T extends ModelComponent> {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> query = getSearch(
         filter: filter,
         search: search,
-        searchColumns: searchColumns,
-        arraySearchColumns: arraySearchColumns,
+        searchFields: searchFields,
+        arraySearchFields: arraySearchFields,
         select: select,
         params: params,
       );
@@ -266,6 +266,7 @@ abstract class Repository<T extends ModelComponent> {
       );
 
       final List<dynamic> response = await paginationQuery;
+
       return response
           .map<T>((data) => fromMap(data as Map<String, dynamic>))
           .toList();
@@ -279,8 +280,8 @@ abstract class Repository<T extends ModelComponent> {
   /// [limit] cantidad de registros por página.
   /// [filter] mapa de filtros aplicables (como fechas o flags).
   /// [search] texto a buscar en los campos.
-  /// [searchColumns] lista de columnas a buscar en el texto.
-  /// [arraySearchColumns] lista de columnas de tipo array a buscar en el texto.
+  /// [searchFields] lista de columnas a buscar en el texto.
+  /// [arraySearchFields] lista de columnas de tipo array a buscar en el texto.
   /// [randomSeed] semilla para generar un orden aleatorio pero consistente.
   /// [select] campos a seleccionar.
   Future<List<T>> getRandom({
@@ -288,8 +289,8 @@ abstract class Repository<T extends ModelComponent> {
     int limit = 20,
     Map<String, dynamic>? filter,
     String? search,
-    List<String>? searchColumns,
-    List<String>? arraySearchColumns,
+    List<String>? searchFields,
+    List<String>? arraySearchFields,
     String? randomSeed,
     String? orderBy,
     bool ascending = false,
@@ -301,8 +302,8 @@ abstract class Repository<T extends ModelComponent> {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> query = getSearch(
         filter: filter,
         search: search,
-        searchColumns: searchColumns,
-        arraySearchColumns: arraySearchColumns,
+        searchFields: searchFields,
+        arraySearchFields: arraySearchFields,
         select: select,
       );
 

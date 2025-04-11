@@ -113,6 +113,14 @@ FOR ALL
 USING ( auth.uid() = users.auth_id )
 WITH CHECK ( auth.uid() = users.auth_id );
 
+
+-- 1.5 View para obtener los datos publicos de los usuarios
+
+-- Crea la vista con los campos públicos deseados
+CREATE OR REPLACE VIEW public.users_public AS
+SELECT id, name, picture
+FROM public.users
+
 ---------------------------------------------------------------------
 -- 2: TIENDAS (COMERCIOS) 
 ---------------------------------------------------------------------
@@ -149,7 +157,7 @@ ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
 CREATE TABLE store_admins (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     store_id uuid REFERENCES stores(id) ON DELETE CASCADE,
-    user_id uuid REFERENCES users(auth_id) ON DELETE CASCADE,
+    user_id uuid UNIQUE REFERENCES users(id) ON DELETE CASCADE,
 
     -- Datos de contacto (obligatorios)
     contact_name text NOT NULL,
@@ -198,6 +206,7 @@ AS $$
 DECLARE
     new_store_id uuid;
     existing_store_count integer;
+    current_user_id uuid;
 BEGIN
     -- Validaciones mínimas
     IF store_name IS NULL OR TRIM(store_name) = '' THEN
@@ -210,10 +219,20 @@ BEGIN
         RAISE EXCEPTION 'El teléfono del contacto no es válido.';
     END IF;
 
+    -- Obtener el identificador interno de usuario basado en auth.uid()
+    SELECT id
+      INTO current_user_id
+      FROM users
+      WHERE auth_id = auth.uid();
+
+    IF current_user_id IS NULL THEN
+        RAISE EXCEPTION 'Usuario no encontrado en la tabla de users para auth.uid()';
+    END IF;
+
     -- Verifica que el usuario no sea admin en otra tienda
     SELECT COUNT(*) INTO existing_store_count
     FROM store_admins
-    WHERE user_id = auth.uid();
+    WHERE user_id = current_user_id;
 
     IF existing_store_count > 0 THEN
         RAISE EXCEPTION 'El usuario ya es administrador de otra tienda.';
@@ -237,7 +256,7 @@ BEGIN
         store_id, user_id, contact_name, contact_email, contact_phone, is_primary_contact
     )
     VALUES (
-        new_store_id, auth.uid(), contact_name, contact_email, contact_phone, true
+        new_store_id, current_user_id, contact_name, contact_email, contact_phone, true
     );
 
     RETURN new_store_id;
@@ -251,9 +270,11 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER AS $$
   SELECT EXISTS (
-    SELECT 1 FROM store_admins
-    WHERE store_id = target_store_id
-      AND user_id = auth.uid()
+    SELECT 1
+    FROM store_admins sa
+    JOIN users u ON u.id = sa.user_id
+    WHERE sa.store_id = target_store_id
+      AND u.auth_id = auth.uid()
   );
 $$;
 

@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/store_admin_cubit.dart';
+import 'package:ofodep/blocs/list_cubits/users_public_list_cubit.dart';
 import 'package:ofodep/models/store_admin_model.dart';
+import 'package:ofodep/models/user_public_model.dart';
 import 'package:ofodep/repositories/store_repository.dart';
 import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
+import 'package:ofodep/widgets/list_cubit_state_handler.dart';
 import 'package:ofodep/widgets/message_page.dart';
 
 class StoreAdminAdminPage extends StatelessWidget {
@@ -170,8 +173,24 @@ class StoreAdminAdminPage extends StatelessWidget {
           leading: const Icon(Icons.info),
           title: Text(
             'El usuario debe estar previamente registrado. '
-            'Puedes buscarlo escribiendo su nombre, correo electrónico o número de teléfono. '
+            'Puedes buscarlo escribiendo su nombre. '
             'Una vez encontrado, se asociará como administrador del comercio seleccionado.',
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.search),
+          title: Text('Buscar usuario'),
+          subtitle: Text(
+            edited.userId.isEmpty
+                ? 'Selecciona un usuario'
+                : '${edited.userName}\n${edited.userId}',
+          ),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () => showBottomSheet(
+            context: context,
+            builder: (context) => UserSearch(
+              cubit: cubit,
+            ),
           ),
         ),
         Divider(),
@@ -217,6 +236,38 @@ class StoreAdminAdminPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class UserSearch extends StatelessWidget {
+  final StoreAdminCubit cubit;
+  const UserSearch({super.key, required this.cubit});
+
+  @override
+  Widget build(BuildContext context) {
+    double height = MediaQuery.sizeOf(context).height * 0.7;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: height),
+      child: ListCubitStateHandler<UserPublicModel, UsersPublicListCubit>(
+        showAppBar: false,
+        createCubit: (context) =>
+            UsersPublicListCubit()..updateFilter({'name': ''}),
+        onSearch: (cubit, search) => cubit.updateFilter({'name': search}),
+        itemBuilder: (context, user, state) => ListTile(
+          title: Text(user.name),
+          subtitle: Text(user.id),
+          onTap: () {
+            cubit.updateEditedModel(
+              (model) => model.copyWith(
+                userName: user.name,
+                userId: user.id,
+              ),
+            );
+            context.pop();
+          },
+        ),
+      ),
     );
   }
 }
