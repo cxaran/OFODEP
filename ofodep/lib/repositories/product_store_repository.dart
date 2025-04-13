@@ -8,7 +8,7 @@ class ProductStoreRepository extends Repository<ProductStoreModel> {
 
   /// La cláusula SELECT se define para:
   /// - Incluir todos los campos de productos.
-  /// - Realizar un INNER JOIN con "stores" (alias "store") para traer los datos de la tienda.
+  /// - Realizar un INNER JOIN con "stores" (alias "store") para traer los datos de el comercio.
   /// - Calcular "is_open" como columna computada, evaluando primero las excepciones
   ///   y, en su defecto, los horarios regulares.
   @override

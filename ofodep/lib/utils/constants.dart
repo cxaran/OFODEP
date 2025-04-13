@@ -51,6 +51,66 @@ const List<CountryTimezone> timeZonesLatAm = [
   CountryTimezone(country: 'EC', timezone: 'America/Guayaquil'),
 ];
 
+class Currency {
+  final String code;
+  final String description;
+
+  const Currency({required this.code, required this.description});
+}
+
+const List<Currency> americanCurrencies = [
+  // América del Norte
+  Currency(code: 'MXN', description: 'Peso mexicano'),
+  Currency(code: 'USD', description: 'Dólar estadounidense'),
+  Currency(code: 'CAD', description: 'Dólar canadiense'),
+
+  // América Central
+  Currency(code: 'GTQ', description: 'Quetzal (Guatemala)'),
+  Currency(code: 'HNL', description: 'Lempira (Honduras)'),
+  Currency(code: 'NIO', description: 'Córdoba (Nicaragua)'),
+  Currency(code: 'CRC', description: 'Colón costarricense'),
+  Currency(code: 'PAB', description: 'Balboa (Panamá)'),
+  Currency(code: 'BZD', description: 'Dólar beliceño'),
+
+  // Caribe
+  Currency(code: 'CUP', description: 'Peso cubano'),
+  Currency(code: 'DOP', description: 'Peso dominicano'),
+  Currency(code: 'HTG', description: 'Gourde (Haití)'),
+  Currency(code: 'JMD', description: 'Dólar jamaiquino'),
+  Currency(code: 'BSD', description: 'Dólar bahameño'),
+  Currency(code: 'BBD', description: 'Dólar barbadense'),
+  Currency(code: 'TTD', description: 'Dólar trinitense'),
+  Currency(code: 'XCD', description: 'Dólar del Caribe Oriental'),
+
+  // América del Sur
+  Currency(code: 'ARS', description: 'Peso argentino'),
+  Currency(code: 'BOB', description: 'Boliviano'),
+  Currency(code: 'BRL', description: 'Real brasileño'),
+  Currency(code: 'CLP', description: 'Peso chileno'),
+  Currency(code: 'COP', description: 'Peso colombiano'),
+  Currency(code: 'GYD', description: 'Dólar guyanés'),
+  Currency(code: 'PYG', description: 'Guaraní (Paraguay)'),
+  Currency(code: 'PEN', description: 'Sol (Perú)'),
+  Currency(code: 'SRD', description: 'Dólar surinamés'),
+  Currency(code: 'UYU', description: 'Peso uruguayo'),
+  Currency(code: 'VES', description: 'Bolívar venezolano'),
+
+  // Reutilización del dólar en varios países
+  Currency(
+      code: 'USD',
+      description:
+          'Dólar estadounidense (El Salvador, Ecuador,\nPanamá, Puerto Rico, etc.)'),
+
+  // Territorios con otras monedas
+  Currency(code: 'EUR', description: 'Euro (Guayana Francesa)'),
+  Currency(code: 'BMD', description: 'Dólar bermudeño'),
+  Currency(
+      code: 'ANG',
+      description: 'Florín antillano neerlandés (Curazao, Sint Maarten)'),
+  Currency(code: 'AWG', description: 'Florín arubeño'),
+  Currency(code: 'FKP', description: 'Libra malvinense (Islas Malvinas)'),
+];
+
 const gap = Gap();
 
 String? dayName(int day) {

@@ -68,9 +68,20 @@ class StoreAdminPage extends StatelessWidget {
           onTap: () => context.push('/admin/orders?store=${store.id}'),
         ),
         const Divider(),
+        Text(
+          'Datos generales tu comercio.',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         ListTile(
-          leading: const Icon(Icons.phone),
-          title: Text('Datos de contacto'),
+          leading: const Icon(Icons.share),
+          title: const Text('Redes sociales'),
+          onTap: () => cubit.startEditing(
+            editSection: StoreEditSection.social,
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.location_searching),
+          title: Text('Dirección'),
           subtitle: Text(
             [
               store.addressStreet,
@@ -117,6 +128,10 @@ class StoreAdminPage extends StatelessWidget {
           ),
         ),
         const Divider(),
+        Text(
+          'Administración de imágenes.',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         ListTile(
           leading: FutureBuilder(
             future: StoreImagesRepository().getById(store.id),
@@ -136,6 +151,10 @@ class StoreAdminPage extends StatelessWidget {
           onTap: () => context.push('/admin/store_images/${store.id}'),
         ),
         const Divider(),
+        Text(
+          'Horarios de tu comercio.',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         ListTile(
           leading: const Icon(Icons.schedule),
           title: const Text('Horarios'),
@@ -147,6 +166,9 @@ class StoreAdminPage extends StatelessWidget {
           onTap: () => context.push('/admin/schedule_exceptions/${store.id}'),
         ),
         const Divider(),
+        const Text(
+          'Categorías y productos.',
+        ),
         ListTile(
           leading: const Icon(Icons.category),
           title: const Text('Categorías de productos'),
@@ -158,6 +180,10 @@ class StoreAdminPage extends StatelessWidget {
           onTap: () => context.push('/admin/products/${store.id}'),
         ),
         const Divider(),
+        Text(
+          'Datos de administración del comercio.',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         ListTile(
           leading: FutureBuilder(
             future: StoreSubscriptionRepository().getById(store.id),
@@ -186,7 +212,7 @@ class StoreAdminPage extends StatelessWidget {
     );
   }
 
-  /// Renderiza la página de la tienda.
+  /// Renderiza la página de el comercio.
   /// Si el estado es de edición (StoreCrudEditing) muestra el formulario según la sección,
   /// de lo contrario muestra un menú de secciones.
   Widget editingBuilder(
@@ -200,6 +226,8 @@ class StoreAdminPage extends StatelessWidget {
           return buildGeneralSection(cubit, state);
         case StoreEditSection.contact:
           return buildContactSection(cubit, state);
+        case StoreEditSection.social:
+          return buildSocialSection(cubit, state);
         case StoreEditSection.coordinates:
           return buildCoordinatesSection(cubit, state);
         case StoreEditSection.geom:
@@ -211,7 +239,7 @@ class StoreAdminPage extends StatelessWidget {
     return Container();
   }
 
-  /// Sección general: nombre y logo de la tienda.
+  /// Sección general: nombre y logo de el comercio.
   Widget buildGeneralSection(
     StoreCubit cubit,
     StoreCrudEditing state,
@@ -226,15 +254,23 @@ class StoreAdminPage extends StatelessWidget {
       onBack: cubit.cancelEditing,
       children: [
         const Text(
-          'Con este logotipo y nombre aparecerá en la página de tu tienda en el portal.',
+          'Con este logotipo y nombre aparecerá en la página de tu comercio en el portal.',
         ),
         Divider(),
-        AdminImage(
-          clientId: null,
-          imageUrl: edited.logoUrl,
-          onImageUploaded: (url) {
-            cubit.updateEditedModel(
-              (model) => model.copyWith(logoUrl: url),
+        FutureBuilder(
+          future: StoreImagesRepository().getValueById(
+            edited.id,
+            'imgur_client_id',
+          ),
+          builder: (context, snapshot) {
+            return AdminImage(
+              clientId: snapshot.data,
+              imageUrl: edited.logoUrl,
+              onImageUploaded: (url) {
+                cubit.updateEditedModel(
+                  (model) => model.copyWith(logoUrl: url),
+                );
+              },
             );
           },
         ),
@@ -267,7 +303,7 @@ class StoreAdminPage extends StatelessWidget {
       onBack: cubit.cancelEditing,
       children: [
         const Text(
-          "Tu dirección y contacto se mostrarán en tu tienda y se utilizarán para validar los horarios de entrega segun tu zona horaria.",
+          "Tu dirección y contacto se mostrarán en tu comercio y se utilizarán para validar los horarios de entrega segun tu zona horaria.",
         ),
         Divider(),
         TextFormField(
@@ -374,13 +410,74 @@ class StoreAdminPage extends StatelessWidget {
             return null;
           },
         ),
+      ],
+    );
+  }
+
+  /// Sección de configuración de social.
+  Widget buildSocialSection(StoreCubit cubit, StoreCrudEditing state) {
+    final edited = state.editedModel;
+    return CustomListView(
+      formKey: formDeliveryKey,
+      title: 'Configuración de redes sociales',
+      isLoading: state.isSubmitting,
+      editMode: state.editMode,
+      onSave: () => submit(formDeliveryKey, cubit),
+      onBack: cubit.cancelEditing,
+      children: [
+        const Text(
+          "Configura las redes sociales de tu comercio. Estas redes se usarán para compartir tus productos y servicios con tus clientes.",
+        ),
+        Divider(),
+        TextFormField(
+          initialValue: edited.facebookLink,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.facebook),
+            labelText: "Enlace de Facebook",
+          ),
+          validator: validate,
+          onChanged: (value) {
+            cubit.updateEditedModel(
+              (model) => model.copyWith(facebookLink: value),
+            );
+          },
+        ),
+        TextFormField(
+          initialValue: edited.instagramLink,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.link),
+            labelText: "Enlace de Instagram",
+          ),
+          validator: validate,
+          onChanged: (value) {
+            cubit.updateEditedModel(
+              (model) => model.copyWith(instagramLink: value),
+            );
+          },
+        ),
+        Divider(),
+        const Text(
+          "Configura tu información para recibir y gestionar las solicitudes de productos directamente por WhatsApp.",
+        ),
         TextFormField(
           initialValue: edited.whatsapp,
-          decoration: const InputDecoration(labelText: "WhatsApp"),
+          decoration: const InputDecoration(
+            icon: Icon(Icons.phone),
+            labelText: "Número de teléfono",
+          ),
           validator: validate,
           onChanged: (value) {
             cubit.updateEditedModel(
               (model) => model.copyWith(whatsapp: value),
+            );
+          },
+        ),
+        SwitchListTile(
+          title: const Text("Permitir WhatsApp"),
+          value: edited.whatsappAllow ?? false,
+          onChanged: (value) {
+            cubit.updateEditedModel(
+              (model) => model.copyWith(whatsappAllow: value),
             );
           },
         ),
@@ -460,7 +557,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         Divider(),
         SwitchListTile(
-          title: const Text("Entrega en tienda"),
+          title: const Text("Entrega en comercio"),
           subtitle: state.model.lat == null || state.model.lng == null
               ? const Text("No se ha definido la ubicación")
               : null,

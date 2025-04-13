@@ -8,6 +8,7 @@ import 'package:ofodep/models/enums.dart';
 import 'package:ofodep/models/store_subscription_model.dart';
 import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/repositories/admin_global_repository.dart';
+import 'package:ofodep/repositories/store_repository.dart';
 import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
 import 'package:ofodep/widgets/custom_form_validator.dart';
@@ -32,7 +33,7 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
       body: CrudStateHandler<StoreSubscriptionModel, StoreSubscriptionCubit>(
         createCubit: (context) => StoreSubscriptionCubit()..load(storeId!),
         loadedBuilder: loadedBuilder,
-        // editingBuilder: editingBuilder,
+        editingBuilder: editingBuilder,
       ),
     );
   }
@@ -68,8 +69,14 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.storefront),
-              title: Text('Tienda'),
-              subtitle: Text(model.storeName),
+              title: Text('Comercio'),
+              subtitle: model.storeName != null
+                  ? Text(model.storeName!)
+                  : FutureBuilder(
+                      future:
+                          StoreRepository().getValueById(model.storeId, 'name'),
+                      builder: (context, snapshot) => Text(snapshot.data ?? ''),
+                    ),
             ),
             Divider(),
             ListTile(
@@ -101,7 +108,7 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
                   color: Theme.of(context).colorScheme.error,
                 ),
                 title: Text(
-                  'La suscripción ha expirado si desea renovarla, si usted es el administrador de la tienda, puede renovar la suscripción poniendose en contacto con nosotros.',
+                  'La suscripción ha expirado si desea renovarla, si usted es el administrador de el comercio, puede renovar la suscripción poniendose en contacto con nosotros.',
                 ),
               ),
           ],
@@ -124,6 +131,20 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
       onSave: () => submit(formKey, cubit),
       onBack: cubit.cancelEditing,
       children: [
+        ListTile(
+          leading: const Icon(Icons.storefront),
+          title: Text('Comercio'),
+          subtitle: edited.storeName != null
+              ? Text(edited.storeName!)
+              : FutureBuilder(
+                  future: StoreRepository().getValueById(
+                    edited.storeId,
+                    'name',
+                  ),
+                  builder: (context, snapshot) => Text(snapshot.data ?? ''),
+                ),
+        ),
+        Divider(),
         DropdownButtonFormField<SubscriptionType>(
           decoration: const InputDecoration(
             labelText: 'Tipo de suscripción',

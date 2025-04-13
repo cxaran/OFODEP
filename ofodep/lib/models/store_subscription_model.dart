@@ -3,14 +3,14 @@ import 'package:ofodep/models/enums.dart';
 
 class StoreSubscriptionModel extends ModelComponent {
   final String storeId;
-  final String storeName;
+  String? storeName;
   final SubscriptionType subscriptionType;
   DateTime expirationDate;
 
   StoreSubscriptionModel({
     required super.id,
     required this.storeId,
-    required this.storeName,
+    this.storeName,
     required this.subscriptionType,
     required this.expirationDate,
     super.createdAt,

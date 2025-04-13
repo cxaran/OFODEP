@@ -15,7 +15,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- 0.2 Enums para los tipos de datos
 
--- Se utiliza para definir los tipos de suscripciones de las tiendas
+-- Se utiliza para definir los tipos de suscripciones de las comercios
 CREATE TYPE subscription_type_enum AS ENUM ('general', 'special', 'premium');
 
 -- Se utiliza para definir los estados de los pedidos
@@ -96,7 +96,10 @@ USING (
 );
 
 
--- 1.4 Politicas "users". 
+-- 1.4 Politicas "users" y "admin_global".
+
+-- 1.4.1 Politicas "users".
+
 -- Admin global
 CREATE POLICY admin_users_access ON users
 FOR ALL
@@ -113,6 +116,15 @@ FOR ALL
 USING ( auth.uid() = users.auth_id )
 WITH CHECK ( auth.uid() = users.auth_id );
 
+-- 1.4.2 Politicas "admin_global".
+CREATE POLICY admin_global_access ON admin_global
+FOR ALL
+USING (
+  public.is_global_admin()
+);
+
+
+
 
 -- 1.5 View para obtener los datos publicos de los usuarios
 
@@ -122,7 +134,7 @@ SELECT id, name, picture
 FROM public.users
 
 ---------------------------------------------------------------------
--- 2: TIENDAS (COMERCIOS) 
+-- 2: ComercioS (COMERCIOS) 
 ---------------------------------------------------------------------
 
 -- 2.1. Tablas
@@ -130,7 +142,7 @@ FROM public.users
 CREATE TABLE stores (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name text NOT NULL CHECK (TRIM(name) <> ''),
-    logo_url text,                                              -- URL o ruta del logo de la tienda
+    logo_url text,                                              -- URL o ruta del logo de el comercio
     address_street text,
     address_number text,
     address_colony text,
@@ -143,6 +155,9 @@ CREATE TABLE stores (
     lng numeric,                                                -- Longitud geográfica
     geom geometry(Polygon, 4326),                               -- Polígono para delimitar la zona de delivery (SRID 4326)
     whatsapp text CHECK (whatsapp ~ '^\+?[0-9]{7,15}$'),
+    whatsapp_allow boolean DEFAULT false,
+    facebook_link text,
+    instagram_link text,
     delivery_minimum_order numeric DEFAULT 0, 
     pickup boolean DEFAULT false,
     delivery boolean DEFAULT false,
@@ -187,9 +202,9 @@ ALTER TABLE store_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- 2.2. Funciones auxiliares
 
--- Funcion para generar una store, una suscripción y un admin global, recibe como parámetros el nombre de la tienda.
--- Se hace admin de la tienda al usuario autenticado.
--- 2.2. Función para registrar una tienda junto con su suscripción y admin
+-- Funcion para generar una store, una suscripción y un admin global, recibe como parámetros el nombre de el comercio.
+-- Se hace admin de el comercio al usuario autenticado.
+-- 2.2. Función para registrar una comercio junto con su suscripción y admin
 CREATE OR REPLACE FUNCTION public.create_store(
     store_name text,
     contact_name text,
@@ -210,7 +225,7 @@ DECLARE
 BEGIN
     -- Validaciones mínimas
     IF store_name IS NULL OR TRIM(store_name) = '' THEN
-        RAISE EXCEPTION 'El nombre de la tienda no puede estar vacío.';
+        RAISE EXCEPTION 'El nombre de el comercio no puede estar vacío.';
     ELSIF contact_name IS NULL OR TRIM(contact_name) = '' THEN
         RAISE EXCEPTION 'El nombre del contacto no puede estar vacío.';
     ELSIF contact_email IS NULL OR contact_email !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' THEN
@@ -229,16 +244,16 @@ BEGIN
         RAISE EXCEPTION 'Usuario no encontrado en la tabla de users para auth.uid()';
     END IF;
 
-    -- Verifica que el usuario no sea admin en otra tienda
+    -- Verifica que el usuario no sea admin en otra comercio
     SELECT COUNT(*) INTO existing_store_count
     FROM store_admins
     WHERE user_id = current_user_id;
 
     IF existing_store_count > 0 THEN
-        RAISE EXCEPTION 'El usuario ya es administrador de otra tienda.';
+        RAISE EXCEPTION 'El usuario ya es administrador de otra comercio.';
     END IF;
 
-    -- Crear tienda
+    -- Crear comercio
     INSERT INTO stores (
         name, country_code, timezone
     )
@@ -263,7 +278,7 @@ BEGIN
 END;
 $$;
 
--- Función auxiliar para verificar si un usuario es administrador de una tienda
+-- Función auxiliar para verificar si un usuario es administrador de una comercio
 CREATE OR REPLACE FUNCTION public.is_store_admin(target_store_id uuid)
 RETURNS boolean
 LANGUAGE sql
@@ -278,7 +293,7 @@ SECURITY DEFINER AS $$
   );
 $$;
 
--- Función auxiliar para verificar una tienda tiene su subscripcion activa 
+-- Función auxiliar para verificar una comercio tiene su subscripcion activa 
 CREATE OR REPLACE FUNCTION public.is_store_subscription_active(target_store_id uuid)
 RETURNS boolean
 LANGUAGE sql
@@ -302,10 +317,10 @@ $$;
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    ✓*   |    X   |    X   |    X   |
 -- * Se permite el acceso público solo si la expiration_date está en el futuro.
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 -- Permitir acceso completo a admin_global
--- Permitir acceso completo a store_admin de su propia tienda
+-- Permitir acceso completo a store_admin de su propia comercio
 CREATE POLICY admin_stores_access ON stores
 FOR ALL
 USING (
@@ -326,7 +341,7 @@ USING (
 -- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    X   |    X   |    X   |    X   |
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
 -- Select
@@ -370,7 +385,7 @@ USING (
 -- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- store_admin  |  X  |    ✓   |    X   |    X   |    X   |
 -- public       |  X  |    X   |    X   |    X   |    X   |
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
 -- Permitir acceso completo a admin_global
@@ -380,7 +395,7 @@ USING (
   public.is_global_admin()
 );
 
--- Permitir lectura a store_admin de su tienda
+-- Permitir lectura a store_admin de su comercio
 CREATE POLICY store_admin_store_subscriptions_access ON store_subscriptions
 FOR SELECT
 USING (
@@ -392,11 +407,11 @@ USING (
 ---------------------------------------------------------------------
 
 -- 3.1: Tablas 
--- Registra los horarios regulares de apertura y cierre para cada tienda.
+-- Registra los horarios regulares de apertura y cierre para cada comercio.
 CREATE TABLE store_schedules (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     store_id uuid REFERENCES stores(id) ON DELETE CASCADE,  
-    days int[],                                             -- "dias"; 1 = lunes, ... , 7 = domingo
+    days int[] DEFAULT '{}',                             -- "dias"; 1 = lunes, ... , 7 = domingo  
     opening_time time,
     closing_time time,
     created_at timestamptz DEFAULT now(),
@@ -489,10 +504,10 @@ $$ LANGUAGE plpgsql;
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    ✓*   |    X   |    X   |    X   |
 -- * Se permite el acceso público solo si la store tiene su subscripción activa.
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
--- Permitir acceso completo a admin_global y store_admin de su propia tienda
+-- Permitir acceso completo a admin_global y store_admin de su propia comercio
 CREATE POLICY admin_store_schedules_access ON store_schedules
 FOR ALL
 USING (
@@ -514,10 +529,10 @@ USING (
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    ✓*   |    X   |    X   |    X   |
 -- * Se permite el acceso público solo si la store tiene su subscripción activa.
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
--- Permitir acceso completo a admin_global y store_admin de su propia tienda
+-- Permitir acceso completo a admin_global y store_admin de su propia comercio
 CREATE POLICY admin_store_exceptions_access ON store_schedule_exceptions
 FOR ALL
 USING (
@@ -557,10 +572,10 @@ ALTER TABLE store_images ENABLE ROW LEVEL SECURITY;
 -- admin_global |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    X    |    X   |    X   |    X   |
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
--- Permitir acceso completo a admin_global y store_admin de su propia tienda
+-- Permitir acceso completo a admin_global y store_admin de su propia comercio
 CREATE POLICY admin_store_images_access ON store_images
 FOR ALL
 USING (
@@ -589,7 +604,7 @@ CREATE TABLE products_categories (
 ALTER TABLE products_categories ENABLE ROW LEVEL SECURITY;
 
 -- productos
--- Registra los productos de la tienda.
+-- Registra los productos de el comercio.
 CREATE TABLE products (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
@@ -604,6 +619,7 @@ CREATE TABLE products (
     currency text DEFAULT 'MXN',
     tags text[],
     active boolean DEFAULT true,
+    days int[] DEFAULT '{}',                             -- "dias"; 1 = lunes, ... , 7 = domingo donde esta disponible
     position int DEFAULT 0,
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
@@ -656,7 +672,7 @@ ALTER TABLE product_options ENABLE ROW LEVEL SECURITY;
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    ✓*   |    X   |    X   |    X   |
 -- * Se permite el acceso público solo si la store tiene su subscripción activa.
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
 CREATE POLICY admin_products_categories_access ON products_categories
@@ -680,7 +696,7 @@ USING (
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    ✓*   |    X   |    X   |    X   |
 -- * Se permite el acceso público solo si la store tiene su subscripción activa.
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
 CREATE POLICY admin_products_access ON products
@@ -704,7 +720,7 @@ USING (
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    ✓*   |    X   |    X   |    X   |
 -- * Se permite el acceso público solo si la store tiene su subscripción activa.
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
 CREATE POLICY admin_products_configurations_access ON product_configurations
@@ -727,7 +743,7 @@ USING (
 -- store_admin  |  ✓  |    ✓   |    ✓   |    ✓   |    ✓   |
 -- public       |  X  |    ✓*   |    X   |    X   |    X   |
 -- * Se permite el acceso público solo si la store tiene su subscripción activa.
--- store_admin  se refiere al registro de su propia tienda.
+-- store_admin  se refiere al registro de su propia comercio.
 ---------------------------------------------------------------------
 
 CREATE POLICY admin_products_options_access ON product_options
@@ -747,83 +763,6 @@ USING (
 -- 5.3: Funciones auxiliares
 
 -- Funciones de posicionamiento de categorías
-
--- Función: products_categories_move_afer
--- Recibe el ID de la categoría a mover y el ID de la categoría de destino.
--- Devuelve TRUE si la operación fue exitosa y FALSE en caso de error.
-CREATE OR REPLACE FUNCTION products_categories_move_afer(
-    p_moving_category_id uuid,
-    p_target_category_id uuid
-) RETURNS boolean AS $$
-DECLARE
-    v_store uuid;
-    v_target_store uuid;
-    arr_ids uuid[];
-    new_order uuid[] := ARRAY[]::uuid[];
-    target_index int := 0;
-    i int;
-BEGIN
-    -- Obtener el store de ambas categorías
-    SELECT store_id INTO v_store 
-      FROM products_categories 
-     WHERE id = p_moving_category_id;
-    IF v_store IS NULL THEN
-        RAISE EXCEPTION 'La categoría a mover no existe';
-    END IF;
-    
-    SELECT store_id INTO v_target_store 
-      FROM products_categories 
-     WHERE id = p_target_category_id;
-    IF v_target_store IS NULL THEN
-        RAISE EXCEPTION 'La categoría de destino no existe';
-    END IF;
-    
-    IF v_store <> v_target_store THEN
-        RAISE EXCEPTION 'Las categorías no pertenecen al mismo store';
-    END IF;
-    
-    -- Obtener arreglo de IDs del store ordenado por position
-    SELECT array_agg(id ORDER BY position ASC) INTO arr_ids
-      FROM products_categories 
-     WHERE store_id = v_store;
-    
-    -- Construir nuevo arreglo excluyendo la categoría a mover
-    FOR i IN 1 .. array_length(arr_ids, 1) LOOP
-        IF arr_ids[i] <> p_moving_category_id THEN
-            new_order := new_order || arr_ids[i];
-        END IF;
-    END LOOP;
-    
-    -- Buscar la posición de la categoría destino en el arreglo
-    FOR i IN 1 .. array_length(new_order, 1) LOOP
-        IF new_order[i] = p_target_category_id THEN
-            target_index := i;
-            EXIT;
-        END IF;
-    END LOOP;
-    
-    IF target_index = 0 THEN
-        RAISE EXCEPTION 'Categoría de destino no encontrada en el orden actual';
-    END IF;
-    
-    -- Insertar la categoría a mover inmediatamente después de la de destino
-    new_order := new_order[1:target_index] || ARRAY[p_moving_category_id] ||
-                 new_order[target_index + 1: array_length(new_order, 1)];
-    
-    -- Actualizar el campo position secuencialmente según el nuevo orden
-    FOR i IN 1 .. array_length(new_order, 1) LOOP
-         UPDATE products_categories
-            SET position = i,
-                updated_at = now()
-          WHERE id = new_order[i];
-    END LOOP;
-    
-    RETURN true;
-EXCEPTION
-    WHEN OTHERS THEN
-         RETURN false;
-END;
-$$ LANGUAGE plpgsql;
 
 
 -- Función: products_categories_move_up

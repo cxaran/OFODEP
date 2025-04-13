@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
+import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/models/products_category_model.dart';
 import 'package:ofodep/models/store_admin_model.dart';
 import 'package:ofodep/models/store_schedule_exception_model.dart';
@@ -205,6 +206,13 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         ),
       ),
       GoRoute(
+        path: '/admin/product/:productId',
+        builder: (context, state) => ProductAdminPage(
+          productId: state.pathParameters['productId'],
+          createModel: state.extra as ProductModel?,
+        ),
+      ),
+      GoRoute(
         path: '/admin/subscriptions',
         builder: (context, state) => const AdminStoreSubscriptionsAdminPage(),
       ),
@@ -212,12 +220,6 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         path: '/admin/subscription/:storeId',
         builder: (context, state) => StoreSubscriptionAdminPage(
           storeId: state.pathParameters['storeId'],
-        ),
-      ),
-      GoRoute(
-        path: '/admin/product/:productId',
-        builder: (context, state) => ProductAdminPage(
-          productId: state.pathParameters['productId'],
         ),
       ),
       GoRoute(

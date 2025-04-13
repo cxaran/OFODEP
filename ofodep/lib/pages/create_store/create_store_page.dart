@@ -24,7 +24,7 @@ const List<InfoImage> images = [
     'https://i.imgur.com/rA0RnMd.png',
   ),
   InfoImage(
-    'Tu Tienda Online \nen Minutos',
+    'Tu comercio Online \nen Minutos',
     'Publica tus productos y comienza a recibir pedidos sin necesidad de conocimientos técnicos. Solo regístrate y solicita tu activación.',
     'https://i.imgur.com/5JmScxN.png',
   ),

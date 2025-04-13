@@ -16,7 +16,7 @@ class ProductsCategoriesRepository extends Repository<ProductsCategoryModel> {
 
   @override
   Future<String?> create(ProductsCategoryModel model) async {
-    model.position ??= await last(model.storeId);
+    model.position ??= await last(model.storeId) + 1;
     return super.create(model);
   }
 

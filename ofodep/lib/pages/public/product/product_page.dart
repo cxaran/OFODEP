@@ -66,7 +66,7 @@ class ProductPage extends StatelessWidget {
                           Text("Nombre: ${state.model.name}"),
                           Text("Descripción: ${state.model.description}"),
                           // Text("Precio: ${state.model.price}"),
-                          Text("Categoría: ${state.model.category}"),
+
                           ProductConfigurationsPage(
                             productId: state.model.id,
                           ),

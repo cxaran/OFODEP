@@ -6,7 +6,6 @@ class StoreModel extends ModelComponent {
   String? logoUrl;
 
   // Contact information
-  String? whatsapp;
   String? addressStreet;
   String? addressNumber;
   String? addressColony;
@@ -15,6 +14,12 @@ class StoreModel extends ModelComponent {
   String? addressState;
   String? countryCode;
   String? timezone;
+
+  // Social media links
+  String? whatsapp;
+  bool? whatsappAllow;
+  String? facebookLink;
+  String? instagramLink;
 
   // Geographical coordinates
   num? lat;
@@ -48,6 +53,9 @@ class StoreModel extends ModelComponent {
     this.lng,
     this.geom,
     this.whatsapp,
+    this.whatsappAllow,
+    this.facebookLink,
+    this.instagramLink,
     this.deliveryMinimumOrder,
     this.pickup = false,
     this.delivery = false,
@@ -75,6 +83,9 @@ class StoreModel extends ModelComponent {
       lng: map['lng'],
       geom: map['geom'] as Map<String, dynamic>?,
       whatsapp: map['whatsapp'] as String?,
+      whatsappAllow: map['whatsapp_allow'] as bool?,
+      facebookLink: map['facebook_link'] as String?,
+      instagramLink: map['instagram_link'] as String?,
       deliveryMinimumOrder: map['delivery_minimum_order'],
       pickup: map['pickup'] as bool? ?? false,
       delivery: map['delivery'] as bool? ?? false,
@@ -105,6 +116,9 @@ class StoreModel extends ModelComponent {
         'lng': lng,
         'geom': geom,
         'whatsapp': whatsapp,
+        'whatsapp_allow': whatsappAllow,
+        'facebook_link': facebookLink,
+        'instagram_link': instagramLink,
         'delivery_minimum_order': deliveryMinimumOrder,
         'pickup': pickup,
         'delivery': delivery,
@@ -128,6 +142,9 @@ class StoreModel extends ModelComponent {
     num? lng,
     Map<String, dynamic>? geom,
     String? whatsapp,
+    bool? whatsappAllow,
+    String? facebookLink,
+    String? instagramLink,
     num? deliveryMinimumOrder,
     bool? pickup,
     bool? delivery,
@@ -152,6 +169,9 @@ class StoreModel extends ModelComponent {
       lng: lng ?? this.lng,
       geom: geom ?? this.geom,
       whatsapp: whatsapp ?? this.whatsapp,
+      whatsappAllow: whatsappAllow ?? this.whatsappAllow,
+      facebookLink: facebookLink ?? this.facebookLink,
+      instagramLink: instagramLink ?? this.instagramLink,
       deliveryMinimumOrder: deliveryMinimumOrder ?? this.deliveryMinimumOrder,
       pickup: pickup ?? this.pickup,
       delivery: delivery ?? this.delivery,
@@ -179,6 +199,9 @@ class StoreModel extends ModelComponent {
       'lng: $lng, '
       'geom: $geom, '
       'whatsapp: $whatsapp, '
+      'whatsappAllow: $whatsappAllow, '
+      'facebookLink: $facebookLink, '
+      'instagramLink: $instagramLink, '
       'deliveryMinimumOrder: $deliveryMinimumOrder, '
       'pickup: $pickup, '
       'delivery: $delivery, '

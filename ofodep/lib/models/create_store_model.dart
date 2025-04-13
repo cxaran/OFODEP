@@ -1,7 +1,7 @@
 import 'package:ofodep/models/abstract_model.dart';
 
 class CreateStoreModel extends ModelComponent {
-  // Datos de la tienda
+  // Datos de el comercio
   final String storeName;
   final String countryCode;
   final String timezone;

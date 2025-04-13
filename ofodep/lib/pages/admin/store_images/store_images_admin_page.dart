@@ -67,6 +67,9 @@ class StoreImagesAdminPage extends StatelessWidget {
         ),
       ],
       children: [
+        const Text(
+          'Imgur es una plataforma de almacenamiento de imágenes y vídeos. Permite subir y compartir imágenes con tus clientes y comercios.',
+        ),
         ListTile(
           leading: const Icon(Icons.ads_click),
           title: Text('Obtener tus claves de Imgur'),
@@ -107,6 +110,9 @@ class StoreImagesAdminPage extends StatelessWidget {
       onSave: onSave,
       onBack: onBack,
       children: [
+        const Text(
+          'Imgur es una plataforma de almacenamiento de imágenes y vídeos. Permite subir y compartir imágenes con tus clientes y comercios.',
+        ),
         ListTile(
           leading: const Icon(Icons.ads_click),
           title: Text('Obtener tus claves de Imgur'),

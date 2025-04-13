@@ -1,7 +1,7 @@
 import 'package:ofodep/models/abstract_model.dart';
 
 class StoreAdminModel extends ModelComponent {
-  // Datos de la tienda
+  // Datos de el comercio
   final String storeId;
   final String? storeName;
   // Datos de la cuenta de usuario

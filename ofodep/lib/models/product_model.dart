@@ -2,6 +2,9 @@ import 'package:ofodep/models/abstract_model.dart';
 
 class ProductModel extends ModelComponent {
   final String storeId;
+  final String categoryId;
+  String? storeName;
+  String? categoryName;
   String name;
   String? description;
   String? imageUrl;
@@ -10,14 +13,17 @@ class ProductModel extends ModelComponent {
   DateTime? saleStart;
   DateTime? saleEnd;
   String? currency;
-  String? category;
   List<String>? tags;
+  List<int> days;
   bool active;
   int position;
 
   ProductModel({
     required super.id,
     required this.storeId,
+    required this.categoryId,
+    this.storeName,
+    this.categoryName,
     required this.name,
     this.description,
     this.imageUrl,
@@ -26,8 +32,8 @@ class ProductModel extends ModelComponent {
     this.saleStart,
     this.saleEnd,
     this.currency,
-    this.category,
     this.tags,
+    this.days = const [],
     this.active = true,
     this.position = 0,
     super.createdAt,
@@ -39,6 +45,9 @@ class ProductModel extends ModelComponent {
     return ProductModel(
       id: map['id'],
       storeId: map['store_id'],
+      categoryId: map['category_id'],
+      storeName: map['stores']?['name'],
+      categoryName: map[' products_categories']?['name'],
       name: map['name'],
       description: map['description'],
       imageUrl: map['image_url'],
@@ -47,7 +56,7 @@ class ProductModel extends ModelComponent {
       saleStart: map['sale_start'],
       saleEnd: map['sale_end'],
       currency: map['currency'],
-      category: map['category'],
+      days: (map['days'] as List).map((e) => e as int).toList(),
       tags: (map['tags'] as List?)?.map((e) => e.toString()).toList(),
       active: map['active'],
       position: map['position'],
@@ -63,6 +72,7 @@ class ProductModel extends ModelComponent {
       {
         if (includeId) 'id': id,
         'store_id': storeId,
+        'category_id': categoryId,
         'name': name,
         'description': description,
         'image_url': imageUrl,
@@ -71,8 +81,8 @@ class ProductModel extends ModelComponent {
         'sale_start': saleStart,
         'sale_end': saleEnd,
         'currency': currency,
-        'category': category,
         'tags': tags,
+        'days': days,
         'active': active,
         'position': position,
       };
@@ -80,6 +90,10 @@ class ProductModel extends ModelComponent {
   @override
   ProductModel copyWith({
     String? id,
+    String? storeId,
+    String? categoryId,
+    String? storeName,
+    String? categoryName,
     String? name,
     String? description,
     String? imageUrl,
@@ -90,12 +104,16 @@ class ProductModel extends ModelComponent {
     String? currency,
     String? category,
     List<String>? tags,
+    List<int>? days,
     bool? active,
     int? position,
   }) {
     return ProductModel(
       id: id ?? this.id,
-      storeId: storeId,
+      storeId: storeId ?? this.storeId,
+      categoryId: categoryId ?? this.categoryId,
+      storeName: storeName ?? this.storeName,
+      categoryName: categoryName ?? this.categoryName,
       name: name ?? this.name,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -104,9 +122,9 @@ class ProductModel extends ModelComponent {
       saleStart: saleStart ?? this.saleStart,
       saleEnd: saleEnd ?? this.saleEnd,
       currency: currency ?? this.currency,
-      category: category ?? this.category,
       tags: tags ?? this.tags,
       active: active ?? this.active,
+      days: days ?? this.days,
       position: position ?? this.position,
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -124,9 +142,9 @@ class ProductModel extends ModelComponent {
       'saleStart: $saleStart, '
       'saleEnd: $saleEnd, '
       'currency: $currency, '
-      'category: $category, '
       'tags: $tags, '
       'active: $active, '
+      'days: $days, '
       'position: $position, '
       'createdAt: $createdAt, '
       'updatedAt: $updatedAt)';

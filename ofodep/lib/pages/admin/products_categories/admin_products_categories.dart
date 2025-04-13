@@ -37,28 +37,17 @@ class AdminProductsCategoriesPage extends StatelessWidget {
           subtitle: Text(
             category.description ?? '',
           ),
-          trailing: Column(
+          trailing: ToggleButtons(
+            isSelected: [false, false],
+            onPressed: (index) => (index == 0
+                    ? ProductsCategoriesRepository().moveUp(category.id)
+                    : ProductsCategoriesRepository().moveDown(category.id))
+                .then(
+              (_) => cubit.refresh(),
+            ),
             children: [
-              IconButton(
-                onPressed: () =>
-                    ProductsCategoriesRepository().moveUp(category.id).then(
-                          (value) => cubit.updateOrdering(
-                            orderBy: 'position',
-                            ascending: true,
-                          ),
-                        ),
-                icon: const Icon(Icons.arrow_upward),
-              ),
-              IconButton(
-                onPressed: () =>
-                    ProductsCategoriesRepository().moveDown(category.id).then(
-                          (value) => cubit.updateOrdering(
-                            orderBy: 'position',
-                            ascending: true,
-                          ),
-                        ),
-                icon: const Icon(Icons.arrow_downward),
-              ),
+              Icon(Icons.keyboard_arrow_up),
+              Icon(Icons.keyboard_arrow_down),
             ],
           ),
           onTap: () => context.push(

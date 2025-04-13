@@ -23,7 +23,7 @@ class _AdminStoreSubscriptionsAdminPageState
         title: 'Suscripciones',
         createCubit: (context) => StoreSubscriptionsListCubit(),
         itemBuilder: (context, cubit, model, index) => ListTile(
-          title: Text(model.storeName),
+          title: Text(model.storeName ?? ''),
           subtitle: Text(model.subscriptionType.description),
           trailing: Text(
             MaterialLocalizations.of(context).formatShortDate(

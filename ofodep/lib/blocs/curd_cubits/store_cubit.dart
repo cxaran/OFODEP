@@ -2,10 +2,11 @@ import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/models/store_model.dart';
 import 'package:ofodep/repositories/store_repository.dart';
 
-/// Secciones editables para la tienda.
+/// Secciones editables para el comercio.
 enum StoreEditSection {
   general('general'),
   contact('contact'),
+  social('social'),
   coordinates('coordinates'),
   geom('geom'),
   delivery('delivery');
@@ -49,7 +50,7 @@ class StoreCrudEditing extends CrudEditing<StoreModel> {
 }
 
 /// Cubit para manejar operaciones CRUD de StoreModel utilizando la abstracción CrudCubit.
-/// Se utiliza el id de la tienda (storeId) pasado en el constructor y se mantiene la edición
+/// Se utiliza el id de el comercio (storeId) pasado en el constructor y se mantiene la edición
 /// por secciones mediante StoreCrudEditing.
 class StoreCubit extends CrudCubit<StoreModel, StoreRepository> {
   StoreCubit({

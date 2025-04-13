@@ -89,7 +89,7 @@ El flujo básico del sistema comprende:
 | **Fase** | **Descripción**                                     | **Tablas principales**                                                                                                                            |
 |----------|-----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1        | Usuarios y Autenticación                            | **users**                                                                                                                                          |
-| 2        | Tiendas (Stores) y Gestión de Horarios              | **stores**, **store_schedules**, **store_schedule_exceptions**, **store_admins**, **store_subscriptions**                                         |
+| 2        | Comercios (Stores) y Gestión de Horarios              | **stores**, **store_schedules**, **store_schedule_exceptions**, **store_admins**, **store_subscriptions**                                         |
 | 3        | Productos y Configuraciones                         | **products**, **product_configurations**, **product_options**                                                                                     |
 | 4        | Pedidos, Comentarios y Detalles                     | **orders**, **order_reviews**, **order_products**, **order_configurations**, **order_options**                                                    |
 | 5        | Información de Delivery                             | **delivery_info**                                                                                                                                 |
