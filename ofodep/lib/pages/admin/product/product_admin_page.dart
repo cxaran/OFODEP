@@ -6,6 +6,7 @@ import 'package:ofodep/blocs/list_cubits/products_categories_list_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/models/products_category_model.dart';
 import 'package:ofodep/repositories/products_categories_repository.dart';
+import 'package:ofodep/repositories/store_images_repository.dart';
 import 'package:ofodep/repositories/store_repository.dart';
 import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/utils/constants.dart';
@@ -29,6 +30,7 @@ class ProductAdminPage extends StatelessWidget {
 
   final GlobalKey<FormState> formEditingKey = GlobalKey<FormState>();
   final GlobalKey<FormState> formCreatingKey = GlobalKey<FormState>();
+  final TextEditingController tagsController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +84,7 @@ class ProductAdminPage extends StatelessWidget {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('¿Eliminar producto?'),
-              content: const Text('Esta acción no se puede deshacer.'),
+              content: const Text('Esta acción no se puede deshacer'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -190,8 +192,8 @@ class ProductAdminPage extends StatelessWidget {
         Divider(),
         ListTile(
           leading: const Icon(Icons.tag),
-          title: Text('Etiquetas'),
-          subtitle: Text(model.tags?.join(', ') ?? ''),
+          title: Text('Etiquetas para la búsqueda'),
+          subtitle: Text(model.tags.join(', ')),
         ),
         ListTile(
           leading: model.active
@@ -253,12 +255,20 @@ class ProductAdminPage extends StatelessWidget {
               : null,
         ),
         Divider(),
-        AdminImage(
-          clientId: null,
-          imageUrl: edited.imageUrl,
-          onImageUploaded: (url) {
-            cubit.updateEditedModel(
-              (model) => model.copyWith(imageUrl: url),
+        FutureBuilder(
+          future: StoreImagesRepository().getValueById(
+            edited.storeId,
+            'imgur_client_id',
+          ),
+          builder: (context, snapshot) {
+            return AdminImage(
+              clientId: snapshot.data,
+              imageUrl: edited.imageUrl,
+              onImageUploaded: (url) {
+                cubit.updateEditedModel(
+                  (model) => model.copyWith(imageUrl: url),
+                );
+              },
             );
           },
         ),
@@ -295,12 +305,16 @@ class ProductAdminPage extends StatelessWidget {
           ),
         ),
         Divider(),
+        const Text(
+          'Precios del producto',
+        ),
         TextFormField(
           initialValue: edited.regularPrice.toString(),
           decoration: const InputDecoration(
             icon: Icon(Icons.attach_money),
             labelText: "Precio (regular)",
           ),
+          validator: validateNumber,
           keyboardType: TextInputType.number,
           onChanged: (value) => cubit.updateEditedModel(
             (model) => model.copyWith(regularPrice: num.tryParse(value) ?? 0),
@@ -313,8 +327,22 @@ class ProductAdminPage extends StatelessWidget {
             labelText: "Precio (oferta)",
           ),
           keyboardType: TextInputType.number,
+          validator: (value) => edited.salePrice != null
+              ? (edited.salePrice! >= edited.regularPrice
+                  ? 'El precio de la oferta no puede ser mayor o igual al precio regular'
+                  : null)
+              : null,
           onChanged: (value) => cubit.updateEditedModel(
-            (model) => model.copyWith(salePrice: num.tryParse(value)),
+            (model) {
+              final num? numValue = num.tryParse(value);
+
+              model.salePrice = numValue;
+              if (numValue == null) {
+                model.saleStart = null;
+                model.saleEnd = null;
+              }
+              return model;
+            },
           ),
         ),
         if (edited.salePrice != null)
@@ -333,6 +361,14 @@ class ProductAdminPage extends StatelessWidget {
             ),
             icon: const Icon(Icons.calendar_today),
           ),
+        CustomFormValidator(
+          initialValue: edited.saleStart,
+          validator: (value) => edited.salePrice != null
+              ? (value == null
+                  ? 'Se requiere una fecha de inicio del periodo de oferta'
+                  : null)
+              : null,
+        ),
         if (edited.salePrice != null)
           OutlinedButton.icon(
             onPressed: () => showDatePicker(
@@ -349,11 +385,22 @@ class ProductAdminPage extends StatelessWidget {
             ),
             icon: const Icon(Icons.calendar_today),
           ),
+        CustomFormValidator(
+          initialValue: edited.saleEnd,
+          validator: (value) => edited.salePrice != null
+              ? (value == null
+                  ? 'Se requiere una fecha de fin de la oferta'
+                  : (value.isBefore(edited.saleStart!)
+                      ? 'La fecha de fin de la oferta debe ser posterior a la de inicio'
+                      : null))
+              : null,
+        ),
         DropdownButtonFormField<Currency>(
           decoration: const InputDecoration(
             icon: Icon(Icons.payment),
             labelText: "Moneda",
           ),
+          validator: (value) => value == null ? 'Selecciona una moneda' : null,
           items: [
             for (final currency in americanCurrencies)
               DropdownMenuItem(
@@ -367,7 +414,85 @@ class ProductAdminPage extends StatelessWidget {
           onChanged: (value) => cubit.updateEditedModel(
             (model) => model.copyWith(currency: value?.code ?? ''),
           ),
-        )
+        ),
+        Divider(),
+        const Text(
+          'Dias de disponibilidad en la semana',
+        ),
+        for (var day in [1, 2, 3, 4, 5, 6, 7])
+          CheckboxListTile(
+            title: Text(dayName(day) ?? ''),
+            value: edited.days.contains(day),
+            onChanged: (value) => cubit.updateEditedModel(
+              (model) => model.copyWith(
+                days: edited.days.contains(day)
+                    ? (List.from(model.days)..remove(day))
+                    : (List.from(model.days)..add(day)),
+              ),
+            ),
+          ),
+        CustomFormValidator(
+          initialValue: edited.days,
+          validator: (value) =>
+              value!.isEmpty ? 'Selecciona al menos un día' : null,
+        ),
+        Divider(),
+        ListTile(
+          leading: const Icon(Icons.tag),
+          title: Text('Etiquetas para la búsqueda'),
+          subtitle: Wrap(
+            children: [
+              for (final tag in edited.tags)
+                Chip(
+                  label: Text('#$tag'),
+                  onDeleted: () => cubit.updateEditedModel(
+                    (model) => model.copyWith(
+                      tags: edited.tags.where((e) => e != tag).toList(),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        ListTile(
+          trailing: IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              String newTag = tagsController.text.trim();
+              if (newTag.isEmpty && edited.tags.contains(newTag)) {
+                return;
+              }
+              cubit.updateEditedModel(
+                (model) => model.copyWith(
+                  tags: [...edited.tags, newTag],
+                ),
+              );
+              tagsController.clear();
+            },
+          ),
+          title: TextFormField(
+            controller: tagsController,
+            decoration: const InputDecoration(
+              labelText: "Etiquetas para la búsqueda",
+            ),
+            onFieldSubmitted: (value) {
+              String newTag = value.trim();
+              if (newTag.isEmpty && edited.tags.contains(newTag)) {
+                return;
+              }
+              cubit.updateEditedModel(
+                (model) => model.copyWith(
+                  tags: [...edited.tags, newTag],
+                ),
+              );
+              tagsController.clear();
+            },
+          ),
+        ),
+        Divider(),
+        const Text(
+          'Configuraciones del producto',
+        ),
       ],
     );
   }

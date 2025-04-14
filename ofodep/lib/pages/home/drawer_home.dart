@@ -30,7 +30,7 @@ class DrawerHome extends StatelessWidget {
                     if (snapshot.hasData && snapshot.data != null) {
                       return ListTile(
                         leading: const Icon(Icons.store_sharp),
-                        title: Text(snapshot.data?.storeName ?? '...'),
+                        title: Text(snapshot.data?.storeName ?? ''),
                         onTap: () => context.push(
                           '/admin/store/${snapshot.data?.storeId}',
                         ),

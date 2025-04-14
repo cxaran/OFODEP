@@ -22,7 +22,7 @@ class LocationButton extends StatelessWidget {
         } else if (state is LocationLoading) {
           return LocationIcon(
             icon: Icons.location_on,
-            label: '...',
+            label: '',
           );
         } else {
           // Estado inicial u otro no manejado

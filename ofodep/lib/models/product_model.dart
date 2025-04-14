@@ -13,7 +13,7 @@ class ProductModel extends ModelComponent {
   DateTime? saleStart;
   DateTime? saleEnd;
   String? currency;
-  List<String>? tags;
+  List<String> tags;
   List<int> days;
   bool active;
   int position;
@@ -32,7 +32,7 @@ class ProductModel extends ModelComponent {
     this.saleStart,
     this.saleEnd,
     this.currency,
-    this.tags,
+    this.tags = const [],
     this.days = const [],
     this.active = true,
     this.position = 0,
@@ -57,7 +57,7 @@ class ProductModel extends ModelComponent {
       saleEnd: map['sale_end'],
       currency: map['currency'],
       days: (map['days'] as List).map((e) => e as int).toList(),
-      tags: (map['tags'] as List?)?.map((e) => e.toString()).toList(),
+      tags: (map['tags'] as List).map((e) => e.toString()).toList(),
       active: map['active'],
       position: map['position'],
       createdAt: DateTime.tryParse(map['created_at'] ?? ''),

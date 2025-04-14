@@ -74,7 +74,7 @@ class StoreScheduleAdminPage extends StatelessWidget {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('¿Eliminar horario?'),
-              content: const Text('Esta acción no se puede deshacer.'),
+              content: const Text('Esta acción no se puede deshacer'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),

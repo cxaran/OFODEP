@@ -69,7 +69,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         const Divider(),
         Text(
-          'Datos generales tu comercio.',
+          'Datos generales tu comercio',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         ListTile(
@@ -129,7 +129,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         const Divider(),
         Text(
-          'Administración de imágenes.',
+          'Administración de imágenes',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         ListTile(
@@ -152,7 +152,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         const Divider(),
         Text(
-          'Horarios de tu comercio.',
+          'Horarios de tu comercio',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         ListTile(
@@ -167,7 +167,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         const Divider(),
         const Text(
-          'Categorías y productos.',
+          'Categorías y productos',
         ),
         ListTile(
           leading: const Icon(Icons.category),
@@ -181,7 +181,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         const Divider(),
         Text(
-          'Datos de administración del comercio.',
+          'Datos de administración del comercio',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         ListTile(
@@ -254,7 +254,7 @@ class StoreAdminPage extends StatelessWidget {
       onBack: cubit.cancelEditing,
       children: [
         const Text(
-          'Con este logotipo y nombre aparecerá en la página de tu comercio en el portal.',
+          'Con este logotipo y nombre aparecerá en la página de tu comercio en el portal',
         ),
         Divider(),
         FutureBuilder(
@@ -278,7 +278,7 @@ class StoreAdminPage extends StatelessWidget {
           initialValue: edited.name,
           decoration: const InputDecoration(
             icon: Icon(Icons.storefront),
-            labelText: "Nombre del comercio",
+            labelText: 'Nombre del comercio',
           ),
           validator: validate,
           onChanged: (value) => cubit.updateEditedModel(
@@ -303,13 +303,13 @@ class StoreAdminPage extends StatelessWidget {
       onBack: cubit.cancelEditing,
       children: [
         const Text(
-          "Tu dirección y contacto se mostrarán en tu comercio y se utilizarán para validar los horarios de entrega segun tu zona horaria.",
+          'Tu dirección y contacto se mostrarán en tu comercio y se utilizarán para validar los horarios de entrega segun tu zona horaria',
         ),
         Divider(),
         TextFormField(
           initialValue: edited.addressStreet,
           decoration: const InputDecoration(
-            labelText: "Calle",
+            labelText: 'Calle',
           ),
           validator: validate,
           onChanged: (value) {
@@ -321,7 +321,7 @@ class StoreAdminPage extends StatelessWidget {
         TextFormField(
           initialValue: edited.addressNumber,
           decoration: const InputDecoration(
-            labelText: "Numero",
+            labelText: 'Numero',
           ),
           validator: validate,
           onChanged: (value) {
@@ -333,7 +333,7 @@ class StoreAdminPage extends StatelessWidget {
         TextFormField(
           initialValue: edited.addressColony,
           decoration: const InputDecoration(
-            labelText: "Colonia o barrio",
+            labelText: 'Colonia o barrio',
           ),
           validator: validate,
           onChanged: (value) {
@@ -345,7 +345,7 @@ class StoreAdminPage extends StatelessWidget {
         TextFormField(
           initialValue: edited.addressZipcode,
           decoration: const InputDecoration(
-            labelText: "Código postal",
+            labelText: 'Código postal',
           ),
           validator: validate,
           onChanged: (value) {
@@ -357,7 +357,7 @@ class StoreAdminPage extends StatelessWidget {
         TextFormField(
           initialValue: edited.addressCity,
           decoration: const InputDecoration(
-            labelText: "Ciudad o municipio",
+            labelText: 'Ciudad o municipio',
           ),
           validator: validate,
           onChanged: (value) {
@@ -369,7 +369,7 @@ class StoreAdminPage extends StatelessWidget {
         TextFormField(
           initialValue: edited.addressState,
           decoration: const InputDecoration(
-            labelText: "Estado",
+            labelText: 'Estado',
           ),
           validator: validate,
           onChanged: (value) {
@@ -380,7 +380,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         DropdownButtonFormField<CountryTimezone>(
           decoration: const InputDecoration(
-            labelText: "Pais y zona horaria",
+            labelText: 'Pais y zona horaria',
           ),
           value: edited.countryCode == '' || edited.timezone == ''
               ? null
@@ -426,14 +426,14 @@ class StoreAdminPage extends StatelessWidget {
       onBack: cubit.cancelEditing,
       children: [
         const Text(
-          "Configura las redes sociales de tu comercio. Estas redes se usarán para compartir tus productos y servicios con tus clientes.",
+          'Configura las redes sociales de tu comercio. Estas redes se usarán para compartir tus productos y servicios con tus clientes',
         ),
         Divider(),
         TextFormField(
           initialValue: edited.facebookLink,
           decoration: const InputDecoration(
             icon: Icon(Icons.facebook),
-            labelText: "Enlace de Facebook",
+            labelText: 'Enlace de Facebook',
           ),
           validator: validate,
           onChanged: (value) {
@@ -446,7 +446,7 @@ class StoreAdminPage extends StatelessWidget {
           initialValue: edited.instagramLink,
           decoration: const InputDecoration(
             icon: Icon(Icons.link),
-            labelText: "Enlace de Instagram",
+            labelText: 'Enlace de Instagram',
           ),
           validator: validate,
           onChanged: (value) {
@@ -457,13 +457,13 @@ class StoreAdminPage extends StatelessWidget {
         ),
         Divider(),
         const Text(
-          "Configura tu información para recibir y gestionar las solicitudes de productos directamente por WhatsApp.",
+          'Configura tu información para recibir y gestionar las solicitudes de productos directamente por WhatsApp',
         ),
         TextFormField(
           initialValue: edited.whatsapp,
           decoration: const InputDecoration(
             icon: Icon(Icons.phone),
-            labelText: "Número de teléfono",
+            labelText: 'Número de teléfono',
           ),
           validator: validate,
           onChanged: (value) {
@@ -473,7 +473,7 @@ class StoreAdminPage extends StatelessWidget {
           },
         ),
         SwitchListTile(
-          title: const Text("Permitir WhatsApp"),
+          title: const Text('Permitir WhatsApp'),
           value: edited.whatsappAllow ?? false,
           onChanged: (value) {
             cubit.updateEditedModel(
@@ -490,12 +490,12 @@ class StoreAdminPage extends StatelessWidget {
     final edited = state.editedModel;
     if (edited.countryCode == null || edited.timezone == null) {
       return MessagePage.warning(
-        "El pais y zona horaria no están definidos.",
+        'El pais y zona horaria no están definidos',
         onBack: cubit.cancelEditing,
       );
     }
     return LocationPicker(
-      title: "Ubicación de tu comercio",
+      title: 'Ubicación de tu comercio',
       onBack: cubit.cancelEditing,
       onSave: state.editMode ? () => cubit.submit() : null,
       initialLatitude: edited.lat?.toDouble(),
@@ -522,12 +522,12 @@ class StoreAdminPage extends StatelessWidget {
     final edited = state.editedModel;
     if (edited.lat == null || edited.lng == null) {
       return MessagePage.warning(
-        "La ubicación no está definida.",
+        'La ubicación no está definida',
         onBack: cubit.cancelEditing,
       );
     }
     return ZonePolygon(
-      title: "Área de cobertura del comercio",
+      title: 'Área de cobertura del comercio',
       onBack: cubit.cancelEditing,
       onSave: state.editMode ? () => cubit.submit() : null,
       geom: state.editedModel.geom,
@@ -553,13 +553,13 @@ class StoreAdminPage extends StatelessWidget {
       onBack: cubit.cancelEditing,
       children: [
         const Text(
-          "Configura las opciones de entrega de tu comercio. Define las configuraciones de entregas para tus productos y servicios.",
+          'Configura las opciones de entrega de tu comercio. Define las configuraciones de entregas para tus productos y servicios',
         ),
         Divider(),
         SwitchListTile(
-          title: const Text("Entrega en comercio"),
+          title: const Text('Entrega en comercio'),
           subtitle: state.model.lat == null || state.model.lng == null
-              ? const Text("No se ha definido la ubicación")
+              ? const Text('No se ha definido la ubicación')
               : null,
           secondary: state.model.lat == null || state.model.lng == null
               ? const Icon(Icons.info)
@@ -572,9 +572,9 @@ class StoreAdminPage extends StatelessWidget {
           },
         ),
         SwitchListTile(
-          title: const Text("Entrega a domicilio"),
+          title: const Text('Entrega a domicilio'),
           subtitle: state.model.geom == null
-              ? const Text("No se ha definido la zona de cobertura")
+              ? const Text('No se ha definido la zona de cobertura')
               : null,
           secondary: state.model.geom == null ? const Icon(Icons.info) : null,
           value: edited.delivery,
@@ -585,10 +585,10 @@ class StoreAdminPage extends StatelessWidget {
           },
         ),
         TextFormField(
-          initialValue: edited.deliveryMinimumOrder?.toString() ?? "",
+          initialValue: edited.deliveryMinimumOrder?.toString() ?? '',
           decoration: const InputDecoration(
             icon: Icon(Icons.monetization_on),
-            labelText: "Minimo de compra",
+            labelText: 'Minimo de compra',
           ),
           keyboardType: TextInputType.number,
           validator: validateNumber,
@@ -600,10 +600,10 @@ class StoreAdminPage extends StatelessWidget {
           },
         ),
         TextFormField(
-          initialValue: edited.deliveryPrice?.toString() ?? "",
+          initialValue: edited.deliveryPrice?.toString() ?? '',
           decoration: const InputDecoration(
             icon: Icon(Icons.delivery_dining),
-            labelText: "Precio de entrega",
+            labelText: 'Precio de entrega',
           ),
           keyboardType: TextInputType.number,
           validator: validateNumber,

@@ -22,15 +22,19 @@ class _AdminStoreSubscriptionsAdminPageState
           StoreSubscriptionsListCubit>(
         title: 'Suscripciones',
         createCubit: (context) => StoreSubscriptionsListCubit(),
-        itemBuilder: (context, cubit, model, index) => ListTile(
-          title: Text(model.storeName ?? ''),
-          subtitle: Text(model.subscriptionType.description),
+        itemBuilder: (context, cubit, subscription, index) => ListTile(
+          title: Text(subscription.storeName ?? ''),
+          subtitle: Text(
+            '${subscription.subscriptionType.description}\n'
+            '${subscription.id}',
+          ),
           trailing: Text(
             MaterialLocalizations.of(context).formatShortDate(
-              model.expirationDate,
+              subscription.expirationDate,
             ),
           ),
-          onTap: () => context.push('/admin/subscription/${model.storeId}'),
+          onTap: () =>
+              context.push('/admin/subscription/${subscription.storeId}'),
         ),
         filterSectionBuilder: (context, cubit, state) => CustomListView(
           children: [

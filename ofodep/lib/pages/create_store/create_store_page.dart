@@ -105,7 +105,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
           ];
         },
         body: user == null
-            ? MessagePage.warning('Inicia sesión para registrar tu comercio.')
+            ? MessagePage.warning('Inicia sesión para registrar tu comercio')
             : FutureBuilder(
                 future: StoreAdminRepository().getById(
                   user.id,
@@ -115,7 +115,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasData && snapshot.data != null) {
                       return MessagePage.warning(
-                        'Tu comercio "${snapshot.data?.storeName}" ya ha sido registrado.',
+                        'Tu comercio "${snapshot.data?.storeName}" ya ha sido registrado',
                       );
                     }
                   }

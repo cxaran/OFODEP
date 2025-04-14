@@ -617,7 +617,7 @@ CREATE TABLE products (
     sale_start timestamptz,
     sale_end timestamptz,
     currency text DEFAULT 'MXN',
-    tags text[],
+    tags text[] DEFAULT '{}',
     active boolean DEFAULT true,
     days int[] DEFAULT '{}',                             -- "dias"; 1 = lunes, ... , 7 = domingo donde esta disponible
     position int DEFAULT 0,

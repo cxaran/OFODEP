@@ -78,6 +78,10 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
                       builder: (context, snapshot) => Text(snapshot.data ?? ''),
                     ),
             ),
+            ListTile(
+              title: Text('ID'),
+              subtitle: Text(model.id),
+            ),
             Divider(),
             ListTile(
               leading: const Icon(Icons.card_membership),
@@ -108,7 +112,7 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
                   color: Theme.of(context).colorScheme.error,
                 ),
                 title: Text(
-                  'La suscripción ha expirado si desea renovarla, si usted es el administrador de el comercio, puede renovar la suscripción poniendose en contacto con nosotros.',
+                  'La suscripción ha expirado si desea renovarla, si usted es el administrador de el comercio, puede renovar la suscripción poniendose en contacto con nosotros',
                 ),
               ),
           ],
@@ -143,6 +147,10 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
                   ),
                   builder: (context, snapshot) => Text(snapshot.data ?? ''),
                 ),
+        ),
+        ListTile(
+          title: Text('ID'),
+          subtitle: Text(edited.id),
         ),
         Divider(),
         DropdownButtonFormField<SubscriptionType>(

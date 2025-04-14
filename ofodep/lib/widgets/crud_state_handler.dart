@@ -167,7 +167,7 @@ class CrudStateHandler<T extends ModelComponent,
               return deletedBuilder != null
                   ? deletedBuilder!(context, state.id)
                   : MessagePage.warning(
-                      'El elemento ha sido eliminado.',
+                      'El elemento ha sido eliminado',
                       onBack: context.pop,
                     );
             }

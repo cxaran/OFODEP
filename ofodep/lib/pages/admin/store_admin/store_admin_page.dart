@@ -76,7 +76,7 @@ class StoreAdminAdminPage extends StatelessWidget {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('¿Eliminar administrador de comercio?'),
-              content: const Text('Esta acción no se puede deshacer.'),
+              content: const Text('Esta acción no se puede deshacer'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -174,7 +174,7 @@ class StoreAdminAdminPage extends StatelessWidget {
           title: Text(
             'El usuario debe estar previamente registrado. '
             'Puedes buscarlo escribiendo su nombre. '
-            'Una vez encontrado, se asociará como administrador del comercio seleccionado.',
+            'Una vez encontrado, se asociará como administrador del comercio seleccionado',
           ),
         ),
         ListTile(

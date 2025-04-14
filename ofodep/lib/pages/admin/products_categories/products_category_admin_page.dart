@@ -72,7 +72,7 @@ class ProductsCategoryAdminPage extends StatelessWidget {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('¿Eliminar categoría de productos?'),
-              content: const Text('Esta acción no se puede deshacer.'),
+              content: const Text('Esta acción no se puede deshacer'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -165,7 +165,7 @@ class ProductsCategoryAdminPage extends StatelessWidget {
                   ),
                 ),
         ),
-        const Text('Categoría para agrupar productos de tu comercio.'),
+        const Text('Categoría para agrupar productos de tu comercio'),
         Divider(),
         TextFormField(
           initialValue: edited.name,
