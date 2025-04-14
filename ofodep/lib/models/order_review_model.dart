@@ -6,7 +6,7 @@ class OrderReviewModel extends ModelComponent {
   String? review;
 
   OrderReviewModel({
-    required super.id,
+    super.id,
     required this.orderId,
     required this.rating,
     this.review,

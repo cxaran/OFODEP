@@ -8,7 +8,7 @@ class StoreScheduleModel extends ModelComponent {
   TimeOfDay? closingTime;
 
   StoreScheduleModel({
-    required super.id,
+    super.id,
     required this.storeId,
     required this.days,
     this.openingTime,

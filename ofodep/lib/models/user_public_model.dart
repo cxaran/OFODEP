@@ -5,7 +5,7 @@ class UserPublicModel extends ModelComponent {
   String? picture;
 
   UserPublicModel({
-    required super.id,
+    super.id,
     required this.name,
     this.picture,
     super.createdAt,

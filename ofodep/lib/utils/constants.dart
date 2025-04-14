@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:ofodep/models/country_timezone.dart';
 import 'package:ofodep/widgets/gap.dart';
 
@@ -133,3 +134,5 @@ String? dayName(int day) {
       return null;
   }
 }
+
+final currencyFormatter = NumberFormat.currency(locale: "en_US", symbol: "\$");

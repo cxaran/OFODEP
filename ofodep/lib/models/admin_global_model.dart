@@ -4,7 +4,7 @@ class AdminGlobalModel extends ModelComponent {
   final String authId;
 
   AdminGlobalModel({
-    required super.id,
+    super.id,
     required this.authId,
     super.createdAt,
     super.updatedAt,

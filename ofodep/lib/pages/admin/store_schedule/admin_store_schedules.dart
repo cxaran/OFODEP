@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/list_cubits/store_schedules_list_cubit.dart';
 import 'package:ofodep/models/store_schedule_model.dart';
+import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/list_cubit_state_handler.dart';
@@ -67,10 +68,10 @@ class AdminStoreSchedulesPage extends StatelessWidget {
             ),
           ],
         ),
-        onAdd: (context, cubit) => context.push(
-          '/admin/schedule/create',
-          extra: StoreScheduleModel(
-            id: 'new',
+        onAdd: (context, cubit) => pageNewModel(
+          context,
+          '/admin/schedule',
+          StoreScheduleModel(
             storeId: storeId!,
             days: [],
           ),

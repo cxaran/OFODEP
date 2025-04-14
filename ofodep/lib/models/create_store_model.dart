@@ -2,35 +2,24 @@ import 'package:ofodep/models/abstract_model.dart';
 
 class CreateStoreModel extends ModelComponent {
   // Datos de el comercio
-  final String storeName;
-  final String countryCode;
-  final String timezone;
+  final String? storeName;
+  final String? countryCode;
+  final String? timezone;
 
   // Datos de contacto
-  final String contactName;
-  final String contactEmail;
-  final String contactPhone;
+  final String? contactName;
+  final String? contactEmail;
+  final String? contactPhone;
 
   CreateStoreModel({
-    required super.id,
-    required this.storeName,
-    required this.countryCode,
-    required this.timezone,
-    required this.contactName,
-    required this.contactEmail,
-    required this.contactPhone,
+    super.id,
+    this.storeName,
+    this.countryCode,
+    this.timezone,
+    this.contactName,
+    this.contactEmail,
+    this.contactPhone,
   });
-
-  CreateStoreModel.empty()
-      : this(
-          id: '',
-          storeName: '',
-          countryCode: '',
-          timezone: '',
-          contactName: '',
-          contactEmail: '',
-          contactPhone: '',
-        );
 
   @override
   factory CreateStoreModel.fromMap(Map<String, dynamic> map) {

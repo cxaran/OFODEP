@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ofodep/widgets/container_page.dart';
 import 'package:ofodep/widgets/custom_form_validator.dart';
 
@@ -7,6 +8,7 @@ class CustomListView extends StatelessWidget {
   final String? title;
   final void Function()? onBack;
   final void Function()? onSave;
+  final String? loadedMessage;
   final bool editMode;
   final bool isLoading;
 
@@ -19,6 +21,7 @@ class CustomListView extends StatelessWidget {
     this.title,
     this.onBack,
     this.onSave,
+    this.loadedMessage,
     this.editMode = true,
     this.isLoading = false,
     this.actions = const [],
@@ -44,17 +47,19 @@ class CustomListView extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: ListView(
-              children: children.map((child) {
-                if (child is ListTile ||
-                    child is Divider ||
-                    child is SwitchListTile ||
-                    child is CheckboxListTile ||
-                    child is CustomFormValidator) {
-                  return child;
-                }
-                return ListTile(title: child);
-              }).toList(),
+            child: SingleChildScrollView(
+              child: Column(
+                children: children.map((child) {
+                  if (child is ListTile ||
+                      child is Divider ||
+                      child is SwitchListTile ||
+                      child is CheckboxListTile ||
+                      child is CustomFormValidator) {
+                    return child;
+                  }
+                  return ListTile(title: child);
+                }).toList(),
+              ),
             ),
           ),
           if (actions_.isNotEmpty) const Divider(height: 0),
@@ -97,7 +102,10 @@ class CustomListView extends StatelessWidget {
                     onPressed: onBack,
                     icon: const Icon(Icons.arrow_back),
                   )
-                : null,
+                : IconButton(
+                    onPressed: () => context.pop(loadedMessage != null),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
           ),
         ];
       },

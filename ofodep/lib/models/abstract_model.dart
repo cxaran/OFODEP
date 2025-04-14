@@ -1,13 +1,19 @@
+import 'package:uuid/uuid.dart';
+
+String newId() {
+  return const Uuid().v4();
+}
+
 abstract class ModelComponent {
   final String id;
-  DateTime? createdAt;
-  DateTime? updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   ModelComponent({
-    required this.id,
+    String? id,
     this.createdAt,
     this.updatedAt,
-  });
+  }) : id = id ?? newId();
 
   /// Crear una instancia del objeto a partir de un mapa (por ejemplo, desde JSON)
   /// [map] mapa de datos

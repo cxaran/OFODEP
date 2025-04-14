@@ -89,7 +89,7 @@ abstract class Repository<T extends ModelComponent> {
     try {
       final response = await Supabase.instance.client
           .from(tableName)
-          .insert(model.toMap(includeId: false))
+          .insert(model.toMap())
           .select('id')
           .maybeSingle();
 
@@ -124,6 +124,29 @@ abstract class Repository<T extends ModelComponent> {
     }
   }
 
+  /// Realiza un UPSERT en la tabla especificada.
+  /// Retorna el número de filas actualizadas.
+  /// [field] campo por el cual se busca.
+  /// [value] valor del campo.
+  Future<int> upsert(List<T> values) async {
+    try {
+      final response = await Supabase.instance.client
+          .from(tableName)
+          .upsert(values.map((e) => e.toMap()).toList())
+          .select('id');
+      return response.length;
+    } catch (e) {
+      throw Exception('error(updateByFieldValue): $e');
+    }
+  }
+
+  /// Retorna una lista de modelos por búsqueda de un campo.
+  /// [field] campo por el cual se busca.
+  /// [value] valor del campo.
+  /// [select] campos a seleccionar.
+  /// [params] parámetros adicionales.
+  /// [orderBy] campo por el cual se ordena (ej: 'created_at').
+  /// [ascending] orden ascendente si es true, descendente si es false.
   Future<List<T>> find(
     String field,
     dynamic value, {
@@ -170,6 +193,40 @@ abstract class Repository<T extends ModelComponent> {
       return false;
     } catch (e) {
       throw Exception('error(delete): $e');
+    }
+  }
+
+  /// Elimina varios modelos por búsqueda de un campo.
+  /// Retorna el número de filas eliminadas.
+  /// [field] campo por el cual se busca.
+  /// [value] valor del campo.
+  Future<int> deleteByFieldValue(String field, dynamic value) async {
+    try {
+      final response = await Supabase.instance.client
+          .from(tableName)
+          .delete()
+          .eq(field, value)
+          .select('id');
+      return response.length;
+    } catch (e) {
+      throw Exception('error(deleteByFieldValue): $e');
+    }
+  }
+
+  /// Elimina varios modelos por búsqueda de un campo cuyos valores están en un array dado.
+  /// Retorna el número de filas eliminadas.
+  /// [field] campo por el cual se busca.
+  /// [values] lista de valores del campo.
+  Future<int> deleteByFieldInFilter(String field, List<dynamic> values) async {
+    try {
+      final response = await Supabase.instance.client
+          .from(tableName)
+          .delete()
+          .inFilter(field, values)
+          .select('id');
+      return response.length;
+    } catch (e) {
+      throw Exception('error(deleteByFieldArrayValue): $e');
     }
   }
 

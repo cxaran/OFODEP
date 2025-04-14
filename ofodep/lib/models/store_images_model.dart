@@ -11,7 +11,7 @@ class StoreImagesModel extends ModelComponent {
   final String imgurClientSecret;
 
   StoreImagesModel({
-    required super.id,
+    super.id,
     required this.storeId,
     required this.imgurClientId,
     required this.imgurClientSecret,

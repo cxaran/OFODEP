@@ -29,7 +29,6 @@ class StoreImagesCubit
         emit(
           CrudCreate(
             editedModel: StoreImagesModel(
-              id: '_',
               storeId: id,
               imgurClientId: '',
               imgurClientSecret: '',

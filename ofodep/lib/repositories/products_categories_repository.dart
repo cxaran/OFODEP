@@ -20,31 +20,13 @@ class ProductsCategoriesRepository extends Repository<ProductsCategoryModel> {
     return super.create(model);
   }
 
-  Future<bool> moveAfter({
-    required String movingCategoryId,
-    required String targetCategoryId,
-  }) async {
-    try {
-      final response = await Supabase.instance.client.rpc(
-        'products_categories_move_afer',
-        params: {
-          'p_moving_category_id': movingCategoryId,
-          'p_target_category_id': targetCategoryId,
-        },
-      );
-      return response;
-    } catch (e) {
-      return false;
-    }
-  }
-
+  /// Mueve la categoría identificada por [categoryId] hacia arriba (intercambia con
+  /// la categoría inmediatamente superior dentro del mismo store).
   Future<bool> moveUp(String categoryId) async {
     try {
       final response = await Supabase.instance.client.rpc(
         'products_categories_move_up',
-        params: {
-          'p_category_id': categoryId,
-        },
+        params: {'p_category_id': categoryId},
       );
       return response;
     } catch (e) {
@@ -58,9 +40,7 @@ class ProductsCategoriesRepository extends Repository<ProductsCategoryModel> {
     try {
       final response = await Supabase.instance.client.rpc(
         'products_categories_move_down',
-        params: {
-          'p_category_id': categoryId,
-        },
+        params: {'p_category_id': categoryId},
       );
       return response;
     } catch (e) {
@@ -74,9 +54,7 @@ class ProductsCategoriesRepository extends Repository<ProductsCategoryModel> {
     try {
       final response = await Supabase.instance.client.rpc(
         'products_categories_last',
-        params: {
-          'p_store_id': storeId,
-        },
+        params: {'p_store_id': storeId},
       );
       return response;
     } catch (e) {

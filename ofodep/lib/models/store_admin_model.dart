@@ -17,7 +17,7 @@ class StoreAdminModel extends ModelComponent {
   bool? isPrimaryContact;
 
   StoreAdminModel({
-    required super.id,
+    super.id,
     required this.storeId,
     this.storeName,
     required this.userId,

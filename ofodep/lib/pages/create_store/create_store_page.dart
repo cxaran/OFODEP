@@ -123,7 +123,7 @@ class _CreateStorePageState extends State<CreateStorePage> {
                     createCubit: (context) => CreateStoreCubit()
                       ..load(
                         null,
-                        createModel: CreateStoreModel.empty(),
+                        createModel: CreateStoreModel(),
                       ),
                     loadedBuilder: (_, __, ___) => SizedBox.shrink(),
                     editingBuilder: (_, __, ___) => SizedBox.shrink(),
@@ -135,16 +135,11 @@ class _CreateStorePageState extends State<CreateStorePage> {
                         CustomListView(
                       formKey: _formKey,
                       isLoading: state.isSubmitting,
-                      onSave: () async {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          final newId = await cubit.create();
-                          if (newId != null && context.mounted) {
-                            context.pushReplacement(
-                              '/admin/store/$newId',
-                            );
-                          }
-                        }
-                      },
+                      onSave: () => create(_formKey, cubit, callback: () {
+                        context.pushReplacement(
+                          '/admin/store/${state.editedModel.id}',
+                        );
+                      }),
                       children: [
                         Text(
                           'Solicita tu prueba gratuita',
@@ -166,17 +161,17 @@ class _CreateStorePageState extends State<CreateStorePage> {
                             );
                           },
                         ),
-                        DropdownButtonFormField<CountryTimezone>(
+                        DropdownButtonFormField<CountryTimezone?>(
                           decoration: InputDecoration(
                             icon: const Icon(Icons.map),
                             labelText: 'Zona del comercio',
                           ),
-                          value: state.editedModel.countryCode == '' ||
-                                  state.editedModel.timezone == ''
+                          value: state.editedModel.countryCode == null ||
+                                  state.editedModel.timezone == null
                               ? null
                               : CountryTimezone(
-                                  country: state.editedModel.countryCode,
-                                  timezone: state.editedModel.timezone,
+                                  country: state.editedModel.countryCode!,
+                                  timezone: state.editedModel.timezone!,
                                 ),
                           items: timeZonesLatAm
                               .map(

@@ -54,6 +54,10 @@ class ListCubitStateHandler<T extends ModelComponent,
   /// Función opcional al buscar.
   final void Function(C cubit, String search)? onSearch;
 
+  final bool shrinkWrap;
+
+  final ScrollPhysics? physics;
+
   const ListCubitStateHandler({
     super.key,
     this.title,
@@ -66,6 +70,8 @@ class ListCubitStateHandler<T extends ModelComponent,
     this.onAdd,
     this.filterSectionBuilder = defaultFilterSectionBuilder,
     this.onSearch,
+    this.shrinkWrap = false,
+    this.physics,
   });
 
   /// Sección por defecto para filtros y búsqueda.
@@ -194,6 +200,8 @@ class ListCubitStateHandler<T extends ModelComponent,
                   return PagedListView<int, T>(
                     state: pagingState,
                     fetchNextPage: fetchNextPage,
+                    shrinkWrap: shrinkWrap,
+                    physics: physics,
                     builderDelegate: PagedChildBuilderDelegate<T>(
                       itemBuilder: (context, item, index) =>
                           itemBuilder(context, cubit, item, index),

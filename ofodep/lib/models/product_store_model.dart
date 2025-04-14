@@ -37,7 +37,7 @@ class ProductStoreModel extends ModelComponent {
   List<String>? tags;
 
   ProductStoreModel({
-    required super.id,
+    super.id,
     required this.storeId,
     required this.storeName,
     this.storeLogoUrl,

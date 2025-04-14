@@ -13,6 +13,16 @@ class CrudLoaded<T extends ModelComponent> implements CrudState<T> {
   final T model;
   final String? message;
   CrudLoaded(this.model, {this.message});
+
+  CrudLoaded copyWith({
+    T? model,
+    String? message,
+  }) {
+    return CrudLoaded(
+      model ?? this.model,
+      message: message ?? this.message,
+    );
+  }
 }
 
 class CrudCreate<T extends ModelComponent> implements CrudState<T> {
@@ -150,10 +160,19 @@ abstract class CrudCubit<T extends ModelComponent, R extends Repository<T>>
     }
   }
 
+  /// Actualiza el estado modificando únicamente el modelo de edición.
   void onRetry() {
     final current = state;
     if (current is CrudError<T>) {
       load(current.id);
+    }
+  }
+
+  /// Actualiza el estado modificando únicamente el modelo de edición.
+  void refresh() {
+    final current = state;
+    if (current is CrudLoaded<T>) {
+      emit(CrudLoaded<T>(current.model));
     }
   }
 

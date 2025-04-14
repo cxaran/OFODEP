@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/list_cubits/products_list_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
+import 'package:ofodep/utils/aux_forms.dart';
+import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/list_cubit_state_handler.dart';
 import 'package:ofodep/widgets/message_page.dart';
+import 'package:ofodep/widgets/preview_image.dart';
 
 class AdminProductsPage extends StatelessWidget {
   final String? storeId;
@@ -26,12 +29,15 @@ class AdminProductsPage extends StatelessWidget {
         title: 'Productos',
         createCubit: (context) => ProductsListCubit(storeId: storeId!),
         itemBuilder: (context, cubit, product, index) => ListTile(
-          title: Text(product.name),
+          leading: PreviewImage.mini(imageUrl: product.imageUrl),
+          title: Text(product.name ?? ''),
           subtitle: Text(
             '${product.categoryName ?? ''}\n'
             '${product.description ?? ''}',
           ),
-          trailing: Text(product.regularPrice.toString()),
+          trailing: Text(
+            currencyFormatter.format(product.regularPrice),
+          ),
           onTap: () => context.push(
             '/admin/product/${product.id}',
           ),
@@ -79,16 +85,13 @@ class AdminProductsPage extends StatelessWidget {
             ),
           ],
         ),
-        onAdd: (context, cubit) => context.push(
-          '/admin/product/create',
-          extra: ProductModel(
-            id: 'new',
+        onAdd: (context, cubit) => pageNewModel(
+          context,
+          '/admin/product',
+          ProductModel(
             storeId: storeId!,
-            categoryId: '',
-            name: '',
-            regularPrice: 0,
             days: [1, 2, 3, 4, 5, 6, 7],
-            active: true,
+            active: false,
             tags: [],
           ),
         ),

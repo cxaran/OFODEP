@@ -8,7 +8,7 @@ class UserModel extends ModelComponent {
   String? picture;
 
   UserModel({
-    required super.id,
+    super.id,
     required this.authId,
     required this.email,
     required this.name,

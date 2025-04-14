@@ -8,7 +8,7 @@ class ProductsCategoryModel extends ModelComponent {
   int? position;
 
   ProductsCategoryModel({
-    required super.id,
+    super.id,
     required this.storeId,
     this.storeName,
     required this.name,

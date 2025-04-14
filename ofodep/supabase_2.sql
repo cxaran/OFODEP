@@ -607,8 +607,8 @@ ALTER TABLE products_categories ENABLE ROW LEVEL SECURITY;
 -- Registra los productos de el comercio.
 CREATE TABLE products (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
-    category_id uuid REFERENCES products_categories(id) ON DELETE CASCADE,
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE NOT NULL,
+    category_id uuid REFERENCES products_categories(id) ON DELETE CASCADE NOT NULL,
     name text NOT NULL,
     description text,
     image_url text,
@@ -631,8 +631,8 @@ ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 -- Registra las configuraciones disponibles para un producto.
 CREATE TABLE product_configurations (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
-    product_id uuid REFERENCES products(id) ON DELETE CASCADE,
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE NOT NULL,
+    product_id uuid REFERENCES products(id) ON DELETE CASCADE NOT NULL,
     name text NOT NULL,
     description text,
     range_min int,
@@ -649,8 +649,9 @@ ALTER TABLE product_configurations ENABLE ROW LEVEL SECURITY;
 -- Registra las opciones disponibles para cada configuración, incluyendo costos extras.
 CREATE TABLE product_options (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    store_id uuid REFERENCES stores(id) ON DELETE CASCADE, 
-    product_configuration_id uuid REFERENCES product_configurations(id) ON DELETE CASCADE,
+    store_id uuid REFERENCES stores(id) ON DELETE CASCADE NOT NULL,
+    product_id uuid REFERENCES products(id) ON DELETE CASCADE NOT NULL,
+    product_configuration_id uuid REFERENCES product_configurations(id) ON DELETE CASCADE NOT NULL,
     name text NOT NULL,
     range_min int,
     range_max int,
@@ -764,7 +765,6 @@ USING (
 
 -- Funciones de posicionamiento de categorías
 
-
 -- Función: products_categories_move_up
 -- Recibe el ID de la categoría y la mueve intercambiándola con la categoría inmediatamente superior.
 -- Retorna TRUE si se realizó el cambio; de lo contrario FALSE.
@@ -876,5 +876,133 @@ BEGIN
 EXCEPTION
     WHEN OTHERS THEN
          RETURN 0;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función: products_last
+-- Recibe el ID de la categoría y retorna el número máximo de posición en esa categoría.
+CREATE OR REPLACE FUNCTION products_last(
+    p_category_id uuid
+) RETURNS integer AS $$
+DECLARE
+    v_last int;
+BEGIN
+    SELECT COALESCE(MAX(position), 0)
+      INTO v_last
+      FROM products
+     WHERE category_id = p_category_id;
+    RETURN v_last;
+EXCEPTION
+    WHEN OTHERS THEN
+         RETURN 0;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+-- FUNCIONES DE POSICIONAMIENTO DE PRODUCTOS
+
+-- Función: products_move_up
+-- Recibe el ID del producto y la mueve intercambiándolo con el producto inmediatamente superior dentro de la misma categoría y tienda.
+CREATE OR REPLACE FUNCTION products_move_up(
+    p_product_id uuid
+) RETURNS boolean AS $$
+DECLARE
+    v_store uuid;
+    v_category uuid;
+    v_position int;
+    v_prev_id uuid;
+    v_prev_position int;
+BEGIN
+    -- Obtener store, category y posición del producto actual.
+    SELECT store_id, category_id, position
+      INTO v_store, v_category, v_position
+      FROM products
+     WHERE id = p_product_id;
+    
+    IF v_store IS NULL THEN
+         RAISE EXCEPTION 'El producto no existe';
+    END IF;
+    
+    -- Buscar el producto inmediatamente superior dentro de la misma categoría y tienda.
+    SELECT id, position
+      INTO v_prev_id, v_prev_position
+      FROM products
+     WHERE store_id = v_store
+       AND category_id = v_category
+       AND position < v_position
+     ORDER BY position DESC
+     LIMIT 1;
+     
+    IF v_prev_id IS NULL THEN
+        RETURN false;  -- El producto ya se encuentra en la posición más alta.
+    END IF;
+    
+    -- Intercambiar posiciones.
+    UPDATE products
+       SET position = v_prev_position, updated_at = now()
+     WHERE id = p_product_id;
+     
+    UPDATE products
+       SET position = v_position, updated_at = now()
+     WHERE id = v_prev_id;
+     
+    RETURN true;
+EXCEPTION
+    WHEN OTHERS THEN
+         RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Función: products_move_down
+-- Recibe el ID del producto y la mueve intercambiándolo con el producto inmediatamente inferior dentro de la misma categoría y tienda.
+CREATE OR REPLACE FUNCTION products_move_down(
+    p_product_id uuid
+) RETURNS boolean AS $$
+DECLARE
+    v_store uuid;
+    v_category uuid;
+    v_position int;
+    v_next_id uuid;
+    v_next_position int;
+BEGIN
+    -- Obtener store, category y posición del producto actual.
+    SELECT store_id, category_id, position
+      INTO v_store, v_category, v_position
+      FROM products
+     WHERE id = p_product_id;
+    
+    IF v_store IS NULL THEN
+         RAISE EXCEPTION 'El producto no existe';
+    END IF;
+    
+    -- Buscar el producto inmediatamente inferior dentro de la misma categoría y tienda.
+    SELECT id, position
+      INTO v_next_id, v_next_position
+      FROM products
+     WHERE store_id = v_store
+       AND category_id = v_category
+       AND position > v_position
+     ORDER BY position ASC
+     LIMIT 1;
+     
+    IF v_next_id IS NULL THEN
+        RETURN false;  -- El producto ya se encuentra en la posición más baja.
+    END IF;
+    
+    -- Intercambiar posiciones.
+    UPDATE products
+       SET position = v_next_position, updated_at = now()
+     WHERE id = p_product_id;
+     
+    UPDATE products
+       SET position = v_position, updated_at = now()
+     WHERE id = v_next_id;
+     
+    RETURN true;
+EXCEPTION
+    WHEN OTHERS THEN
+         RETURN false;
 END;
 $$ LANGUAGE plpgsql;

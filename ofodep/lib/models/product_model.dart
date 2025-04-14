@@ -2,13 +2,13 @@ import 'package:ofodep/models/abstract_model.dart';
 
 class ProductModel extends ModelComponent {
   final String storeId;
-  final String categoryId;
+  String? categoryId;
   String? storeName;
   String? categoryName;
-  String name;
+  String? name;
   String? description;
   String? imageUrl;
-  num regularPrice;
+  num? regularPrice;
   num? salePrice;
   DateTime? saleStart;
   DateTime? saleEnd;
@@ -16,18 +16,18 @@ class ProductModel extends ModelComponent {
   List<String> tags;
   List<int> days;
   bool active;
-  int position;
+  int? position;
 
   ProductModel({
-    required super.id,
+    super.id,
     required this.storeId,
-    required this.categoryId,
+    this.categoryId,
     this.storeName,
     this.categoryName,
-    required this.name,
+    this.name,
     this.description,
     this.imageUrl,
-    required this.regularPrice,
+    this.regularPrice,
     this.salePrice,
     this.saleStart,
     this.saleEnd,
@@ -35,7 +35,7 @@ class ProductModel extends ModelComponent {
     this.tags = const [],
     this.days = const [],
     this.active = true,
-    this.position = 0,
+    this.position,
     super.createdAt,
     super.updatedAt,
   });

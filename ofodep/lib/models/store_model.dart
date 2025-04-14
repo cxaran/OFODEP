@@ -38,7 +38,7 @@ class StoreModel extends ModelComponent {
   bool? isOpen;
 
   StoreModel({
-    required super.id,
+    super.id,
     required this.name,
     this.logoUrl,
     this.addressStreet,

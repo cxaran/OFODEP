@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/list_cubits/products_categories_list_cubit.dart';
 import 'package:ofodep/models/products_category_model.dart';
 import 'package:ofodep/repositories/products_categories_repository.dart';
+import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/list_cubit_state_handler.dart';
 import 'package:ofodep/widgets/message_page.dart';
 
@@ -55,10 +56,10 @@ class AdminProductsCategoriesPage extends StatelessWidget {
           ),
         ),
         showFilterButton: false,
-        onAdd: (context, cubit) => context.push(
-          '/admin/products_category/create',
-          extra: ProductsCategoryModel(
-            id: 'new',
+        onAdd: (context, cubit) => pageNewModel(
+          context,
+          '/admin/products_category',
+          ProductsCategoryModel(
             name: '',
             storeId: storeId!,
           ),

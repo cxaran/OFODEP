@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/list_cubits/store_admins_list_cubit.dart';
 import 'package:ofodep/models/store_admin_model.dart';
+import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/list_cubit_state_handler.dart';
 
@@ -69,10 +70,10 @@ class AdminStoreAdminsPage extends StatelessWidget {
         ),
         onAdd: storeId == null
             ? null
-            : (context, cubit) => context.push(
-                  '/admin/store_admin/create',
-                  extra: StoreAdminModel(
-                    id: 'new',
+            : (context, cubit) => pageNewModel(
+                  context,
+                  '/admin/store_admin',
+                  StoreAdminModel(
                     storeId: storeId!,
                     userId: '',
                     contactName: '',

@@ -9,7 +9,7 @@ class StoreScheduleExceptionModel extends ModelComponent {
   TimeOfDay? closingTime;
 
   StoreScheduleExceptionModel({
-    required super.id,
+    super.id,
     required this.storeId,
     required this.date,
     this.isClosed = false,

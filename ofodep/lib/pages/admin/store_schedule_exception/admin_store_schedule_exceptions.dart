@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/list_cubits/store_schedule_exceptions_list_cubit.dart';
 import 'package:ofodep/models/store_schedule_exception_model.dart';
+import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/list_cubit_state_handler.dart';
 import 'package:ofodep/widgets/message_page.dart';
@@ -77,14 +78,12 @@ class AdminStoreScheduleExceptionsPage extends StatelessWidget {
             ),
           ],
         ),
-        onAdd: (context, cubit) => context.push(
-          '/admin/schedule_exception/create',
-          extra: StoreScheduleExceptionModel(
-            id: 'new',
+        onAdd: (context, cubit) => pageNewModel(
+          context,
+          '/admin/schedule_exception',
+          StoreScheduleExceptionModel(
             storeId: storeId!,
-            date: DateTime.now().subtract(
-              const Duration(days: 1),
-            ),
+            date: DateTime.now(),
           ),
         ),
       ),
