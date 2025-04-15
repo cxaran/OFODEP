@@ -130,6 +130,11 @@ class ListCubitStateHandler<T extends ModelComponent,
                     floating: true,
                     snap: true,
                     actions: [
+                      if (showFilterButton)
+                        IconButton(
+                          onPressed: cubit.refresh,
+                          icon: const Icon(Icons.refresh),
+                        ),
                       if (onAdd != null)
                         IconButton.filledTonal(
                           onPressed: () => onAdd!(context, cubit),

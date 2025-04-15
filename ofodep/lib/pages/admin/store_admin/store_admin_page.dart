@@ -70,6 +70,7 @@ class StoreAdminAdminPage extends StatelessWidget {
     final model = state.model;
     return CustomListView(
       title: 'Administrador de comercio',
+      loadedMessage: state.message,
       actions: [
         ElevatedButton.icon(
           onPressed: () => showDialog(

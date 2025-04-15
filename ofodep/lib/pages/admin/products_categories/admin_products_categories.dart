@@ -51,9 +51,13 @@ class AdminProductsCategoriesPage extends StatelessWidget {
               Icon(Icons.keyboard_arrow_down),
             ],
           ),
-          onTap: () => context.push(
-            '/admin/products_category/${category.id}',
-          ),
+          onTap: () => context
+              .push(
+                '/admin/products_category/${category.id}',
+              )
+              .then(
+                (back) => back == true ? cubit.refresh() : null,
+              ),
         ),
         showFilterButton: false,
         onAdd: (context, cubit) => pageNewModel(
@@ -63,6 +67,8 @@ class AdminProductsCategoriesPage extends StatelessWidget {
             name: '',
             storeId: storeId!,
           ),
+        ).then(
+          (back) => back == true ? cubit.refresh() : null,
         ),
       ),
     );

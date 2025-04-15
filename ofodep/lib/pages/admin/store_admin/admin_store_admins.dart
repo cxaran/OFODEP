@@ -31,7 +31,9 @@ class AdminStoreAdminsPage extends StatelessWidget {
           trailing: model.isPrimaryContact ?? false
               ? const Icon(Icons.admin_panel_settings)
               : null,
-          onTap: () => context.push('/admin/store_admin/${model.id}'),
+          onTap: () => context.push('/admin/store_admin/${model.id}').then(
+                (back) => back == true ? cubit.refresh() : null,
+              ),
         ),
         filterSectionBuilder: (context, cubit, state) => CustomListView(
           children: [
@@ -81,6 +83,8 @@ class AdminStoreAdminsPage extends StatelessWidget {
                     contactPhone: '',
                     isPrimaryContact: false,
                   ),
+                ).then(
+                  (back) => back == true ? cubit.refresh() : null,
                 ),
       ),
     );

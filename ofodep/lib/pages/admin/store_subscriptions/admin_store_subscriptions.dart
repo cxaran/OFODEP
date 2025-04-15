@@ -33,8 +33,13 @@ class _AdminStoreSubscriptionsAdminPageState
               subscription.expirationDate,
             ),
           ),
-          onTap: () =>
-              context.push('/admin/subscription/${subscription.storeId}'),
+          onTap: () => context
+              .push(
+                '/admin/subscription/${subscription.storeId}',
+              )
+              .then(
+                (back) => back == true ? cubit.refresh() : null,
+              ),
         ),
         filterSectionBuilder: (context, cubit, state) => CustomListView(
           children: [

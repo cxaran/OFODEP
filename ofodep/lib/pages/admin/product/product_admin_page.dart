@@ -97,6 +97,7 @@ class ProductAdminPage extends StatelessWidget {
     final model = state.model;
     return CustomListView(
       title: 'Producto',
+      loadedMessage: state.message,
       actions: [
         ElevatedButton.icon(
           onPressed: () => showDialog(

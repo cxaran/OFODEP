@@ -35,7 +35,9 @@ class AdminStoreSchedulesPage extends StatelessWidget {
             ' - '
             '${model.closingTime == null ? 'Hora de cierre no definida' : MaterialLocalizations.of(context).formatTimeOfDay(model.closingTime!)}',
           ),
-          onTap: () => context.push('/admin/schedule/${model.id}'),
+          onTap: () => context.push('/admin/schedule/${model.id}').then(
+                (back) => back == true ? cubit.refresh() : null,
+              ),
         ),
         filterSectionBuilder: (context, cubit, state) => CustomListView(
           children: [
@@ -75,6 +77,8 @@ class AdminStoreSchedulesPage extends StatelessWidget {
             storeId: storeId!,
             days: [],
           ),
+        ).then(
+          (back) => back == true ? cubit.refresh() : null,
         ),
       ),
     );

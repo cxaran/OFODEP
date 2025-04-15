@@ -73,6 +73,7 @@ class ProductsCategoryAdminPage extends StatelessWidget {
         builder: (context, snapshot) {
           return CustomListView(
             title: 'Categoría de productos',
+            loadedMessage: state.message,
             actions: [
               ElevatedButton.icon(
                 onPressed: () => showDialog(

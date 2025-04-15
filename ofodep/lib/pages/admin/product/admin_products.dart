@@ -38,9 +38,13 @@ class AdminProductsPage extends StatelessWidget {
           trailing: Text(
             currencyFormatter.format(product.regularPrice),
           ),
-          onTap: () => context.push(
-            '/admin/product/${product.id}',
-          ),
+          onTap: () => context
+              .push(
+                '/admin/product/${product.id}',
+              )
+              .then(
+                (back) => back == true ? cubit.refresh() : null,
+              ),
         ),
         filterSectionBuilder: (context, cubit, state) => CustomListView(
           children: [
@@ -94,6 +98,8 @@ class AdminProductsPage extends StatelessWidget {
             active: false,
             tags: [],
           ),
+        ).then(
+          (back) => back == true ? cubit.refresh() : null,
         ),
       ),
     );

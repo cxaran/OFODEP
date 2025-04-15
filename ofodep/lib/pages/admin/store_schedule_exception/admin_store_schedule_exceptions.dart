@@ -41,7 +41,10 @@ class AdminStoreScheduleExceptionsPage extends StatelessWidget {
             ' - '
             '${model.closingTime == null ? '-' : MaterialLocalizations.of(context).formatTimeOfDay(model.closingTime!)}',
           ),
-          onTap: () => context.push('/admin/schedule_exception/${model.id}'),
+          onTap: () =>
+              context.push('/admin/schedule_exception/${model.id}').then(
+                    (back) => back == true ? cubit.refresh() : null,
+                  ),
         ),
         filterSectionBuilder: (context, cubit, state) => CustomListView(
           children: [
@@ -85,6 +88,8 @@ class AdminStoreScheduleExceptionsPage extends StatelessWidget {
             storeId: storeId!,
             date: DateTime.now(),
           ),
+        ).then(
+          (back) => back == true ? cubit.refresh() : null,
         ),
       ),
     );

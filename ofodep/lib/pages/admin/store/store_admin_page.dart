@@ -54,6 +54,7 @@ class StoreAdminPage extends StatelessWidget {
     StoreModel store = state.model;
     return CustomListView(
       title: 'Configura tu comercio',
+      loadedMessage: state.message,
       children: [
         ListTile(
           leading: PreviewImage.mini(imageUrl: store.logoUrl),
@@ -167,7 +168,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         const Divider(),
         const Text(
-          'Categorías y productos',
+          'Menu o catalogo de productos',
         ),
         ListTile(
           leading: const Icon(Icons.category),
@@ -571,6 +572,8 @@ class StoreAdminPage extends StatelessWidget {
             );
           },
         ),
+        Divider(),
+        Text('Configuraciones de entregas a domicilio'),
         SwitchListTile(
           title: const Text('Entrega a domicilio'),
           subtitle: state.model.geom == null

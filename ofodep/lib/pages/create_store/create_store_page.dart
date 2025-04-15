@@ -13,6 +13,7 @@ import 'package:ofodep/repositories/store_admin_repository.dart';
 import 'package:ofodep/utils/aux_forms.dart';
 import 'package:ofodep/widgets/container_page.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
+import 'package:ofodep/widgets/custom_form_validator.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/hero_layout_card.dart';
 import 'package:ofodep/widgets/message_page.dart';
@@ -259,32 +260,28 @@ class _CreateStorePageState extends State<CreateStorePage> {
                           },
                         ),
                         Divider(),
-                        FormField<bool>(
-                          initialValue: false,
-                          validator: (value) {
-                            if (value != true) {
-                              return 'Debes aceptar los Términos y Condiciones';
-                            }
-                            return null;
-                          },
-                          builder: (state) => Row(
-                            children: [
-                              Checkbox(
-                                value: state.value,
-                                onChanged: (value) => state.didChange(value),
-                                isError: state.hasError,
-                              ),
-                              InkWell(
-                                onTap: () => showDialog(
-                                  context: context,
-                                  builder: (context) => TermsCreateStore(),
-                                ),
-                                child: const Text(
-                                  'Acepto los Términos y Condiciones',
-                                ),
-                              ),
-                            ],
+                        CheckboxListTile(
+                          value: state.editedModel.termsAccepted,
+                          onChanged: (value) => cubit.updateEditedModel(
+                            (model) => model.copyWith(termsAccepted: value),
                           ),
+                          title: Text('Acepto los Términos y Condiciones'),
+                          subtitle: Align(
+                            alignment: Alignment.centerLeft,
+                            child: CustomFormValidator(
+                              padding: 0,
+                              initialValue: state.editedModel.termsAccepted,
+                              validator: (value) => value == true
+                                  ? null
+                                  : 'Debes aceptar los Términos y Condiciones',
+                            ),
+                          ),
+                          secondary: IconButton(
+                              onPressed: () => showDialog(
+                                    context: context,
+                                    builder: (context) => TermsCreateStore(),
+                                  ),
+                              icon: const Icon(Icons.info)),
                         ),
                       ],
                     ),

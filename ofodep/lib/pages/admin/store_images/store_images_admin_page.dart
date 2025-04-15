@@ -59,6 +59,7 @@ class StoreImagesAdminPage extends StatelessWidget {
   ) {
     return CustomListView(
       title: 'Imgur',
+      loadedMessage: state.message,
       actions: [
         ElevatedButton.icon(
           onPressed: () => cubit.startEditing(),

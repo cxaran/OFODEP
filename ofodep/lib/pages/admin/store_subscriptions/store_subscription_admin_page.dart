@@ -57,6 +57,7 @@ class StoreSubscriptionAdminPage extends StatelessWidget {
       builder: (context, snapshot) {
         return CustomListView(
           title: 'Suscripcion',
+          loadedMessage: state.message,
           actions: [
             if (snapshot.connectionState == ConnectionState.done)
               if (snapshot.hasData && snapshot.data != null)

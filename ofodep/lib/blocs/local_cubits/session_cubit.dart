@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ofodep/models/user_model.dart';
 import 'package:ofodep/repositories/user_repository.dart';
@@ -9,11 +10,28 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// [SessionAuthenticated] estado de autenticación
 /// [SessionUnauthenticated] estado de no autenticación
 abstract class SessionState {
-  const SessionState();
+  final ThemeMode themeMode;
+  const SessionState({
+    this.themeMode = ThemeMode.system,
+  });
+
+  SessionState copyWith({
+    ThemeMode? themeMode,
+  });
 }
 
 class SessionInitial extends SessionState {
-  const SessionInitial() : super();
+  const SessionInitial({
+    super.themeMode,
+  });
+
+  @override
+  SessionState copyWith({
+    ThemeMode? themeMode,
+  }) =>
+      SessionInitial(
+        themeMode: themeMode ?? this.themeMode,
+      );
 }
 
 class SessionAuthenticated extends SessionState {
@@ -21,14 +39,33 @@ class SessionAuthenticated extends SessionState {
 
   /// Crea el estado de autenticación a partir de un Usuario
   /// [user] Usuario a copiar
-  SessionAuthenticated(this.user);
+  SessionAuthenticated(this.user, {super.themeMode});
+  @override
+  SessionState copyWith({
+    ThemeMode? themeMode,
+  }) =>
+      SessionAuthenticated(
+        user,
+        themeMode: themeMode ?? this.themeMode,
+      );
 }
 
 class SessionUnauthenticated extends SessionState {
   final String? errorMessage;
   const SessionUnauthenticated({
     this.errorMessage,
-  }) : super();
+    super.themeMode,
+  });
+
+  @override
+  SessionState copyWith({
+    ThemeMode? themeMode,
+    String? errorMessage,
+  }) =>
+      SessionUnauthenticated(
+        errorMessage: errorMessage ?? this.errorMessage,
+        themeMode: themeMode ?? this.themeMode,
+      );
 }
 
 /// Cubit que gestiona el estado de autenticación
@@ -49,6 +86,12 @@ class SessionCubit extends Cubit<SessionState> {
     });
     // Verificar la sesión al iniciar el Cubit
     checkSession();
+  }
+
+  ThemeMode get themeMode => state.themeMode;
+
+  void setThemeMode(ThemeMode themeMode) {
+    emit(state.copyWith(themeMode: themeMode));
   }
 
   /// Verifica la sesión actual

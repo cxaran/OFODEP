@@ -93,6 +93,7 @@ class ProductCrudCreate extends CrudCreate<ProductModel> {
   @override
   ProductCrudCreate copyWith({
     ProductModel? editedModel,
+    bool? editMode,
     bool? isSubmitting,
     String? errorMessage,
     List<ProductConfigurationModel>? configurations,
@@ -415,8 +416,7 @@ class ProductCubit extends CrudCubit<ProductModel, ProductRepository> {
     int? rangeMin,
     int? rangeMax,
   }) async {
-    if (state is CrudEditing<ProductModel> ||
-        state is CrudCreate<ProductModel>) {
+    if (state is ProductCrudEditing || state is ProductCrudCreate) {
       final concreteState = state as dynamic;
       final configurations = List<ProductConfigurationModel>.from(
         concreteState.configurations,
@@ -449,8 +449,7 @@ class ProductCubit extends CrudCubit<ProductModel, ProductRepository> {
     int? rangeMax,
     num? extraPrice,
   }) async {
-    if (state is CrudEditing<ProductModel> ||
-        state is CrudCreate<ProductModel>) {
+    if (state is ProductCrudEditing || state is ProductCrudCreate) {
       final concreteState = state as dynamic;
       final options = List<ProductOptionModel>.from(concreteState.options);
       int index = options.indexWhere(

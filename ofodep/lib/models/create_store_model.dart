@@ -11,6 +11,8 @@ class CreateStoreModel extends ModelComponent {
   final String? contactEmail;
   final String? contactPhone;
 
+  final bool termsAccepted;
+
   CreateStoreModel({
     super.id,
     this.storeName,
@@ -19,6 +21,7 @@ class CreateStoreModel extends ModelComponent {
     this.contactName,
     this.contactEmail,
     this.contactPhone,
+    this.termsAccepted = false,
   });
 
   @override
@@ -54,6 +57,7 @@ class CreateStoreModel extends ModelComponent {
     String? contactEmail,
     String? contactPhone,
     bool? isPrimaryContact,
+    bool? termsAccepted,
   }) {
     return CreateStoreModel(
       id: id ?? this.id,
@@ -63,6 +67,7 @@ class CreateStoreModel extends ModelComponent {
       contactName: contactName ?? this.contactName,
       contactEmail: contactEmail ?? this.contactEmail,
       contactPhone: contactPhone ?? this.contactPhone,
+      termsAccepted: termsAccepted ?? this.termsAccepted,
     );
   }
 
@@ -74,6 +79,7 @@ class CreateStoreModel extends ModelComponent {
       'timezone: $timezone, '
       'contactName: $contactName, '
       'contactEmail: $contactEmail, '
-      'contactPhone: $contactPhone'
+      'contactPhone: $contactPhone, '
+      'termsAccepted: $termsAccepted'
       ')';
 }

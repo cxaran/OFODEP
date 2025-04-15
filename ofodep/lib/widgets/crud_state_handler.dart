@@ -80,7 +80,7 @@ class CrudStateHandler<T extends ModelComponent,
     CrudState state,
   ) =>
       MessagePage.error(
-        onBack: context.pop,
+        onBack: () => context.pop(true),
         onRetry: cubit.onRetry,
       );
 
@@ -95,7 +95,7 @@ class CrudStateHandler<T extends ModelComponent,
   ) =>
       MessagePage.error(
         message: error,
-        onBack: context.pop,
+        onBack: () => context.pop(true),
         onRetry: cubit.onRetry,
       );
 

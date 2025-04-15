@@ -69,6 +69,7 @@ class StoreScheduleExceptionAdminPage extends StatelessWidget {
     final model = state.model;
     return CustomListView(
       title: 'Horario',
+      loadedMessage: state.message,
       actions: [
         ElevatedButton.icon(
           onPressed: () => showDialog(

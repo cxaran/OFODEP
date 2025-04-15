@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
 
 class CustomFormValidator<T> extends StatelessWidget {
-  final FormFieldBuilder<T> builder;
+  final FormFieldBuilder<T>? builder;
   final FormFieldSetter<T>? onSaved;
   final FormFieldValidator<T>? validator;
+  final double padding;
   final T? initialValue;
 
   const CustomFormValidator({
     super.key,
-    this.builder = defaultBuilder,
+    this.builder,
     this.onSaved,
     this.validator,
+    this.padding = 16.0,
     this.initialValue,
   });
 
-  static Widget defaultBuilder(FormFieldState state) {
+  Widget defaultBuilder(FormFieldState state) {
     if (state.hasError && state.errorText != null) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: EdgeInsets.symmetric(
+          horizontal: padding,
+        ),
         child: Text(
           state.errorText!,
           style: Theme.of(state.context)
@@ -33,7 +37,7 @@ class CustomFormValidator<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FormField(
-      builder: builder,
+      builder: builder ?? defaultBuilder,
       onSaved: onSaved,
       validator: validator,
       initialValue: initialValue,

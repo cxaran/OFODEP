@@ -62,6 +62,31 @@ class DrawerHome extends StatelessWidget {
                   return SizedBox.shrink();
                 },
               ),
+            ListTile(
+              title: SegmentedButton<ThemeMode>(
+                segments: [
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    icon: const Icon(Icons.auto_awesome),
+                    tooltip: 'Sistema',
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: const Icon(Icons.light_mode),
+                    tooltip: 'Claro',
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: const Icon(Icons.dark_mode),
+                    tooltip: 'Oscuro',
+                  ),
+                ],
+                selected: {context.read<SessionCubit>().themeMode},
+                onSelectionChanged: (value) {
+                  context.read<SessionCubit>().setThemeMode(value.first);
+                },
+              ),
+            ),
           ],
         ),
       ),

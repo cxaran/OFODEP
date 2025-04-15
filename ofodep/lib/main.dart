@@ -32,7 +32,7 @@ class App extends StatelessWidget {
       title: 'OFODEP',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: context.watch<SessionCubit>().themeMode,
       routerConfig: createRouter(
         context.watch<SessionCubit>(),
       ),
