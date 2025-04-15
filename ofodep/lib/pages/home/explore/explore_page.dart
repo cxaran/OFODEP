@@ -13,6 +13,18 @@ class ExplorePage extends StatelessWidget {
   // Reciente
   // Comentadas
 
+  // Filtro forzoso: posicion lat y lng y distancia
+
+  // Campos de busqueda o like: nombre del producto,  nombre de la store, categoria, tags
+
+  // Filtro exacto: tags
+
+  // Filtros boleanos: delivery, pickup, ofertas, envios gratis,
+
+  // Ordenamiento: precio, recientes
+
+  // Filtros lte: precio, minimo de compra para entrega
+
   @override
   Widget build(BuildContext context) {
     return NestedScrollView(
