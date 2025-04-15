@@ -130,15 +130,15 @@ class ListCubitStateHandler<T extends ModelComponent,
                     floating: true,
                     snap: true,
                     actions: [
-                      if (showFilterButton)
-                        IconButton(
-                          onPressed: cubit.refresh,
-                          icon: const Icon(Icons.refresh),
-                        ),
                       if (onAdd != null)
                         IconButton.filledTonal(
                           onPressed: () => onAdd!(context, cubit),
                           icon: const Icon(Icons.add),
+                        ),
+                      if (showFilterButton)
+                        IconButton(
+                          onPressed: cubit.refresh,
+                          icon: const Icon(Icons.refresh),
                         ),
                       if (showFilterButton)
                         IconButton(
@@ -197,31 +197,33 @@ class ListCubitStateHandler<T extends ModelComponent,
                   ),
               ];
             },
-            body: RefreshIndicator(
-              onRefresh: () async => cubit.refresh(),
-              child: PagingListener(
-                controller: cubit.pagingController,
-                builder: (context, pagingState, fetchNextPage) {
-                  return PagedListView<int, T>(
-                    state: pagingState,
-                    fetchNextPage: fetchNextPage,
-                    shrinkWrap: shrinkWrap,
-                    physics: physics,
-                    builderDelegate: PagedChildBuilderDelegate<T>(
-                      itemBuilder: (context, item, index) =>
-                          itemBuilder(context, cubit, item, index),
-                      firstPageErrorIndicatorBuilder: (context) =>
-                          MessagePage.error(
-                        onBack: cubit.refresh,
+            body: SafeArea(
+              child: RefreshIndicator(
+                onRefresh: () async => cubit.refresh(),
+                child: PagingListener(
+                  controller: cubit.pagingController,
+                  builder: (context, pagingState, fetchNextPage) {
+                    return PagedListView<int, T>(
+                      state: pagingState,
+                      fetchNextPage: fetchNextPage,
+                      shrinkWrap: shrinkWrap,
+                      physics: physics,
+                      builderDelegate: PagedChildBuilderDelegate<T>(
+                        itemBuilder: (context, item, index) =>
+                            itemBuilder(context, cubit, item, index),
+                        firstPageErrorIndicatorBuilder: (context) =>
+                            MessagePage.error(
+                          onBack: cubit.refresh,
+                        ),
+                        noItemsFoundIndicatorBuilder: (context) =>
+                            MessagePage.warning(
+                          'No se encontraron elementos',
+                          onRetry: cubit.refresh,
+                        ),
                       ),
-                      noItemsFoundIndicatorBuilder: (context) =>
-                          MessagePage.warning(
-                        'No se encontraron elementos',
-                        onRetry: cubit.refresh,
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           );

@@ -4,10 +4,12 @@ class ProductModel extends ModelComponent {
   final String storeId;
   String? categoryId;
   String? storeName;
+  String? storeTimezone;
   String? categoryName;
   String? name;
   String? description;
   String? imageUrl;
+  num? productPrice;
   num? regularPrice;
   num? salePrice;
   DateTime? saleStart;
@@ -23,10 +25,12 @@ class ProductModel extends ModelComponent {
     required this.storeId,
     this.categoryId,
     this.storeName,
+    this.storeTimezone,
     this.categoryName,
     this.name,
     this.description,
     this.imageUrl,
+    this.productPrice,
     this.regularPrice,
     this.salePrice,
     this.saleStart,
@@ -47,14 +51,16 @@ class ProductModel extends ModelComponent {
       storeId: map['store_id'],
       categoryId: map['category_id'],
       storeName: map['stores']?['name'],
-      categoryName: map[' products_categories']?['name'],
+      storeTimezone: map['stores']?['timezone'],
+      categoryName: map['products_categories']?['name'],
       name: map['name'],
       description: map['description'],
       imageUrl: map['image_url'],
+      productPrice: map['product_price'],
       regularPrice: map['regular_price'],
       salePrice: map['sale_price'],
-      saleStart: map['sale_start'],
-      saleEnd: map['sale_end'],
+      saleStart: DateTime.tryParse(map['sale_start'] ?? ''),
+      saleEnd: DateTime.tryParse(map['sale_end'] ?? ''),
       currency: map['currency'],
       days: (map['days'] as List).map((e) => e as int).toList(),
       tags: (map['tags'] as List).map((e) => e.toString()).toList(),
@@ -78,8 +84,8 @@ class ProductModel extends ModelComponent {
         'image_url': imageUrl,
         'regular_price': regularPrice,
         'sale_price': salePrice,
-        'sale_start': saleStart,
-        'sale_end': saleEnd,
+        'sale_start': saleStart?.toIso8601String(),
+        'sale_end': saleEnd?.toIso8601String(),
         'currency': currency,
         'tags': tags,
         'days': days,
@@ -93,10 +99,12 @@ class ProductModel extends ModelComponent {
     String? storeId,
     String? categoryId,
     String? storeName,
+    String? storeTimezone,
     String? categoryName,
     String? name,
     String? description,
     String? imageUrl,
+    num? productPrice,
     num? regularPrice,
     num? salePrice,
     DateTime? saleStart,
@@ -113,10 +121,12 @@ class ProductModel extends ModelComponent {
       storeId: storeId ?? this.storeId,
       categoryId: categoryId ?? this.categoryId,
       storeName: storeName ?? this.storeName,
+      storeTimezone: storeTimezone ?? this.storeTimezone,
       categoryName: categoryName ?? this.categoryName,
       name: name ?? this.name,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
+      productPrice: productPrice ?? this.productPrice,
       regularPrice: regularPrice ?? this.regularPrice,
       salePrice: salePrice ?? this.salePrice,
       saleStart: saleStart ?? this.saleStart,

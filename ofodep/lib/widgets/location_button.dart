@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/location_cubit.dart';
 
 class LocationButton extends StatelessWidget {
@@ -44,14 +45,12 @@ class LocationIcon extends StatelessWidget {
     this.label = '',
   });
 
-  Future<void> onRefresh(BuildContext context) async {}
-
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 145, maxHeight: 60),
       child: TextButton.icon(
-        onPressed: () => onRefresh(context),
+        onPressed: () => context.push('/location'),
         icon: Icon(icon, color: color, size: 20),
         label: Text(
           label,

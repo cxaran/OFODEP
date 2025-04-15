@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
 import 'package:flutter_map_line_editor/flutter_map_line_editor.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/widgets/location_picker.dart';
 
 class ZonePolygon extends StatefulWidget {
@@ -23,7 +25,7 @@ class ZonePolygon extends StatefulWidget {
     required this.onGeomChanged,
     required this.centerLatitude,
     required this.centerLongitude,
-    this.maxDistance = 5000,
+    this.maxDistance = 10000,
   });
 
   @override
@@ -33,6 +35,7 @@ class ZonePolygon extends StatefulWidget {
 class _ZonePolygonState extends State<ZonePolygon> {
   late PolyEditor polyEditor;
   late PolygonGeometry polygonGeometry;
+  final MapController controller = MapController();
 
   @override
   void initState() {
@@ -49,12 +52,12 @@ class _ZonePolygonState extends State<ZonePolygon> {
       points: polygonGeometry.points,
       pointIcon: const Icon(
         Icons.square,
-        size: 15,
+        size: 18,
         color: Colors.orange,
       ),
       intermediateIcon: const Icon(
         Icons.lens,
-        size: 10,
+        size: 12,
         color: Colors.orangeAccent,
       ),
       callbackRefresh: (LatLng? _) => setState(
@@ -76,88 +79,153 @@ class _ZonePolygonState extends State<ZonePolygon> {
       polygons.add(testPolygon);
     }
 
-    return Stack(
-      children: [
-        FlutterMap(
-          options: MapOptions(
-            onTap: (_, tappedPoint) {
-              if (polygonGeometry.distance(tappedPoint) > widget.maxDistance) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('max distance:${widget.maxDistance}'),
-                    duration: Duration(seconds: 1),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        debugPrint('onPopInvokedWithResult: $didPop');
+        if (!didPop) {
+          if (widget.onBack != null) {
+            widget.onBack!();
+          } else {
+            context.pop();
+          }
+        }
+      },
+      child: Stack(
+        children: [
+          FlutterMap(
+            mapController: controller,
+            options: MapOptions(
+              onTap: (_, tappedPoint) {
+                if (polygonGeometry.distance(tappedPoint) >
+                    widget.maxDistance) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('max distance:${widget.maxDistance}'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                  return;
+                }
+                polyEditor.add(testPolygon.points, tappedPoint);
+              },
+              initialCenter: polygonGeometry.center,
+              initialZoom: polygonGeometry.zoom ?? 13,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.ofodep',
+              ),
+              PolygonLayer(polygons: polygons),
+              DragMarkers(
+                markers: polyEditor.edit().map((marker) {
+                  return DragMarker(
+                    size: marker.size,
+                    point: marker.point,
+                    builder: marker.builder,
+                    onDragUpdate: (details, position) {
+                      if (polygonGeometry.distance(position) <=
+                          widget.maxDistance) {
+                        marker.onDragUpdate?.call(details, position);
+                      } else {
+                        setState(() {});
+                      }
+                    },
+                    onDragStart: (details, position) =>
+                        marker.onDragStart?.call(
+                      details,
+                      position,
+                    ),
+                    onDragEnd: (details, position) => marker.onDragEnd?.call(
+                      details,
+                      position,
+                    ),
+                    onLongPress: (details) => marker.onLongPress?.call(details),
+                  );
+                }).toList(),
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point:
+                        LatLng(widget.centerLatitude, widget.centerLongitude),
+                    width: 20,
+                    height: 20,
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 30,
+                    ),
                   ),
-                );
-                return;
-              }
-              polyEditor.add(testPolygon.points, tappedPoint);
-            },
-            initialCenter: polygonGeometry.center,
-            initialZoom: polygonGeometry.zoom ?? 13,
+                ],
+              ),
+            ],
           ),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.ofodep',
-            ),
-            PolygonLayer(polygons: polygons),
-            DragMarkers(
-              markers: polyEditor.edit().map((marker) {
-                return DragMarker(
-                  size: marker.size,
-                  point: marker.point,
-                  builder: marker.builder,
-                  onDragUpdate: (details, position) {
-                    if (polygonGeometry.distance(position) <=
-                        widget.maxDistance) {
-                      marker.onDragUpdate?.call(details, position);
-                    } else {
-                      setState(() {});
-                    }
+          FloatingMenuButton(
+            title: widget.title,
+            onBack: widget.onBack,
+          ),
+          Positioned(
+            bottom: FloatingMenuButton.size * 8,
+            right: FloatingMenuButton.size,
+            child: Column(
+              children: [
+                IconButton.filledTonal(
+                  onPressed: () => controller.move(
+                    controller.camera.center,
+                    controller.camera.zoom + 1.0,
+                  ),
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Acercar',
+                ),
+                gap,
+                IconButton.filledTonal(
+                  onPressed: () => controller.move(
+                    controller.camera.center,
+                    controller.camera.zoom - 1.0,
+                  ),
+                  icon: const Icon(Icons.remove),
+                  tooltip: 'Alejar',
+                ),
+                gap,
+                IconButton.filledTonal(
+                  onPressed: () {
+                    polygonGeometry.points.clear();
+                    setState(() {});
                   },
-                  onDragStart: (details, position) => marker.onDragStart?.call(
-                    details,
-                    position,
-                  ),
-                  onDragEnd: (details, position) => marker.onDragEnd?.call(
-                    details,
-                    position,
-                  ),
-                  onLongPress: (details) => marker.onLongPress?.call(details),
-                );
-              }).toList(),
-            ),
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: LatLng(widget.centerLatitude, widget.centerLongitude),
-                  width: 20,
-                  height: 20,
-                  child: const Icon(
-                    Icons.location_on,
-                    color: Colors.red,
-                    size: 30,
-                  ),
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Borrar la zona actual',
                 ),
               ],
             ),
-          ],
-        ),
-        FloatingMenuButton(
-          title: widget.title,
-          onBack: widget.onBack,
-        ),
-        Positioned(
-          bottom: FloatingMenuButton.size,
-          right: FloatingMenuButton.size,
-          left: FloatingMenuButton.size,
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.check),
-            onPressed: widget.onSave,
-            label: Text('Guardar'),
           ),
-        )
-      ],
+          Positioned(
+            bottom: FloatingMenuButton.size * 8,
+            left: FloatingMenuButton.size,
+            child: Text(
+              'Selecciona el área en el mapa\n'
+              'Toca para añadir vértices\n'
+              'Arrastra para reposicionarlos\n'
+              'Mantén presionado para borrarlos',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(color: Colors.black),
+            ),
+          ),
+          Positioned(
+            bottom: FloatingMenuButton.size,
+            right: FloatingMenuButton.size,
+            left: FloatingMenuButton.size,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.check),
+              onPressed: widget.onSave,
+              label: Text('Guardar'),
+            ),
+          )
+        ],
+      ),
     );
   }
 }

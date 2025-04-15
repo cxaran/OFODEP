@@ -9,21 +9,33 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomListView(
-      children: [
-        ListTile(
-          title: const Text('Usuario'),
-          subtitle: Text(context.read<SessionCubit>().user?.name ?? ''),
-          onTap: () => context
-              .push('/admin/user/${context.read<SessionCubit>().user?.authId}'),
-        ),
-        Divider(),
-        Text('Configuraciones'),
-        ListTile(
-          title: const Text('Cerrar sesión'),
-          onTap: () => context.read<SessionCubit>().signOut(),
-        ),
-      ],
+    return NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          SliverAppBar(
+            backgroundColor: Theme.of(context).colorScheme.onPrimary,
+            floating: true,
+            snap: true,
+            title: const Text('Mi Perfil'),
+            forceElevated: innerBoxIsScrolled,
+          ),
+        ];
+      },
+      body: CustomListView(
+        children: [
+          ListTile(
+            title: const Text('Datos de usuario'),
+            subtitle: Text(context.read<SessionCubit>().user?.name ?? ''),
+            onTap: () => context.push(
+                '/admin/user/${context.read<SessionCubit>().user?.authId}'),
+          ),
+          Divider(),
+          ListTile(
+            title: const Text('Cerrar sesión'),
+            onTap: () => context.read<SessionCubit>().signOut(),
+          ),
+        ],
+      ),
     );
   }
 }

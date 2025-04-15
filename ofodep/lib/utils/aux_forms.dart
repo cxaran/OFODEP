@@ -11,8 +11,7 @@ Future<void> create(
   formKey.currentState?.reset();
   await Future.delayed(const Duration(milliseconds: 300));
   if (formKey.currentState?.validate() ?? false) {
-    cubit.create();
-    callback?.call();
+    cubit.create().then((value) => callback?.call());
   }
 }
 
@@ -24,8 +23,7 @@ Future<void> submit(
   formKey.currentState?.reset();
   await Future.delayed(const Duration(milliseconds: 300));
   if (formKey.currentState?.validate() ?? false) {
-    cubit.submit();
-    callback?.call();
+    cubit.submit().then((_) => callback?.call());
   }
 }
 

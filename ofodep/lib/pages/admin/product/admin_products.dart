@@ -3,11 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/list_cubits/products_list_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/utils/aux_forms.dart';
-import 'package:ofodep/utils/constants.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/list_cubit_state_handler.dart';
-import 'package:ofodep/widgets/message_page.dart';
 import 'package:ofodep/widgets/preview_image.dart';
+import 'package:ofodep/widgets/product_price.dart';
 
 class AdminProductsPage extends StatelessWidget {
   final String? storeId;
@@ -18,26 +17,27 @@ class AdminProductsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (storeId == null) {
-      return MessagePage.error(
-        onBack: context.pop,
-      );
-    }
-
     return Scaffold(
       body: ListCubitStateHandler<ProductModel, ProductsListCubit>(
         title: 'Productos',
-        createCubit: (context) => ProductsListCubit(storeId: storeId!),
+        createCubit: (context) => ProductsListCubit(storeId: storeId)
+          ..updateSearchFields(
+            ['name', 'description'],
+          ),
         itemBuilder: (context, cubit, product, index) => ListTile(
           leading: PreviewImage.mini(imageUrl: product.imageUrl),
-          title: Text(product.name ?? ''),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${product.name ?? ' '} '),
+              if (!product.active) const Icon(Icons.visibility_off),
+            ],
+          ),
           subtitle: Text(
-            '${product.categoryName ?? ''}\n'
-            '${product.description ?? ''}',
+            '${storeId == null ? '${product.storeName ?? ''}\n' : ''}'
+            '${product.categoryName ?? ''}',
           ),
-          trailing: Text(
-            currencyFormatter.format(product.regularPrice),
-          ),
+          trailing: ProductPrice(product: product),
           onTap: () => context
               .push(
                 '/admin/product/${product.id}',
@@ -51,14 +51,6 @@ class AdminProductsPage extends StatelessWidget {
             Text('Ordenar por: '),
             SegmentedButton<String?>(
               segments: const [
-                ButtonSegment(
-                  value: 'created_at',
-                  label: Text('Fecha'),
-                ),
-                ButtonSegment(
-                  value: 'updated_at',
-                  label: Text('Actualización'),
-                ),
                 ButtonSegment(
                   value: 'name',
                   label: Text('Nombre'),

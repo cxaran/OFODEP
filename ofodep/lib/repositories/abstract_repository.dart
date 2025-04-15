@@ -276,7 +276,6 @@ abstract class Repository<T extends ModelComponent> {
             arraySearchFields.map((col) => "$col.cs.{$search}").join(','),
           );
         }
-
         query = query.or(searchFilters.join(','));
       }
 

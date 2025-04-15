@@ -112,6 +112,8 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
         ascending: ascending,
         randomSeed: state.randomSeed,
         params: state.rpcParams,
+        searchFields: state.searchFields,
+        arraySearchFields: state.arraySearchFields,
       );
     } else {
       return repository.getPaginated(
@@ -122,6 +124,8 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
         orderBy: orderBy,
         ascending: ascending,
         params: state.rpcParams,
+        searchFields: state.searchFields,
+        arraySearchFields: state.arraySearchFields,
       );
     }
   }

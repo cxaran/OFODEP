@@ -44,38 +44,40 @@ class CustomListView extends StatelessWidget {
     }
 
     Widget column = ContainerPage.zero(
-      child: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: children.map((child) {
-                  if (child is ListTile ||
-                      child is Divider ||
-                      child is SwitchListTile ||
-                      child is CheckboxListTile ||
-                      child is CustomFormValidator) {
-                    return child;
-                  }
-                  return ListTile(title: child);
-                }).toList(),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: children.map((child) {
+                    if (child is ListTile ||
+                        child is Divider ||
+                        child is SwitchListTile ||
+                        child is CheckboxListTile ||
+                        child is CustomFormValidator) {
+                      return child;
+                    }
+                    return ListTile(title: child);
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-          if (actions_.isNotEmpty) const Divider(height: 0),
-          ...actions_.map(
-            (child) {
-              if (child is ListTile ||
-                  child is Divider ||
-                  child is SwitchListTile ||
-                  child is CheckboxListTile ||
-                  child is CustomFormValidator) {
-                return child;
-              }
-              return ListTile(title: child);
-            },
-          ),
-        ],
+            if (actions_.isNotEmpty) const Divider(height: 0),
+            ...actions_.map(
+              (child) {
+                if (child is ListTile ||
+                    child is Divider ||
+                    child is SwitchListTile ||
+                    child is CheckboxListTile ||
+                    child is CustomFormValidator) {
+                  return child;
+                }
+                return ListTile(title: child);
+              },
+            ),
+          ],
+        ),
       ),
     );
 
@@ -90,26 +92,39 @@ class CustomListView extends StatelessWidget {
       return column;
     }
 
-    return NestedScrollView(
-      headerSliverBuilder: (context, innerBoxIsScrolled) {
-        return [
-          SliverAppBar(
-            title: Text(title ?? ''),
-            floating: true,
-            snap: true,
-            leading: onBack != null
-                ? IconButton(
-                    onPressed: onBack,
-                    icon: const Icon(Icons.arrow_back),
-                  )
-                : IconButton(
-                    onPressed: () => context.pop(loadedMessage != null),
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-          ),
-        ];
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        debugPrint('onPopInvokedWithResult: $didPop');
+        if (!didPop) {
+          if (onBack != null) {
+            onBack!();
+          } else {
+            context.pop(loadedMessage != null);
+          }
+        }
       },
-      body: column,
+      child: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              title: Text(title ?? ''),
+              floating: true,
+              snap: true,
+              leading: onBack != null
+                  ? IconButton(
+                      onPressed: onBack,
+                      icon: const Icon(Icons.arrow_back),
+                    )
+                  : IconButton(
+                      onPressed: () => context.pop(loadedMessage != null),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+            ),
+          ];
+        },
+        body: column,
+      ),
     );
   }
 }

@@ -35,6 +35,7 @@ class App extends StatelessWidget {
       themeMode: context.watch<SessionCubit>().themeMode,
       routerConfig: createRouter(
         context.watch<SessionCubit>(),
+        context.watch<LocationCubit>(),
       ),
     );
   }

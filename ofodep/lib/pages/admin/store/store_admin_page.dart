@@ -9,7 +9,6 @@ import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/message_page.dart';
 import 'package:ofodep/models/store_model.dart';
 import 'package:ofodep/repositories/store_images_repository.dart';
-import 'package:ofodep/repositories/store_subscription_repository.dart';
 import 'package:ofodep/widgets/admin_image.dart';
 import 'package:ofodep/widgets/container_page.dart';
 import 'package:ofodep/widgets/crud_state_handler.dart';
@@ -52,13 +51,35 @@ class StoreAdminPage extends StatelessWidget {
     CrudLoaded<StoreModel> state,
   ) {
     StoreModel store = state.model;
+
     return CustomListView(
       title: 'Configura tu comercio',
       loadedMessage: state.message,
       children: [
+        if (store.expirationDate != null)
+          if (store.expirationDate!.isBefore(DateTime.now()))
+            ListTile(
+              selected: true,
+              leading: const Icon(Icons.warning_rounded),
+              title: const Text('¡La suscripción ha expirado!'),
+              subtitle: Text('Si desea renovarla, contacte con nosotros'),
+              onTap: () => context.push('/admin/subscription/${store.id}'),
+            ),
+        if (store.imgurClientId == null)
+          ListTile(
+            selected: true,
+            leading: const Icon(Icons.warning_rounded),
+            title: const Text('!Imagenes deshabilitadas!'),
+            subtitle: Text(
+              'Agregue los datos para guardar las imágenes de tu comercio',
+            ),
+            onTap: () => context.push('/admin/store_images/${store.id}'),
+          ),
+        const Divider(),
         ListTile(
           leading: PreviewImage.mini(imageUrl: store.logoUrl),
           title: Text(store.name),
+          subtitle: Text('Nombre y logotipo'),
           onTap: () =>
               cubit.startEditing(editSection: StoreEditSection.general),
         ),
@@ -134,20 +155,12 @@ class StoreAdminPage extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         ListTile(
-          leading: FutureBuilder(
-            future: StoreImagesRepository().getById(store.id),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (!snapshot.hasData) {
-                  return const Badge(
-                    label: Text('1'),
-                    child: Icon(Icons.image),
-                  );
-                }
-              }
-              return const Icon(Icons.image);
-            },
-          ),
+          leading: store.imgurClientId != null
+              ? const Icon(Icons.image)
+              : const Badge(
+                  label: Text('1'),
+                  child: Icon(Icons.image),
+                ),
           title: Text('Configuración de imagenes'),
           onTap: () => context.push('/admin/store_images/${store.id}'),
         ),
@@ -186,22 +199,15 @@ class StoreAdminPage extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         ListTile(
-          leading: FutureBuilder(
-            future: StoreSubscriptionRepository().getById(store.id),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data?.expirationDate.isBefore(DateTime.now()) ??
-                    false) {
-                  return const Badge(
-                    label: Text('1'),
-                    child: Icon(Icons.sell),
-                  );
-                }
-              }
-              return const Icon(Icons.sell);
-            },
-          ),
+          leading: (store.expirationDate?.isBefore(DateTime.now()) ?? false)
+              ? const Badge(label: Text('1'), child: Icon(Icons.sell))
+              : const Icon(Icons.sell),
           title: const Text('Suscripción'),
+          subtitle: store.expirationDate == null
+              ? null
+              : Text(
+                  'Expira el ${MaterialLocalizations.of(context).formatCompactDate(store.expirationDate!)}',
+                ),
           onTap: () => context.push('/admin/subscription/${store.id}'),
         ),
         ListTile(
@@ -497,6 +503,7 @@ class StoreAdminPage extends StatelessWidget {
     }
     return LocationPicker(
       title: 'Ubicación de tu comercio',
+      countryCode: edited.countryCode,
       onBack: cubit.cancelEditing,
       onSave: state.editMode ? () => cubit.submit() : null,
       initialLatitude: edited.lat?.toDouble(),
@@ -547,7 +554,7 @@ class StoreAdminPage extends StatelessWidget {
     final edited = state.editedModel;
     return CustomListView(
       formKey: formDeliveryKey,
-      title: 'Configuraciones de entregas',
+      title: 'Configuracion de entregas',
       isLoading: state.isSubmitting,
       editMode: state.editMode,
       onSave: () => submit(formDeliveryKey, cubit),
@@ -558,7 +565,7 @@ class StoreAdminPage extends StatelessWidget {
         ),
         Divider(),
         SwitchListTile(
-          title: const Text('Entrega en comercio'),
+          title: const Text('Permitir entrega en comercio'),
           subtitle: state.model.lat == null || state.model.lng == null
               ? const Text('No se ha definido la ubicación')
               : null,
@@ -573,9 +580,9 @@ class StoreAdminPage extends StatelessWidget {
           },
         ),
         Divider(),
-        Text('Configuraciones de entregas a domicilio'),
+        Text('Configuracion de entregas a domicilio'),
         SwitchListTile(
-          title: const Text('Entrega a domicilio'),
+          title: const Text('Permitir entrega a domicilio'),
           subtitle: state.model.geom == null
               ? const Text('No se ha definido la zona de cobertura')
               : null,

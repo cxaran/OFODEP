@@ -100,9 +100,7 @@ class LocationCubit extends Cubit<LocationState> {
     String? countryCode,
     String? timezone,
   }) async {
-    if (zipCode != null &&
-        zipCode.isNotEmpty &&
-        countryCode != null &&
+    if (countryCode != null &&
         countryCode.isNotEmpty &&
         timezone != null &&
         timezone.isNotEmpty) {

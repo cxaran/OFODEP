@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ofodep/blocs/local_cubits/location_cubit.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
 import 'package:ofodep/models/product_model.dart';
 import 'package:ofodep/models/products_category_model.dart';
@@ -15,7 +16,6 @@ import 'package:ofodep/pages/admin/order/order_page.dart';
 import 'package:ofodep/pages/admin/store_images/store_images_admin_page.dart';
 import 'package:ofodep/pages/admin/store_schedule_exception/admin_store_schedule_exceptions.dart';
 import 'package:ofodep/pages/admin/store_schedule/admin_store_schedules.dart';
-import 'package:ofodep/pages/admin/store_subscriptions/admin_store_subscriptions.dart';
 import 'package:ofodep/pages/admin/store/admin_stores.dart';
 import 'package:ofodep/pages/admin/admin_dashboard.dart';
 import 'package:ofodep/pages/admin/order/admin_orders.dart';
@@ -32,6 +32,7 @@ import 'package:ofodep/pages/admin/store_schedule_exception/store_schedule_excep
 import 'package:ofodep/pages/admin/store_subscriptions/store_subscription_admin_page.dart';
 import 'package:ofodep/pages/admin/user/user_admin_page.dart';
 import 'package:ofodep/pages/public/product/product_page.dart';
+import 'package:ofodep/pages/public/session_location.dart';
 import 'package:ofodep/pages/public/store/store_page.dart';
 import 'package:ofodep/pages/splash/splash.dart';
 import 'package:ofodep/pages/user/user_page.dart';
@@ -55,7 +56,7 @@ class SessionNotifier extends ChangeNotifier {
 }
 
 /// Crea el router utilizando el estado del SessionCubit
-GoRouter createRouter(SessionCubit sessionCubit) {
+GoRouter createRouter(SessionCubit sessionCubit, LocationCubit locationCubit) {
   GoRouter.optionURLReflectsImperativeAPIs = true;
   final sessionNotifier = SessionNotifier(sessionCubit);
   return GoRouter(
@@ -64,6 +65,7 @@ GoRouter createRouter(SessionCubit sessionCubit) {
     redirect: (context, state) {
       final isAuthenticated = sessionCubit.state is SessionAuthenticated;
       final isInitial = sessionCubit.state is SessionInitial;
+      final isLocation = locationCubit.state is LocationLoaded;
       final loggingIn = state.matchedLocation == '/login';
       final splash = state.matchedLocation == '/splash';
 
@@ -83,11 +85,22 @@ GoRouter createRouter(SessionCubit sessionCubit) {
         return redirectPath;
       }
 
-      final publicPaths = ['/home', '/product', '/store'];
+      final publicPaths = [
+        '/home',
+        '/product',
+        '/store',
+        '/location',
+      ];
       final isPublicRoute =
           publicPaths.any((path) => state.matchedLocation.startsWith(path));
       if (!isAuthenticated && !loggingIn && !isPublicRoute) {
         return '/login?redirect=${Uri.encodeComponent(state.uri.toString())}';
+      }
+
+      if (state.matchedLocation == '/location') {
+        if (!isLocation) {
+          return '/home';
+        }
       }
 
       return null;
@@ -104,6 +117,10 @@ GoRouter createRouter(SessionCubit sessionCubit) {
       GoRoute(
         path: '/home',
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: '/location',
+        builder: (context, state) => const SessionLocation(),
       ),
       GoRoute(
         path: '/create_store',
@@ -211,10 +228,6 @@ GoRouter createRouter(SessionCubit sessionCubit) {
           productId: state.pathParameters['productId'],
           createModel: state.extra as ProductModel?,
         ),
-      ),
-      GoRoute(
-        path: '/admin/subscriptions',
-        builder: (context, state) => const AdminStoreSubscriptionsAdminPage(),
       ),
       GoRoute(
         path: '/admin/subscription/:storeId',

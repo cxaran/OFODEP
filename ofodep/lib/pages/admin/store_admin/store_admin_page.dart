@@ -189,8 +189,13 @@ class StoreAdminAdminPage extends StatelessWidget {
           trailing: const Icon(Icons.arrow_forward),
           onTap: () => showBottomSheet(
             context: context,
-            builder: (context) => UserSearch(
-              cubitStoreAdmin: cubit,
+            builder: (context_) => UserSearch(
+              onUserSelected: (user) => cubit.updateEditedModel(
+                (model) => model.copyWith(
+                  userName: user.name,
+                  userId: user.id,
+                ),
+              ),
             ),
           ),
         ),
@@ -242,8 +247,8 @@ class StoreAdminAdminPage extends StatelessWidget {
 }
 
 class UserSearch extends StatelessWidget {
-  final StoreAdminCubit cubitStoreAdmin;
-  const UserSearch({super.key, required this.cubitStoreAdmin});
+  final Function(UserPublicModel) onUserSelected;
+  const UserSearch({super.key, required this.onUserSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -259,12 +264,7 @@ class UserSearch extends StatelessWidget {
           title: Text(user.name),
           subtitle: Text(user.id),
           onTap: () {
-            cubitStoreAdmin.updateEditedModel(
-              (model) => model.copyWith(
-                userName: user.name,
-                userId: user.id,
-              ),
-            );
+            onUserSelected(user);
             context.pop();
           },
         ),

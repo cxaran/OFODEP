@@ -12,6 +12,7 @@ import 'package:ofodep/widgets/crud_state_handler.dart';
 import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/message_page.dart';
 import 'package:ofodep/widgets/preview_image.dart';
+import 'package:ofodep/widgets/product_price.dart';
 
 class ProductsCategoryAdminPage extends StatelessWidget {
   final String? productCategoryId;
@@ -71,6 +72,9 @@ class ProductsCategoryAdminPage extends StatelessWidget {
     return FutureBuilder(
         future: ProductRepository().find('category_id', model.id),
         builder: (context, snapshot) {
+          List<ProductModel> products = snapshot.data ?? [];
+          products.sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
+
           return CustomListView(
             title: 'Categoría de productos',
             loadedMessage: state.message,
@@ -137,14 +141,19 @@ class ProductsCategoryAdminPage extends StatelessWidget {
                 subtitle: Text(model.description ?? ''),
               ),
               Divider(color: Theme.of(context).colorScheme.onPrimary),
-              for (final product in snapshot.data ?? [])
+              for (final product in products)
                 ListTile(
                   leading: PreviewImage.mini(imageUrl: product.imageUrl),
-                  title: Text(
-                    '${product.name} '
-                    '${currencyFormatter.format(product.regularPrice)}',
+                  title: Text('${product.name} '),
+                  subtitle: Column(
+                    children: [
+                      ProductPrice(product: product),
+                      Text(
+                        '${currencyFormatter.format(product.regularPrice)} \n'
+                        '${product.description ?? ''}',
+                      ),
+                    ],
                   ),
-                  subtitle: Text(product.description ?? ''),
                   trailing: ToggleButtons(
                     isSelected: [false, false],
                     onPressed: (index) => (index == 0

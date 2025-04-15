@@ -58,16 +58,16 @@ class _HomePageState extends State<HomePage> {
                 tooltip: 'Inicio',
               ),
               NavigationDestination(
-                selectedIcon: Icon(Icons.search_sharp),
-                icon: Icon(Icons.search_outlined),
-                label: 'Buscar',
-                tooltip: 'Buscar',
-              ),
-              NavigationDestination(
                 selectedIcon: Icon(Icons.favorite),
                 icon: Icon(Icons.favorite_border_outlined),
                 label: 'Favoritos',
                 tooltip: 'Favoritos',
+              ),
+              NavigationDestination(
+                selectedIcon: Icon(Icons.search_sharp),
+                icon: Icon(Icons.search_outlined),
+                label: 'Buscar',
+                tooltip: 'Buscar',
               ),
               NavigationDestination(
                 selectedIcon: Icon(Icons.notifications),

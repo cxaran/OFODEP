@@ -115,6 +115,17 @@ class StoreImagesAdminPage extends StatelessWidget {
           'Imgur es una plataforma de almacenamiento de imágenes y vídeos. Permite subir y compartir imágenes con tus clientes y comercios',
         ),
         ListTile(
+          title: Text('Instrucciones'),
+          subtitle: Text(
+            '1. Ve imgur.com e incia sesión.\n'
+            '2. Haz click en "Obtener tus claves de Imgur" (https://api.imgur.com/oauth2/addclient).\n'
+            '3. Rellena el fromulario con los datos de tu comercio.\n'
+            '4. En url callback, pon "https://ontiapp.com/admin/store_images/callback".\n'
+            '5. Copia tus claves de Imgur y pegalas en el campo correspondiente.\n'
+            '6. Guarda tus cambios.',
+          ),
+        ),
+        ListTile(
           leading: const Icon(Icons.ads_click),
           title: Text('Obtener tus claves de Imgur'),
           onTap: () => launchUrl(

@@ -2,24 +2,24 @@
 class LocationModel {
   final double latitude;
   final double longitude;
-  final String zipCode;
+  final String? zipCode;
   final String? street;
   final String? city;
   final String? state;
   final String? country;
   late final String countryCode;
-  late final String timezone;
+  final String? timezone;
 
   LocationModel({
     required this.latitude,
     required this.longitude,
-    required this.zipCode,
+    this.zipCode,
     this.street,
     this.city,
     this.state,
     this.country,
     required String countryCode,
-    required this.timezone,
+    this.timezone,
   }) : countryCode = countryCode.toUpperCase();
 
   @override

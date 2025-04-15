@@ -206,6 +206,7 @@ ALTER TABLE store_subscriptions ENABLE ROW LEVEL SECURITY;
 -- Se hace admin de el comercio al usuario autenticado.
 -- 2.2. Función para registrar una comercio junto con su suscripción y admin
 CREATE OR REPLACE FUNCTION public.create_store(
+    store_id uuid,
     store_name text,
     contact_name text,
     contact_email text,
@@ -255,10 +256,10 @@ BEGIN
 
     -- Crear comercio
     INSERT INTO stores (
-        name, country_code, timezone
+        id, name, country_code, timezone
     )
     VALUES (
-        TRIM(store_name), country_code, timezone
+        store_id, TRIM(store_name), country_code, timezone
     )
     RETURNING id INTO new_store_id;
 
@@ -306,6 +307,7 @@ SECURITY DEFINER AS $$
       AND expiration_date >= current_date
   );
 $$;
+
 
 
 -- 2.3 Politicas de seguridad
@@ -401,6 +403,23 @@ FOR SELECT
 USING (
   public.is_store_admin(store_subscriptions.store_id)
 );
+
+-- 2.4 Vistas para obtener los datos del comercio
+CREATE OR REPLACE VIEW public.store_info WITH (security_invoker = on) AS
+SELECT 
+    s.id,
+    s.name,
+    s.logo_url,
+    s.country_code,
+    s.timezone,
+    s.lat,
+    s.lng,
+    s.created_at,
+    ss.subscription_type,
+    ss.expiration_date
+FROM stores s
+LEFT JOIN store_subscriptions ss ON ss.store_id = s.id;
+
 
 ---------------------------------------------------------------------
 -- 3: HORARIOS DE COMERCIOS
@@ -614,8 +633,8 @@ CREATE TABLE products (
     image_url text,
     regular_price numeric NOT NULL CHECK (regular_price >= 0),
     sale_price numeric CHECK (sale_price >= 0 AND sale_price < regular_price),
-    sale_start timestamptz,
-    sale_end timestamptz,
+    sale_start date,
+    sale_end date,
     currency text DEFAULT 'MXN',
     tags text[] DEFAULT '{}',
     active boolean DEFAULT true,
@@ -1006,3 +1025,51 @@ EXCEPTION
          RETURN false;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- Función auxiliar para obtener el precio del producto en función de la fecha actual y la oferta definida.
+-- Si la fecha actual está dentro del rango de oferta, retorna el precio de oferta.
+-- Si no, retorna el precio regular.
+CREATE OR REPLACE FUNCTION product_price(p_product products)
+RETURNS numeric
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    store_tz text;
+    current_date_store date;
+BEGIN
+    -- Obtiene el timezone de la tienda asociada al producto
+    SELECT s.timezone
+      INTO store_tz
+      FROM stores s
+     WHERE s.id = p_product.store_id;
+    
+    -- Convierte la fecha y hora actual al timezone de la tienda y obtiene la parte de la fecha
+    current_date_store := (now() AT TIME ZONE store_tz)::date;
+    
+    -- Si el producto tiene precio de oferta y las fechas de vigencia definidas,
+    -- y la fecha actual está en el rango de vigencia, retorna el precio de oferta.
+    IF p_product.sale_price IS NOT NULL 
+       AND p_product.sale_start IS NOT NULL 
+       AND p_product.sale_end IS NOT NULL 
+       AND current_date_store BETWEEN p_product.sale_start AND p_product.sale_end THEN
+        RETURN p_product.sale_price;
+    ELSE
+        RETURN p_product.regular_price;
+    END IF;
+END;
+$$;
+
+
+---------------------------------------------------------------------
+-- 6: EXPLORAR PRODUCTOS
+---------------------------------------------------------------------
+
+-- 6.1. Funcion auxiliar para obtener la información de un producto segun la informacion de busqueda del usuario
+
+CREATE OR REPLACE FUNCTION public.product_explore(
+  country_code text,
+  user_lat numeric,
+  user_lng numeric,
+  distance_max numeric DEFAULT 5000
+)

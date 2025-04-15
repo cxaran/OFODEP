@@ -28,7 +28,7 @@ class AdminImage extends StatelessWidget {
     if (clientId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Client ID is required to upload images."),
+          content: Text("Abre la configuración de imagenes de tu comercio."),
         ),
       );
       return;

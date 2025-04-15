@@ -8,7 +8,8 @@ class ProductRepository extends Repository<ProductModel> {
   String get tableName => 'products';
 
   @override
-  String get select => '*, stores(name), products_categories(name)';
+  String get select =>
+      '*, stores(name, timezone), products_categories(name), product_price';
 
   @override
   ProductModel fromMap(Map<String, dynamic> map) => ProductModel.fromMap(map);

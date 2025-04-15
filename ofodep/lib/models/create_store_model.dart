@@ -39,6 +39,7 @@ class CreateStoreModel extends ModelComponent {
 
   @override
   Map<String, dynamic> toMap({bool includeId = true}) => {
+        'store_id': id,
         'store_name': storeName,
         'country_code': countryCode,
         'timezone': timezone,

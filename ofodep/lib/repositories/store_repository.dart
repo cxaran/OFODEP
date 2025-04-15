@@ -7,7 +7,8 @@ class StoreRepository extends Repository<StoreModel> {
   String get tableName => 'stores';
 
   @override
-  String get select => '*, store_is_open';
+  String get select =>
+      '*, store_subscriptions(expiration_date), store_images(imgur_client_id), store_is_open';
 
   @override
   StoreModel fromMap(Map<String, dynamic> map) => StoreModel.fromMap(map);

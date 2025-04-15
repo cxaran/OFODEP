@@ -14,20 +14,18 @@ class LocationRepository {
       final placemarks = await placemarkFromCoordinates(latitude, longitude);
       if (placemarks.isNotEmpty) {
         final placemark = placemarks.first;
-        final zipCode = placemark.postalCode ?? "";
         final countryCode = placemark.isoCountryCode ?? "";
-        final timezone = DateTime.now().timeZoneName;
-        if (zipCode.isNotEmpty && countryCode.isNotEmpty) {
+
+        if (countryCode.isNotEmpty) {
           return LocationModel(
             latitude: latitude,
             longitude: longitude,
-            zipCode: zipCode,
+            zipCode: placemark.postalCode,
             street: placemark.street ?? "",
             city: placemark.locality ?? "",
             state: placemark.administrativeArea ?? "",
             country: placemark.country ?? "",
             countryCode: countryCode,
-            timezone: timezone,
           );
         }
       }
@@ -55,17 +53,13 @@ class LocationRepository {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final address = data['address'];
-        final zipCode = address?['postcode'];
         final countryCode = address?['country_code'] ?? "";
-        final timezone = address?['time_zone'] ?? DateTime.now().timeZoneName;
 
-        if (zipCode != null &&
-            zipCode.toString().isNotEmpty &&
-            countryCode.isNotEmpty) {
+        if (countryCode.isNotEmpty) {
           return LocationModel(
             latitude: lat,
             longitude: lon,
-            zipCode: zipCode,
+            zipCode: address?['postcode'],
             street: address['road'] ??
                 address['pedestrian'] ??
                 address['footway'] ??
@@ -78,7 +72,6 @@ class LocationRepository {
             state: address['state'] ?? "",
             country: address['country'] ?? "",
             countryCode: countryCode,
-            timezone: timezone,
           );
         }
       }
@@ -108,18 +101,14 @@ class LocationRepository {
 
         for (final item in data) {
           final address = item['address'];
-          final zip = address?['postcode'];
           final countryCode = address?['country_code'] ?? "";
-          final timezone = address?['time_zone'] ?? DateTime.now().timeZoneName;
 
-          if (zip != null &&
-              zip.toString().isNotEmpty &&
-              countryCode.isNotEmpty) {
+          if (countryCode.isNotEmpty) {
             results.add(
               LocationModel(
                 latitude: double.tryParse(item['lat'] ?? '') ?? 0.0,
                 longitude: double.tryParse(item['lon'] ?? '') ?? 0.0,
-                zipCode: zip,
+                zipCode: address?['postcode'],
                 street: address['road'] ??
                     address['pedestrian'] ??
                     address['footway'],
@@ -130,7 +119,53 @@ class LocationRepository {
                 state: address['state'],
                 country: address['country'],
                 countryCode: countryCode,
-                timezone: timezone,
+              ),
+            );
+          }
+        }
+      }
+    } catch (_) {}
+
+    return results;
+  }
+
+  /// Busca una lista de ubicaciones que contengan código postal no nulo.
+  Future<List<LocationModel>> searchPlace(String query) async {
+    List<LocationModel> results = [];
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'https://nominatim.openstreetmap.org/search?q=$query'
+          '&format=json&addressdetails=1&limit=10',
+        ),
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+
+        for (final item in data) {
+          final address = item['address'];
+          final countryCode = address?['country_code'] ?? "";
+
+          if (countryCode.isNotEmpty) {
+            results.add(
+              LocationModel(
+                latitude: double.tryParse(item['lat'] ?? '') ?? 0.0,
+                longitude: double.tryParse(item['lon'] ?? '') ?? 0.0,
+                zipCode: address?['postcode'],
+                street: address['road'] ??
+                    address['pedestrian'] ??
+                    address['footway'],
+                city: address['city'] ??
+                    address['town'] ??
+                    address['village'] ??
+                    address['county'],
+                state: address['state'],
+                country: address['country'],
+                countryCode: countryCode,
               ),
             );
           }
@@ -149,10 +184,6 @@ class LocationRepository {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        if (data['zip'] == null || data['countryCode'] == null) {
-          throw Exception("No se obtuvieron los datos de ubicación");
-        }
-
         return LocationModel(
           latitude: (data['lat'] as num?)?.toDouble() ?? 0.0,
           longitude: (data['lon'] as num?)?.toDouble() ?? 0.0,
@@ -162,7 +193,7 @@ class LocationRepository {
           state: data['regionName'] ?? data['state'],
           country: data['country'],
           countryCode: data['countryCode'] ?? data['country_code'] ?? "",
-          timezone: data['timezone'] ?? DateTime.now().timeZoneName,
+          timezone: data['timezone'],
         );
       }
     } catch (_) {

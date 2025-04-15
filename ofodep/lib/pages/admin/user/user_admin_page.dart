@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/curd_cubits/abstract_curd_cubit.dart';
 import 'package:ofodep/blocs/curd_cubits/user_cubit.dart';
 import 'package:ofodep/models/user_model.dart';
+import 'package:ofodep/utils/aux_forms.dart';
+import 'package:ofodep/widgets/crud_state_handler.dart';
+import 'package:ofodep/widgets/custom_list_view.dart';
 import 'package:ofodep/widgets/message_page.dart';
 
 class UserAdminPage extends StatelessWidget {
   final String? userId;
 
-  const UserAdminPage({
+  UserAdminPage({
     super.key,
     required this.userId,
   });
+
+  final GlobalKey<FormState> formEditingKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -23,151 +27,102 @@ class UserAdminPage extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(''),
+      body: CrudStateHandler<UserModel, UserCubit>(
+        createCubit: (context) => UserCubit()..load(userId!),
+        loadedBuilder: loadedBuilder,
+        editingBuilder: editingBuilder,
       ),
-      body: BlocProvider<UserCubit>(
-        create: (context) => UserCubit()..load(userId!),
-        child: Builder(
-          builder: (context) {
-            return BlocConsumer<UserCubit, CrudState<UserModel>>(
-              listener: (context, state) {
-                if (state is CrudError<UserModel>) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.message)),
-                  );
-                }
-                if (state is CrudEditing<UserModel> &&
-                    state.errorMessage != null &&
-                    state.errorMessage!.isNotEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.errorMessage!)),
-                  );
-                }
-                if (state is CrudDeleted<UserModel>) {
-                  // Por ejemplo, se puede redirigir a otra pantalla al eliminar
-                  Navigator.of(context).pop();
-                }
-              },
-              builder: (context, state) {
-                if (state is CrudInitial<UserModel> ||
-                    state is CrudLoading<UserModel>) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is CrudError<UserModel>) {
-                  return Center(child: Text(state.message));
-                } else if (state is CrudLoaded<UserModel>) {
-                  // Estado no editable: muestra los datos y un botón para editar
-                  return Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Email: ${state.model.email}"),
-                        Text("Nombre: ${state.model.name}"),
-                        Text("Teléfono: ${state.model.phone}"),
-                        // Text("Admin: ${state.admin ? 'Sí' : 'No'}"),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () =>
-                              context.read<UserCubit>().startEditing(),
-                          child: const Text("Editar"),
-                        ),
-                      ],
-                    ),
-                  );
-                } else if (state is CrudEditing<UserModel>) {
-                  // En modo edición, se usan TextFields que muestran los valores de editedModel.
-                  return SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        // TextField(
-                        //   key: const ValueKey('email_user'),
-                        //   controller: TextEditingController.fromValue(
-                        //     TextEditingValue(
-                        //       text: state.editedModel.email,
-                        //       selection: TextSelection.collapsed(
-                        //           offset: state.editedModel.email.length),
-                        //     ),
-                        //   ),
-                        //   decoration: const InputDecoration(
-                        //     labelText: 'Email',
-                        //     border: OutlineInputBorder(),
-                        //   ),
-                        //   enabled: false,
-                        // ),
-                        // TextField(
-                        //   key: const ValueKey('name_user'),
-                        //   controller: TextEditingController.fromValue(
-                        //     TextEditingValue(
-                        //       text: state.editedModel.name,
-                        //       selection: TextSelection.collapsed(
-                        //           offset: state.editedModel.name.length),
-                        //     ),
-                        //   ),
-                        //   decoration: const InputDecoration(
-                        //     labelText: 'Nombre',
-                        //     border: OutlineInputBorder(),
-                        //   ),
-                        //   onChanged: (value) =>
-                        //       context.read<UserCubit>().nameChanged(value),
-                        // ),
-                        // TextField(
-                        //   key: const ValueKey('phone_user'),
-                        //   controller: TextEditingController.fromValue(
-                        //     TextEditingValue(
-                        //       text: state.editedModel.phone ?? '',
-                        //       selection: TextSelection.collapsed(
-                        //           offset: state.editedModel.phone?.length ?? 0),
-                        //     ),
-                        //   ),
-                        //   decoration: const InputDecoration(
-                        //     labelText: 'Teléfono',
-                        //     border: OutlineInputBorder(),
-                        //   ),
-                        //   onChanged: (value) =>
-                        //       context.read<UserCubit>().phoneChanged(value),
-                        // ),
-                        // BlocBuilder<SessionCubit, SessionState>(
-                        //   builder: (context, sessionState) {
-                        //     if (sessionState is SessionAuthenticated &&
-                        //         sessionState.admin) {
-                        //       return Row(
-                        //         children: [
-                        //           const Text('Admin'),
-                        //           // Checkbox(
-                        //           //   value: state.editedModel.admin,
-                        //           //   onChanged: (value) => context
-                        //           //       .read<UserCubit>()
-                        //           //       .adminChanged(value ?? false),
-                        //           // ),
-                        //         ],
-                        //       );
-                        //     }
-                        //     return Container();
-                        //   },
-                        // ),
-                        if (state.isSubmitting)
-                          const CircularProgressIndicator()
-                        else
-                          ElevatedButton(
-                            onPressed: () => context.read<UserCubit>().submit(),
-                            child: const Text('Guardar'),
-                          ),
-                        ElevatedButton(
-                          onPressed: () =>
-                              context.read<UserCubit>().cancelEditing(),
-                          child: const Text('Cancelar'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                return Container();
-              },
-            );
-          },
+    );
+  }
+
+  Widget loadedBuilder(
+    BuildContext context,
+    UserCubit cubit,
+    CrudLoaded<UserModel> state,
+  ) {
+    final model = state.model;
+    return CustomListView(
+      title: 'Datos de usuario',
+      loadedMessage: state.message,
+      actions: [
+        ElevatedButton.icon(
+          onPressed: () => cubit.startEditing(),
+          icon: const Icon(Icons.edit),
+          label: const Text("Editar"),
         ),
-      ),
+      ],
+      children: [
+        ListTile(
+          leading: const Icon(Icons.person),
+          title: Text('Nombre'),
+          subtitle: Text(model.name),
+        ),
+        ListTile(
+          leading: const Icon(Icons.email),
+          title: Text('Correo'),
+          subtitle: Text(model.email),
+        ),
+        ListTile(
+          leading: const Icon(Icons.phone),
+          title: Text('Teléfono'),
+          subtitle: Text(model.phone ?? ''),
+        ),
+        ListTile(
+          leading: const Icon(Icons.admin_panel_settings),
+          title: Text(model.authId),
+        ),
+      ],
+    );
+  }
+
+  Widget editingBuilder(
+    BuildContext context,
+    UserCubit cubit,
+    CrudEditing<UserModel> state,
+  ) {
+    final edited = state.editedModel;
+    return CustomListView(
+      title: 'Datos de usuario',
+      formKey: formEditingKey,
+      isLoading: state.isSubmitting,
+      editMode: state.editMode,
+      onSave: () => submit(formEditingKey, cubit),
+      onBack: cubit.cancelEditing,
+      children: [
+        TextFormField(
+          initialValue: edited.name,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.person),
+            labelText: 'Nombre',
+          ),
+          validator: validate,
+          onChanged: (value) => cubit.updateEditedModel(
+            (model) => model.copyWith(name: value),
+          ),
+        ),
+        TextFormField(
+          initialValue: edited.email,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.email),
+            labelText: 'Correo',
+          ),
+          validator: validate,
+          onChanged: (value) => cubit.updateEditedModel(
+            (model) => model.copyWith(email: value),
+          ),
+        ),
+        TextFormField(
+          initialValue: edited.phone,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.phone),
+            labelText: 'Teléfono',
+          ),
+          validator: validate,
+          onChanged: (value) => cubit.updateEditedModel(
+            (model) => model.copyWith(phone: value),
+          ),
+        ),
+      ],
     );
   }
 }

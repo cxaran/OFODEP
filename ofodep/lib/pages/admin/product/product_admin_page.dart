@@ -144,6 +144,10 @@ class ProductAdminPage extends StatelessWidget {
                   builder: (context, snapshot) => Text(snapshot.data ?? ''),
                 ),
         ),
+        ListTile(
+          title: Text('ID comercio'),
+          subtitle: Text(model.storeId),
+        ),
         Divider(),
         ListTile(
           leading: const Icon(Icons.category),
@@ -318,6 +322,10 @@ class ProductAdminPage extends StatelessWidget {
                       StoreRepository().getValueById(edited.storeId, 'name'),
                   builder: (context, snapshot) => Text(snapshot.data ?? ''),
                 ),
+        ),
+        ListTile(
+          title: Text('ID comercio'),
+          subtitle: Text(edited.storeId),
         ),
         Divider(),
         ListTile(
@@ -619,7 +627,8 @@ class ProductAdminPage extends StatelessWidget {
             initialValue: configuration.name,
             decoration: InputDecoration(
               icon: const Icon(Icons.arrow_drop_down_sharp),
-              labelText: "Configuración",
+              labelText: '${configurations.indexOf(configuration) + 1}: '
+                  'Configuración ',
               suffix: IconButton(
                 tooltip: 'Eliminar configuración',
                 onPressed: () => cubit.deleteConfiguration(configuration.id),
@@ -702,7 +711,9 @@ class ProductAdminPage extends StatelessWidget {
               initialValue: option.name,
               decoration: InputDecoration(
                 icon: const Icon(Icons.arrow_right_sharp),
-                labelText: "Opción",
+                labelText:
+                    '${options.where((e) => e.configurationId == configuration.id).toList().indexOf(option) + 1}: '
+                    'Opción',
                 suffix: IconButton(
                   tooltip: 'Eliminar opción',
                   onPressed: () => cubit.deleteOption(option.id),

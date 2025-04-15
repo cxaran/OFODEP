@@ -37,6 +37,12 @@ class StoreModel extends ModelComponent {
   // Is open
   bool? isOpen;
 
+  // Store subscription
+  DateTime? expirationDate;
+
+  // Client ID for Imgur
+  String? imgurClientId;
+
   StoreModel({
     super.id,
     required this.name,
@@ -61,6 +67,8 @@ class StoreModel extends ModelComponent {
     this.delivery = false,
     this.deliveryPrice,
     this.isOpen,
+    this.expirationDate,
+    this.imgurClientId,
     super.createdAt,
     super.updatedAt,
   });
@@ -91,6 +99,9 @@ class StoreModel extends ModelComponent {
       delivery: map['delivery'] as bool? ?? false,
       deliveryPrice: map['delivery_price'],
       isOpen: map['store_is_open'] as bool?,
+      expirationDate: DateTime.tryParse(
+          map['store_subscriptions']?['expiration_date'] ?? ''),
+      imgurClientId: map['store_images']?['imgur_client_id'] as String?,
       createdAt: DateTime.tryParse(map['created_at'] ?? ''),
       updatedAt: DateTime.tryParse(map['updated_at'] ?? ''),
     );
@@ -150,8 +161,8 @@ class StoreModel extends ModelComponent {
     bool? delivery,
     num? deliveryPrice,
     bool? isOpen,
+    DateTime? expirationDate,
     String? imgurClientId,
-    String? imgurClientSecret,
   }) {
     return StoreModel(
       id: id ?? this.id,
@@ -177,6 +188,8 @@ class StoreModel extends ModelComponent {
       delivery: delivery ?? this.delivery,
       deliveryPrice: deliveryPrice ?? this.deliveryPrice,
       isOpen: isOpen ?? this.isOpen,
+      expirationDate: expirationDate ?? this.expirationDate,
+      imgurClientId: imgurClientId ?? this.imgurClientId,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -207,6 +220,8 @@ class StoreModel extends ModelComponent {
       'delivery: $delivery, '
       'deliveryPrice: $deliveryPrice, '
       'isOpen: $isOpen, '
+      'expirationDate: $expirationDate, '
+      'imgurClientId: $imgurClientId'
       'createdAt: $createdAt, '
       'updatedAt: $updatedAt'
       ')';
