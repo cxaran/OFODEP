@@ -2,10 +2,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ofodep/models/abstract_model.dart';
 import 'package:ofodep/blocs/list_cubits/filter_state.dart';
+import 'package:ofodep/models/abstract_params.dart';
 import 'package:ofodep/repositories/abstract_repository.dart';
 
 abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
-    extends Cubit<ListState<T>> {
+    extends Cubit<ListState> {
   /// El repositorio de la lista.
   final R repository;
 
@@ -14,8 +15,8 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
 
   ListCubit({
     required this.repository,
-    ListState<T>? initialState,
-  }) : super(initialState ?? FilterState<T>()) {
+    ListState? initialState,
+  }) : super(initialState ?? FilterState()) {
     pagingController = PagingController<int, T>(
       getNextPageKey: (statePagination) {
         final currentPage = statePagination.keys?.last ?? 0;
@@ -88,6 +89,21 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
     refresh();
   }
 
+  void initParams(ParamsComponent rpcParams) {
+    emit(state.copyWith(rpcParams: rpcParams));
+    refresh();
+  }
+
+  /// Actualiza los parámetros de RPC y refresca la paginación.
+  void updateRpcParams(
+    ParamsComponent Function(ParamsComponent current) updater,
+  ) {
+    if (state.rpcParams != null) {
+      final updatedRpcParams = updater(state.rpcParams!);
+      emit(state.copyWith(rpcParams: updatedRpcParams));
+    }
+  }
+
   /// Obtener el filtro con parámetros persobalizados si aplica.
   Map<String, dynamic>? getFilter(Map<String, dynamic>? filter) {
     return filter;
@@ -111,7 +127,7 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
         orderBy: orderBy,
         ascending: ascending,
         randomSeed: state.randomSeed,
-        params: state.rpcParams,
+        params: state.rpcParams?.toMap(),
         searchFields: state.searchFields,
         arraySearchFields: state.arraySearchFields,
       );
@@ -123,7 +139,7 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
         search: search,
         orderBy: orderBy,
         ascending: ascending,
-        params: state.rpcParams,
+        params: state.rpcParams?.toMap(),
         searchFields: state.searchFields,
         arraySearchFields: state.arraySearchFields,
       );

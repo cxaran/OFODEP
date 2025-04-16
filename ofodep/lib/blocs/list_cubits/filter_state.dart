@@ -1,6 +1,6 @@
-import 'package:ofodep/models/abstract_model.dart';
+import 'package:ofodep/models/abstract_params.dart';
 
-abstract class ListState<T extends ModelComponent> {
+abstract class ListState {
   final Map<String, dynamic>? filter;
   final List<String>? searchFields;
   final List<String>? arraySearchFields;
@@ -8,7 +8,7 @@ abstract class ListState<T extends ModelComponent> {
   final String? orderBy;
   final bool ascending;
   final String? errorMessage;
-  final Map<String, dynamic>? rpcParams;
+  final ParamsComponent? rpcParams;
   final int limit;
   final String? randomSeed;
 
@@ -25,7 +25,7 @@ abstract class ListState<T extends ModelComponent> {
     this.randomSeed,
   });
 
-  ListState<T> copyWith({
+  ListState copyWith({
     Map<String, dynamic>? filter,
     List<String>? searchFields,
     List<String>? arraySearchFields,
@@ -33,14 +33,14 @@ abstract class ListState<T extends ModelComponent> {
     String? orderBy,
     bool? ascending,
     String? errorMessage,
-    Map<String, dynamic>? rpcParams,
+    ParamsComponent? rpcParams,
     int? limit,
     String? randomSeed,
   });
 }
 
 /// Implementación genérica de ListState que cubre los parámetros básicos
-class FilterState<T extends ModelComponent> extends ListState<T> {
+class FilterState<P extends ParamsComponent> extends ListState {
   const FilterState({
     super.filter,
     super.searchFields,
@@ -55,7 +55,7 @@ class FilterState<T extends ModelComponent> extends ListState<T> {
   });
 
   @override
-  FilterState<T> copyWith({
+  FilterState copyWith({
     Map<String, dynamic>? filter,
     List<String>? searchFields,
     List<String>? arraySearchFields,
@@ -63,11 +63,11 @@ class FilterState<T extends ModelComponent> extends ListState<T> {
     String? orderBy,
     bool? ascending,
     String? errorMessage,
-    Map<String, dynamic>? rpcParams,
+    ParamsComponent? rpcParams,
     int? limit,
     String? randomSeed,
   }) =>
-      FilterState<T>(
+      FilterState(
         filter: filter ?? this.filter,
         searchFields: searchFields ?? this.searchFields,
         arraySearchFields: arraySearchFields ?? this.arraySearchFields,

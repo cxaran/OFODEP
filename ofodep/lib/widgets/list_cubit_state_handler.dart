@@ -42,7 +42,7 @@ class ListCubitStateHandler<T extends ModelComponent,
   final Widget Function(
     BuildContext context,
     C cubit,
-    ListState<T> state,
+    ListState state,
   ) filterSectionBuilder;
 
   /// Funión opcional al agregar un elemento.
@@ -58,6 +58,8 @@ class ListCubitStateHandler<T extends ModelComponent,
 
   final ScrollPhysics? physics;
 
+  final List<Widget>? actions;
+
   const ListCubitStateHandler({
     super.key,
     this.title,
@@ -72,6 +74,7 @@ class ListCubitStateHandler<T extends ModelComponent,
     this.onSearch,
     this.shrinkWrap = false,
     this.physics,
+    this.actions,
   });
 
   /// Sección por defecto para filtros y búsqueda.
@@ -147,7 +150,7 @@ class ListCubitStateHandler<T extends ModelComponent,
                               maxHeight: 300,
                             ),
                             context: context,
-                            builder: (context) => BlocBuilder<C, ListState<T>>(
+                            builder: (context) => BlocBuilder<C, ListState>(
                               bloc: cubit,
                               builder: (context, cubitState) =>
                                   filterSectionBuilder(
@@ -160,6 +163,7 @@ class ListCubitStateHandler<T extends ModelComponent,
                           icon: const Icon(Icons.tune),
                         ),
                       gap,
+                      ...?actions,
                     ],
                     bottom: !showSearchBar
                         ? null

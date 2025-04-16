@@ -1060,16 +1060,486 @@ BEGIN
 END;
 $$;
 
+-- Función auxiliar para verificar si un producto está disponible para el usuario
+CREATE OR REPLACE FUNCTION product_available(p_product products)
+RETURNS boolean
+AS $$
+DECLARE
+    store_tz text;
+    current_day int;
+BEGIN
+    -- Obtiene el timezone de la tienda asociada al producto
+    SELECT s.timezone
+      INTO store_tz
+      FROM stores s
+     WHERE s.id = p_product.store_id;
+    
+    -- Convertir la fecha/hora actual a la zona horaria del comercio y extraer el día ISO (1 = lunes, 7 = domingo)
+    current_day := EXTRACT(ISODOW FROM (current_timestamp AT TIME ZONE store_tz))::int;
+    
+    -- Retornar true si el día actual se encuentra en la lista de días disponibles del producto
+    RETURN current_day = ANY (p_product.days);
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 ---------------------------------------------------------------------
 -- 6: EXPLORAR PRODUCTOS
 ---------------------------------------------------------------------
 
--- 6.1. Funcion auxiliar para obtener la información de un producto segun la informacion de busqueda del usuario
+-- Idices para optimizar consultas
+CREATE INDEX idx_stores_country_code ON stores (country_code);
+CREATE INDEX idx_stores_geom ON stores USING GIST (geom);
+CREATE INDEX idx_stores_created_at ON stores (created_at);
+CREATE INDEX idx_stores_geopoint ON stores USING GIST (((ST_SetSRID(ST_MakePoint(lng, lat),4326))::geography));
 
+CREATE INDEX idx_products_active ON products (active);
+CREATE INDEX idx_products_store_id ON products (store_id);
+CREATE INDEX idx_products_tags ON products USING GIN (tags);
+CREATE INDEX idx_products_created_at ON products (created_at);
+
+-- 6.1. Funcion auxiliar para obtener la información de un producto segun la informacion de busqueda del usuario
 CREATE OR REPLACE FUNCTION public.product_explore(
-  country_code text,
-  user_lat numeric,
-  user_lng numeric,
-  distance_max numeric DEFAULT 5000
+    country_code text,                          -- Código de país (ej. "MX", "US")    REQUERIDO
+    user_lat numeric,                           -- Latitud geográfica del usuario     REQUERIDO
+    user_lng numeric,                           -- Longitud geográfica del usuario    REQUERIDO
+    max_distance numeric,                       -- Máximo distancia en metros         REQUERIDO (máximo 10 km)
+    page int,                                   -- Página de la consulta              REQUERIDO
+    random_seed text,                           -- Para generar un seed aleatorio para ordenar los productos  REQUERIDO   
+
+    search_text text DEFAULT NULL,              -- Texto para buscar en los campos (products.name, products.description, products.tags, store.name)
+    filter_tags text[] DEFAULT NULL,            -- Filtrar productos por tags (al menos uno debe estar presente en products.tags)
+    price_min numeric DEFAULT NULL,             -- Filtro: product_price >= price_min
+    price_max numeric DEFAULT NULL,             -- Filtro: product_price <= price_max
+
+    page_size int DEFAULT 10,                   -- Tamaño de la página                OPCIONAL
+    sort_product_price boolean DEFAULT false,   -- Ordenar por precio calculado (product_price) si es true 
+    sort_created boolean DEFAULT false,         -- Ordenar por fecha de creación (products.created_at) si es true
+    ascending boolean DEFAULT false,            -- Si sort_product_price o sort_created, se ordena ascendente si true
+
+    filter_delivery boolean DEFAULT false,      -- Filtrar por delivery: el usuario debe estar dentro del área de delivery
+    filter_pickup boolean DEFAULT false,        -- Solo se muestran tiendas con pickup activo
+    filter_offers boolean DEFAULT false,        -- Filtrar productos en oferta (cuando product_price <> products.regular_price)
+    filter_free_shipping boolean DEFAULT false  -- Filtrar tiendas con delivery activo y sin costo de delivery
 )
+RETURNS TABLE(
+   product_id uuid,
+   product_name text,
+   product_description text,
+   product_image_url text,
+   product_regular_price numeric,
+   product_sale_price numeric,
+   product_sale_start date,
+   product_sale_end date,
+   product_currency text,
+   product_tags text[],
+   product_days int[],
+   store_id uuid,
+   store_name text,
+   store_logo_url text,
+   store_lat numeric,
+   store_lng numeric,
+   store_pickup boolean,
+   store_delivery boolean,
+   store_delivery_price numeric,
+   store_is_open boolean,
+   product_available boolean,
+   product_price numeric,           -- Precio calculado por la función product_price
+   distance double precision,       -- Distancia en metros a la tienda
+   delivery_area boolean            -- TRUE si la posición del usuario está dentro del área de delivery de la tienda
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_max_distance numeric;
+  offset_value int;
+  order_clause text;
+  sql_query text;
+BEGIN
+  ----------------------------------------------------------------------------
+  -- Validación de parámetros requeridos
+  ----------------------------------------------------------------------------
+  IF country_code IS NULL OR TRIM(country_code) = '' THEN
+    RAISE EXCEPTION 'El parámetro country_code es requerido';
+  END IF;
+
+  IF user_lat IS NULL THEN
+    RAISE EXCEPTION 'El parámetro user_lat es requerido';
+  END IF;
+    
+  IF user_lng IS NULL THEN
+    RAISE EXCEPTION 'El parámetro user_lng es requerido';
+  END IF;
+    
+  IF max_distance IS NULL THEN
+    RAISE EXCEPTION 'El parámetro max_distance es requerido';
+  END IF;
+    
+  IF page IS NULL OR page < 1 THEN
+    RAISE EXCEPTION 'El parámetro page es requerido y debe ser mayor o igual a 1';
+  END IF;
+
+  IF random_seed IS NULL OR TRIM(random_seed) = '' THEN
+    RAISE EXCEPTION 'El parámetro random_seed es requerido';
+  END IF;
+
+  ----------------------------------------------------------------------------
+  -- Asegurar que max_distance no exceda 10 km (10,000 metros)
+  ----------------------------------------------------------------------------
+  v_max_distance := LEAST(max_distance, 10000);
+
+  ----------------------------------------------------------------------------
+  -- Calcular offset de paginación
+  ----------------------------------------------------------------------------
+  offset_value := (page - 1) * page_size;
+
+  ----------------------------------------------------------------------------
+  -- Construcción de la cláusula ORDER BY según los parámetros
+  ----------------------------------------------------------------------------
+  order_clause := 'ORDER BY store_is_open DESC, product_available DESC';
+
+  IF sort_product_price AND sort_created THEN
+      order_clause := order_clause || format(', product_price %s, created_at %s',
+                            CASE WHEN ascending THEN 'ASC' ELSE 'DESC' END,
+                            CASE WHEN ascending THEN 'ASC' ELSE 'DESC' END);
+  ELSIF sort_product_price THEN
+      order_clause := order_clause || format(', product_price %s',
+                            CASE WHEN ascending THEN 'ASC' ELSE 'DESC' END);
+  ELSIF sort_created THEN
+      order_clause := order_clause || format(', created_at %s',
+                            CASE WHEN ascending THEN 'ASC' ELSE 'DESC' END);
+  END IF;
+
+  -- Se aplica el random seed siempre, para garantizar variabilidad
+  order_clause := order_clause || ', md5(''' || random_seed || ''' || st.id) ASC';
+
+  ----------------------------------------------------------------------------
+  -- Construcción de la consulta dinámica utilizando WITH para filtrar tiendas y productos
+  ----------------------------------------------------------------------------
+  sql_query := $sql$
+  WITH 
+    -- CTE para calcular el punto del usuario (tipo geography)
+    user_point AS (
+      SELECT ST_SetSRID(ST_MakePoint($1, $2),4326)::geography AS pt
+    ),
+    filtered_stores AS (
+      SELECT 
+        st.*,
+        ST_Distance(up.pt, ST_SetSRID(ST_MakePoint(st.lng, st.lat),4326)::geography) AS distance,
+        (st.delivery AND ST_Within(up.pt::geometry,st.geom)) AS delivery_area,
+        public.store_is_open(st) AS store_is_open
+      FROM stores st, user_point up
+      WHERE st.country_code = $3
+        AND st.lat IS NOT NULL AND st.lng IS NOT NULL
+        AND ST_DWithin(ST_SetSRID(ST_MakePoint(st.lng, st.lat),4326)::geography, up.pt, $4)
+        /* Filtros de servicios en tienda */
+        %s
+    ),
+    filtered_products AS (
+      SELECT 
+        p.*,
+        public.product_price(p) AS product_price,
+        public.product_available(p) AS product_available
+      FROM products p
+      WHERE p.active = true
+        %s
+    )
+  SELECT 
+    p.id                      AS product_id,
+    p.name                    AS product_name,
+    p.description             AS product_description,
+    p.image_url               AS product_image_url,
+    p.regular_price           AS product_regular_price,
+    p.sale_price              AS product_sale_price,
+    p.sale_start              AS product_sale_start,
+    p.sale_end                AS product_sale_end,
+    p.currency                AS product_currency,
+    p.tags                    AS product_tags,
+    p.days                    AS product_days,
+    st.id                     AS store_id,
+    st.name                   AS store_name,
+    st.logo_url               AS store_logo_url,
+    st.lat                    AS store_lat,
+    st.lng                    AS store_lng,
+    st.pickup                 AS store_pickup,
+    st.delivery               AS store_delivery,
+    st.delivery_price         AS store_delivery_price,
+    st.store_is_open,
+    p.product_available,
+    p.product_price,
+    st.distance,
+    st.delivery_area
+  FROM filtered_stores st
+  JOIN filtered_products p ON p.store_id = st.id
+  WHERE
+    ($5 IS NULL OR (
+        p.name        ILIKE '%%' || $5 || '%%' OR 
+        p.description ILIKE '%%' || $5 || '%%' OR 
+        array_to_string(p.tags, ' ') ILIKE '%%' || $5 || '%%' OR 
+        st.name       ILIKE '%%' || $5 || '%%'
+    ))
+    %s
+    %s
+  LIMIT $6 OFFSET $7
+  $sql$;
+
+  ----------------------------------------------------------------------------
+  -- Inserción dinámica de filtros para las tiendas y productos
+  ----------------------------------------------------------------------------
+  sql_query := format(sql_query,
+      /* Filtros en filtered_stores */
+      (CASE 
+          WHEN filter_pickup THEN ' AND st.pickup = true ' ELSE '' END) ||
+      (CASE 
+          WHEN filter_free_shipping THEN ' AND st.delivery = true AND st.delivery_price = 0 ' ELSE '' END) ||
+      (CASE 
+          WHEN filter_delivery THEN ' AND ST_Within((SELECT pt::geometry FROM user_point), st.geom) ' ELSE '' END),
+      /* Filtros en filtered_products */
+      (CASE 
+          WHEN filter_tags IS NOT NULL THEN ' AND (p.tags && ' || quote_literal(filter_tags::text) || ') ' ELSE '' END) ||
+      (CASE 
+          WHEN filter_offers THEN ' AND public.product_price(p) <> p.regular_price ' ELSE '' END) ||
+      (CASE 
+          WHEN price_min IS NOT NULL THEN ' AND public.product_price(p) >= ' || price_min || ' ' ELSE '' END) ||
+      (CASE 
+          WHEN price_max IS NOT NULL THEN ' AND public.product_price(p) <= ' || price_max || ' ' ELSE '' END),
+      /* Filtros adicionales en la cláusula WHERE final (vacío) */
+      '',
+      order_clause
+  );
+
+  ----------------------------------------------------------------------------
+  -- Ejecución de la consulta dinámica
+  ----------------------------------------------------------------------------
+  RETURN QUERY EXECUTE sql_query
+       USING user_lng,       -- $1: user_lng para la creación del punto
+             user_lat,       -- $2: user_lat
+             country_code,   -- $3: country_code
+             v_max_distance, -- $4: max_distance ajustado (máximo 10km)
+             search_text,    -- $5: search_text
+             page_size,      -- $6: LIMIT
+             offset_value;   -- $7: OFFSET
+
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION public.product_tags_explore(
+  p_country_code   text,
+  p_user_lat       numeric,
+  p_user_lng       numeric,
+  p_max_distance   numeric,
+  p_tags_limit     int DEFAULT 10
+)
+RETURNS TABLE(tag text, count int)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_max_distance numeric;
+BEGIN
+  -- Validaciones…
+  v_max_distance := LEAST(p_max_distance, 10000);
+
+  RETURN QUERY
+    WITH 
+      user_point AS (
+        SELECT ST_SetSRID(ST_MakePoint(p_user_lng, p_user_lat),4326)::geography AS pt
+      ),
+      filtered_stores AS (
+        SELECT st.id
+        FROM stores st
+        JOIN user_point up ON TRUE
+        WHERE st.country_code = p_country_code
+          AND st.lat IS NOT NULL
+          AND st.lng IS NOT NULL
+          AND ST_DWithin(
+                ST_SetSRID(ST_MakePoint(st.lng, st.lat),4326)::geography,
+                up.pt,
+                v_max_distance
+              )
+      ),
+      filtered_products AS (
+        SELECT p.*
+        FROM products p
+        WHERE p.active
+          AND public.product_available(p)
+          AND p.store_id IN (SELECT id FROM filtered_stores)
+      ),
+      product_tags AS (
+        SELECT unnest(p.tags) AS tag
+        FROM filtered_products p
+        WHERE p.tags IS NOT NULL
+      )
+    SELECT
+      pt.tag               AS tag,
+      COUNT(*)::int        AS count   -- <- cast a integer
+    FROM product_tags pt
+    GROUP BY pt.tag
+    ORDER BY COUNT(*) DESC
+    LIMIT p_tags_limit;
+END;
+$$;
+
+
+
+-- 6.3. Funcion auxiliar para obtener la información de un store segun la informacion de busqueda del usuario
+-- 6.3. Función auxiliar para explorar tiendas con JSON de productos
+CREATE OR REPLACE FUNCTION public.store_explore(
+    country_code         text,    -- Código de país ("MX", "US")
+    user_lat             numeric, -- Latitud del usuario
+    user_lng             numeric, -- Longitud del usuario
+    max_distance         numeric, -- Máxima distancia (máx. 10 km)
+    page                 int,     -- Página (>=1)
+    random_seed          text,    -- Semilla aleatoria para ordenar
+    page_size            int      DEFAULT 10,
+    sort_created         boolean  DEFAULT false,
+    sort_distance        boolean  DEFAULT false,
+    ascending            boolean  DEFAULT false,
+    search_text          text     DEFAULT NULL,
+    filter_delivery      boolean  DEFAULT false,
+    filter_pickup        boolean  DEFAULT false,
+    filter_free_shipping boolean  DEFAULT false,
+    products_limit       int      DEFAULT 5
+)
+RETURNS TABLE(
+   store_id           uuid,
+   store_name         text,
+   store_logo_url     text,
+   store_lat          numeric,
+   store_lng          numeric,
+   store_pickup       boolean,
+   store_delivery     boolean,
+   store_delivery_price numeric,
+   store_is_open      boolean,
+   products_available numeric,
+   distance           numeric,
+   delivery_area      boolean,
+   products_list      jsonb  -- Lista de productos
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+  v_max_distance  numeric := LEAST(max_distance, 10000);
+  v_offset        int     := (page - 1) * page_size;
+  v_order         text    := 'ORDER BY store_is_open DESC';
+  v_store_filters text    := '';
+  v_sql           text;
+BEGIN
+  -- Validaciones
+  IF country_code IS NULL OR trim(country_code) = '' THEN
+    RAISE EXCEPTION 'country_code es requerido';
+  ELSIF user_lat IS NULL OR user_lng IS NULL THEN
+    RAISE EXCEPTION 'user_lat y user_lng son requeridos';
+  ELSIF page < 1 THEN
+    RAISE EXCEPTION 'page debe ser >= 1';
+  ELSIF random_seed IS NULL OR trim(random_seed) = '' THEN
+    RAISE EXCEPTION 'random_seed es requerido';
+  END IF;
+
+  -- Filtros de tienda
+  IF filter_delivery THEN
+    v_store_filters := v_store_filters || ' AND ST_Within(up.pt::geometry, st.geom)';
+  END IF;
+  IF filter_pickup THEN
+    v_store_filters := v_store_filters || ' AND st.pickup = true';
+  END IF;
+  IF filter_free_shipping THEN
+    v_store_filters := v_store_filters || ' AND st.delivery = true AND st.delivery_price = 0';
+  END IF;
+
+  -- ORDER dinámico
+  IF sort_distance THEN
+    v_order := v_order || format(', distance %s', CASE WHEN ascending THEN 'ASC' ELSE 'DESC' END);
+  END IF;
+  IF sort_created THEN
+    v_order := v_order || format(', st.created_at %s', CASE WHEN ascending THEN 'ASC' ELSE 'DESC' END);
+  END IF;
+  v_order := v_order || format(', md5(%L || st.id) ASC', random_seed);
+
+  -- Construir SQL
+  v_sql := format($SQL$
+    WITH user_point AS (
+      SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS pt
+    ),
+    filtered_stores AS (
+      SELECT
+        st.*, 
+        ST_Distance(
+          up.pt,
+          ST_SetSRID(ST_MakePoint(st.lng, st.lat), 4326)::geography
+        )::numeric             AS distance,
+        (st.delivery
+         AND ST_Within(up.pt::geometry, st.geom)
+        )                       AS delivery_area,
+        public.store_is_open(st) AS store_is_open
+      FROM stores st
+      CROSS JOIN user_point up
+      WHERE st.country_code = $3
+        AND st.lat IS NOT NULL
+        AND st.lng IS NOT NULL
+        AND ST_DWithin(
+              ST_SetSRID(ST_MakePoint(st.lng, st.lat), 4326)::geography,
+              up.pt,
+              $4
+            )
+        %s
+    )
+    SELECT
+      st.id                   AS store_id,
+      st.name                 AS store_name,
+      st.logo_url             AS store_logo_url,
+      st.lat                  AS store_lat,
+      st.lng                  AS store_lng,
+      st.pickup               AS store_pickup,
+      st.delivery             AS store_delivery,
+      st.delivery_price       AS store_delivery_price,
+      st.store_is_open        AS store_is_open,
+      (
+        SELECT COUNT(*)::numeric
+        FROM products p
+        WHERE p.store_id = st.id
+          AND p.active
+          AND public.product_available(p)
+      )                       AS products_available,
+      st.distance             AS distance,
+      st.delivery_area        AS delivery_area,
+      (
+        SELECT jsonb_agg(row_to_json(prod))
+        FROM (
+          SELECT
+            p.id                   AS product_id,
+            p.name                 AS product_name,
+            p.image_url            AS product_image,
+            public.product_price(p) AS product_price,
+            p.regular_price
+          FROM products p
+          WHERE p.store_id = st.id
+            AND p.active
+            AND public.product_available(p)
+          ORDER BY md5($6 || p.id)
+          LIMIT $9
+        ) prod
+      )                       AS products_list
+    FROM filtered_stores st
+    WHERE ($5 IS NULL OR st.name ILIKE '%%' || $5 || '%%')
+    %s
+    LIMIT $7 OFFSET $8
+  $SQL$,
+    v_store_filters,
+    v_order
+  );
+
+  -- Ejecutar
+  RETURN QUERY EXECUTE v_sql
+    USING
+      user_lng,        -- $1
+      user_lat,        -- $2
+      country_code,    -- $3
+      v_max_distance,  -- $4
+      search_text,     -- $5
+      random_seed,     -- $6
+      page_size,       -- $7
+      v_offset,        -- $8
+      products_limit;  -- $9
+END;
+$$;
