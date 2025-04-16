@@ -45,6 +45,9 @@ class ListCubitStateHandler<T extends ModelComponent,
     ListState state,
   ) filterSectionBuilder;
 
+  final Widget Function(BuildContext context, C cubit, ListState state)?
+      customHeader;
+
   /// Funión opcional al agregar un elemento.
   final void Function(
     BuildContext context,
@@ -53,12 +56,6 @@ class ListCubitStateHandler<T extends ModelComponent,
 
   /// Función opcional al buscar.
   final void Function(C cubit, String search)? onSearch;
-
-  final bool shrinkWrap;
-
-  final ScrollPhysics? physics;
-
-  final List<Widget>? actions;
 
   const ListCubitStateHandler({
     super.key,
@@ -71,10 +68,8 @@ class ListCubitStateHandler<T extends ModelComponent,
     this.showFilterButton = true,
     this.onAdd,
     this.filterSectionBuilder = defaultFilterSectionBuilder,
+    this.customHeader,
     this.onSearch,
-    this.shrinkWrap = false,
-    this.physics,
-    this.actions,
   });
 
   /// Sección por defecto para filtros y búsqueda.
@@ -163,7 +158,6 @@ class ListCubitStateHandler<T extends ModelComponent,
                           icon: const Icon(Icons.tune),
                         ),
                       gap,
-                      ...?actions,
                     ],
                     bottom: !showSearchBar
                         ? null
@@ -199,6 +193,10 @@ class ListCubitStateHandler<T extends ModelComponent,
                       ),
                     ),
                   ),
+                if (customHeader != null)
+                  SliverToBoxAdapter(
+                    child: customHeader!(context, cubit, cubit.state),
+                  ),
               ];
             },
             body: SafeArea(
@@ -210,8 +208,6 @@ class ListCubitStateHandler<T extends ModelComponent,
                     return PagedListView<int, T>(
                       state: pagingState,
                       fetchNextPage: fetchNextPage,
-                      shrinkWrap: shrinkWrap,
-                      physics: physics,
                       builderDelegate: PagedChildBuilderDelegate<T>(
                         itemBuilder: (context, item, index) =>
                             itemBuilder(context, cubit, item, index),

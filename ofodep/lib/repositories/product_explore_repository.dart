@@ -26,7 +26,6 @@ class ProductExploreRepository extends Repository<ProductExploreModel> {
     required ProductExploreParams params,
     required int page,
   }) async {
-    print(params.toMap());
     try {
       final response = await Supabase.instance.client
           .rpc(

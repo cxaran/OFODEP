@@ -110,33 +110,6 @@ class ProductExploreParams extends ParamsComponent {
   }
 }
 
-// RETURNS TABLE(
-//    product_id uuid,
-//    product_name text,
-//    product_description text,
-//    product_image_url text,
-//    product_regular_price numeric,
-//    product_sale_price numeric,
-//    product_sale_start date,
-//    product_sale_end date,
-//    product_currency text,
-//    product_tags text[],
-//    product_days int[],
-//    store_id uuid,
-//    store_name text,
-//    store_logo_url text,
-//    store_lat numeric,
-//    store_lng numeric,
-//    store_pickup boolean,
-//    store_delivery boolean,
-//    store_delivery_price numeric,
-//    store_is_open boolean,
-//    product_available boolean,
-//    product_price numeric,           -- Precio calculado por la función product_price
-//    distance double precision,       -- Distancia en metros a la tienda
-//    delivery_area boolean            -- TRUE si la posición del usuario está dentro del área de delivery de la tienda
-// )
-
 class ProductExploreModel extends ModelComponent {
   final String productName;
   final String productDescription;
@@ -193,9 +166,6 @@ class ProductExploreModel extends ModelComponent {
 
   @override
   factory ProductExploreModel.fromMap(Map<String, dynamic> map) {
-    for (final key in map.keys) {
-      print('$key: ${map[key]}');
-    }
     return ProductExploreModel(
       id: map['product_id'] as String,
       productName: map['product_name'] as String,

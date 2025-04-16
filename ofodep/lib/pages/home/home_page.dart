@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ofodep/blocs/local_cubits/session_cubit.dart';
-import 'package:ofodep/pages/home/drawer_home.dart';
+
 import 'package:ofodep/pages/home/explore/explore_page.dart';
 import 'package:ofodep/pages/home/profile_page.dart';
 
@@ -30,7 +30,6 @@ class _HomePageState extends State<HomePage> {
       body: _widgetOptions.elementAt(
         _selectedIndex,
       ),
-      drawer: DrawerHome(),
       bottomNavigationBar: BlocConsumer<SessionCubit, SessionState>(
         listener: (context, state) {
           if (state is SessionUnauthenticated) {

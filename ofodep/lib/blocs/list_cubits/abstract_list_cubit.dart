@@ -94,16 +94,6 @@ abstract class ListCubit<T extends ModelComponent, R extends Repository<T>>
     refresh();
   }
 
-  /// Actualiza los parámetros de RPC y refresca la paginación.
-  void updateRpcParams(
-    ParamsComponent Function(ParamsComponent current) updater,
-  ) {
-    if (state.rpcParams != null) {
-      final updatedRpcParams = updater(state.rpcParams!);
-      emit(state.copyWith(rpcParams: updatedRpcParams));
-    }
-  }
-
   /// Obtener el filtro con parámetros persobalizados si aplica.
   Map<String, dynamic>? getFilter(Map<String, dynamic>? filter) {
     return filter;

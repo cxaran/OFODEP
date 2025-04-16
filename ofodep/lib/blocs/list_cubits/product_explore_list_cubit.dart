@@ -1,4 +1,5 @@
 import 'package:ofodep/blocs/list_cubits/abstract_list_cubit.dart';
+import 'package:ofodep/models/abstract_params.dart';
 import 'package:ofodep/models/product_explore_model.dart';
 import 'package:ofodep/repositories/product_explore_repository.dart';
 
@@ -7,6 +8,31 @@ class ProductExploreListCubit
   ProductExploreListCubit({
     super.repository = const ProductExploreRepository(),
   });
+
+  @override
+  void refresh() {
+    if (state.rpcParams is ProductExploreParams) {
+      setParams(
+        (current) => current.copyWith(
+          randomSeed: newRandomSeed(),
+        ),
+      );
+    } else {
+      super.refresh();
+    }
+  }
+
+  void setParams(
+      ProductExploreParams Function(ProductExploreParams current) updater) {
+    if (state.rpcParams is ProductExploreParams) {
+      emit(
+        state.copyWith(
+          rpcParams: updater(state.rpcParams as ProductExploreParams),
+        ),
+      );
+      super.refresh();
+    }
+  }
 
   @override
   Future<List<ProductExploreModel>> getPaginated({

@@ -1,43 +1,4 @@
 import 'package:ofodep/models/abstract_model.dart';
-import 'package:ofodep/models/abstract_params.dart';
-
-class ProductTagsExploreParams extends ParamsComponent {
-  final String countryCode;
-  final double userLat;
-  final double userLng;
-  final double maxDistance;
-  final int tagsLimit;
-
-  ProductTagsExploreParams({
-    required this.countryCode,
-    required this.userLat,
-    required this.userLng,
-    required this.maxDistance,
-    this.tagsLimit = 10,
-  });
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      'country_code': countryCode,
-      'user_lat': userLat,
-      'user_lng': userLng,
-      'max_distance': maxDistance,
-      'tags_limit': tagsLimit,
-    };
-  }
-
-  @override
-  ProductTagsExploreParams copyWith({String? id}) {
-    return ProductTagsExploreParams(
-      countryCode: countryCode,
-      userLat: userLat,
-      userLng: userLng,
-      maxDistance: maxDistance,
-      tagsLimit: tagsLimit,
-    );
-  }
-}
 
 class ProductTagsExploreModel extends ModelComponent {
   final String tag;
@@ -54,6 +15,14 @@ class ProductTagsExploreModel extends ModelComponent {
       'tag': tag,
       'count': count,
     };
+  }
+
+  @override
+  factory ProductTagsExploreModel.fromMap(Map<String, dynamic> map) {
+    return ProductTagsExploreModel(
+      tag: map['tag'],
+      count: map['count'],
+    );
   }
 
   @override
